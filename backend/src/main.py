@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.config import settings
 from src.modules.experiments.router import router as experiments_router
+from src.modules.labs.router import router as labs_router
+from src.modules.spaces.router import router as spaces_router
 
 
 def create_app() -> FastAPI:
@@ -21,6 +23,8 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
+    app.include_router(spaces_router, prefix=settings.api_v1_prefix)
+    app.include_router(labs_router, prefix=settings.api_v1_prefix)
     app.include_router(experiments_router, prefix=settings.api_v1_prefix)
 
     @app.get("/health")

@@ -5,6 +5,9 @@ import { BrowserRouter, Navigate, Route, Routes, useLocation, useNavigate } from
 import { ExperimentDetail } from "@/features/experiments/components/ExperimentDetail";
 import { ExperimentForm } from "@/features/experiments/components/ExperimentForm";
 import { ExperimentList } from "@/features/experiments/components/ExperimentList";
+import { LabDetail } from "@/features/labs/components/LabDetail";
+import { LabForm } from "@/features/labs/components/LabForm";
+import { LabList } from "@/features/labs/components/LabList";
 
 const queryClient = new QueryClient();
 
@@ -15,10 +18,12 @@ function AppLayout() {
   const navigate = useNavigate();
 
   const menuItems = [
-    { key: "/experiments", label: "实验管理" },
+    { key: "/labs", label: "实验室管理" },
+    { key: "/experiments", label: "科研实验" },
   ];
 
-  const selectedKey = menuItems.find((item) => location.pathname.startsWith(item.key))?.key ?? "/experiments";
+  const selectedKey =
+    menuItems.find((item) => location.pathname.startsWith(item.key))?.key ?? "/labs";
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -37,10 +42,13 @@ function AppLayout() {
         </Sider>
         <Content style={{ padding: 24 }}>
           <Routes>
+            <Route path="/labs" element={<LabList />} />
+            <Route path="/labs/new" element={<LabForm />} />
+            <Route path="/labs/:id" element={<LabDetail />} />
             <Route path="/experiments" element={<ExperimentList />} />
             <Route path="/experiments/new" element={<ExperimentForm />} />
             <Route path="/experiments/:id" element={<ExperimentDetail />} />
-            <Route path="*" element={<Navigate to="/experiments" replace />} />
+            <Route path="*" element={<Navigate to="/labs" replace />} />
           </Routes>
         </Content>
       </Layout>

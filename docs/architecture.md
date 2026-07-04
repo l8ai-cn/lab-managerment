@@ -2,102 +2,155 @@
 
 ## 1. 项目概述
 
-本系统是一套面向科研/检测实验室的业务管理平台，核心能力包括实验全生命周期管理、样品追踪、设备调度、人员权限与审计合规。
-
-当前阶段优先建设 **实验管理模块**，作为其他业务模块（样品、设备、试剂、课题）的参考实现。
+面向高校的 **B/S 实验室综合管理平台**，覆盖实验室信息、设备仪器、预约审批、实验项目、故障上报、数据填报、统计分析、外部系统对接及经营性收费等全业务链条。
 
 ## 2. 技术选型
 
 | 层级 | 技术 | 说明 |
 |------|------|------|
-| 后端 | Python 3.12 + FastAPI | 异步 API、自动 OpenAPI 文档、类型友好 |
+| 后端 | Python 3.12 + FastAPI | 异步 API、OpenAPI 文档、RESTful 标准接口 |
 | ORM | SQLAlchemy 2.x + Alembic | 关系型建模与版本化迁移 |
-| 数据库 | PostgreSQL 16 | JSONB 存灵活参数，事务与约束完善 |
-| 前端 | React 18 + TypeScript + Vite | 组件化、类型安全、构建快 |
-| UI | Ant Design 5 | 企业级表格/表单/工作流组件 |
-| 状态 | TanStack Query | 服务端状态缓存与同步 |
-| 认证 | JWT + RBAC | 后续迭代接入 |
+| 数据库 | PostgreSQL 16 | JSONB、事务、全文检索 |
+| 缓存/队列 | Redis + Celery（P1） | 消息推送、异步任务、预约锁 |
+| 前端 | React 18 + TypeScript + Vite | B/S 架构表示层 |
+| UI | Ant Design 5 | 企业级组件 |
+| 工作流 | 自研状态机 + 审批引擎（P1） | 多级审批、留痕追溯 |
+| 认证 | SSO + JWT + RBAC | 统一身份认证对接 |
+| 移动端 | 微信小程序 / 钉钉（P2） | 预约、故障上报 |
+| 支付 | 银校直连 SDK（P3）★ | 分账、归集、电子回单 |
 
-## 3. 目录结构
+## 3. 分层架构
+
+```
+┌─────────────────────────────────────────────────────┐
+│  表示层：Web 前端 / 移动端 / 可视化大屏 / 智能体      │
+├─────────────────────────────────────────────────────┤
+│  接口层：RESTful API / MCP API / Webhook 回调        │
+├─────────────────────────────────────────────────────┤
+│  业务逻辑层：各业务模块 Service + 工作流引擎          │
+├─────────────────────────────────────────────────────┤
+│  数据访问层：Repository + ORM                        │
+├─────────────────────────────────────────────────────┤
+│  数据层：PostgreSQL / Redis / 文件存储               │
+├─────────────────────────────────────────────────────┤
+│  集成层：SSO / 数据中心 / 门禁 / 一卡通 / 人脸中台  │
+└─────────────────────────────────────────────────────┘
+```
+
+## 4. 业务模块地图
+
+```
+backend/src/modules/
+├── spaces/              # 空间管理（楼栋/楼层/房间）        [P0]
+├── labs/                # 实验室信息管理                    [P0]
+├── lab_staff/           # 实验员管理                        [P0]
+├── lab_changes/         # 实验室变更审批                    [P0]
+├── users/               # 用户与 RBAC                       [P0]
+├── instruments/         # 仪器台账                          [P1]
+├── instrument_booking/  # 仪器预约                          [P1]
+├── lab_booking/         # 实验室预约                        [P1]
+├── experiment_projects/ # 实验项目管理（课程体系）            [P2]
+├── experiments/         # 科研实验管理（已有 P0）           [P2]
+├── faults/              # 故障上报                          [P2]
+├── data_reporting/      # 教育部数据填报                    [P3]
+├── statistics/          # 统计分析                          [P2]
+├── integrations/        # 外部系统对接                      [P1]
+├── payments/            # 收费支付 ★                        [P3]
+└── workflow/            # 审批工作流引擎                    [P1]
+```
+
+## 5. 目录结构
 
 ```
 lab-management/
-├── docs/                          # 设计文档
-│   ├── architecture.md
-│   └── modules/
-│       └── experiment-management.md
+├── docs/
+│   ├── architecture.md          # 本文件
+│   ├── requirements.md          # 需求规格说明书
+│   ├── roadmap.md               # 开发路线图
+│   └── modules/                 # 各模块详细设计
 ├── backend/
 │   ├── pyproject.toml
-│   ├── alembic/                   # 数据库迁移
+│   ├── alembic/
 │   └── src/
-│       ├── main.py                # 应用入口
-│       ├── core/                  # 配置、数据库、异常、依赖
-│       └── modules/               # 业务模块（按领域划分）
-│           ├── experiments/       # 实验管理 ★
-│           ├── samples/           # 样品（后续）
-│           ├── equipment/         # 设备（后续）
-│           └── users/             # 用户（后续）
-└── frontend/
-    ├── package.json
-    └── src/
-        ├── app/                   # 路由与布局
-        ├── features/              # 按业务领域组织
-        │   └── experiments/
-        └── shared/                # 通用组件与工具
+│       ├── main.py
+│       ├── core/                # 配置、数据库、认证、异常
+│       ├── shared/              # 通用工具（导入导出、分页）
+│       └── modules/             # 业务模块
+├── frontend/
+│   └── src/
+│       ├── app/                 # 路由与布局
+│       ├── features/            # 按业务领域组织
+│       └── shared/              # 通用组件
+└── docker-compose.yml
 ```
 
-## 4. 模块划分原则
-
-每个业务模块遵循统一分层：
+## 6. 模块分层约定
 
 ```
 modules/<domain>/
 ├── models.py      # SQLAlchemy 实体
-├── schemas.py     # Pydantic 请求/响应模型
-├── repository.py  # 数据访问层
-├── service.py     # 业务逻辑层
+├── schemas.py     # Pydantic 请求/响应
+├── repository.py  # 数据访问
+├── service.py     # 业务逻辑
 └── router.py      # HTTP 路由
 ```
 
-**约定：**
+**全局约定：**
 
-- API 统一前缀 `/api/v1`
-- 资源名复数、kebab-case：`/api/v1/experiments`
-- 数据库表名 snake_case 复数：`experiments`
-- 软删除：`deleted_at` 字段，查询默认过滤
-- 审计字段：`created_at`, `updated_at`, `created_by`, `updated_by`
+- API 前缀 `/api/v1`，资源复数 kebab-case
+- 表名 snake_case 复数，软删除 `deleted_at`
+- 审计字段 `created_at`, `updated_at`, `created_by`, `updated_by`
+- 外部对接通过 `integrations/` 统一适配
 
-## 5. 模块依赖关系
+## 7. 核心实体关系
 
 ```mermaid
-graph TD
-    Users[用户模块] --> Experiments[实验管理]
-    Projects[课题模块] --> Experiments
-    Protocols[方案模块] --> Experiments
-    Samples[样品模块] --> Experiments
-    Equipment[设备模块] --> Experiments
-    Experiments --> AuditLog[审计日志]
-    Experiments --> Attachments[附件服务]
+erDiagram
+    Building ||--o{ Floor : contains
+    Floor ||--o{ Room : contains
+    Room ||--o| Lab : hosts
+    Lab ||--o{ LabStaffAssignment : has
+    LabStaff ||--o{ LabStaffAssignment : manages
+    Lab ||--o{ Instrument : stores
+    Lab ||--o{ LabBooking : receives
+    Instrument ||--o{ InstrumentBooking : receives
+    Lab ||--o{ FaultReport : reports
+    ExperimentProject }o--|| Course : belongs_to
 ```
 
-实验模块在 MVP 阶段可独立运行（外键字段预留，关联实体后续接入）。
+## 8. 集成架构
 
-## 6. 非功能性要求
+| 外部系统 | 对接方式 | 阶段 |
+|----------|----------|------|
+| 统一身份认证（SSO） | OAuth2 / CAS | P0 |
+| 学校数据中心 | REST API 定时同步 | P1 |
+| 资产管理系统 | REST API | P1 |
+| 门禁管理系统 | API + Webhook | P1 |
+| 一卡通系统 | API | P1 |
+| 人脸数据中台 | 增量同步 API | P1 |
+| 微信/钉钉 | 消息推送 API | P1 |
+| 电子班牌 | 数据推送 API | P2 |
+| 银校直连/中国银行 ★ | 支付 SDK | P3 |
+| 智能体（MCP） | REST + MCP 协议 | P3 |
 
-| 维度 | 目标 |
+## 9. 非功能性设计
+
+| 维度 | 方案 |
 |------|------|
-| 可追溯 | 实验状态变更、数据修改均有审计记录 |
-| 权限 | 基于角色的 CRUD 与状态流转控制 |
-| 扩展 | `metadata` JSONB 字段承载领域扩展属性 |
-| 搜索 | 支持按编号、标题、状态、负责人、日期范围筛选 |
-| 导出 | 实验报告 PDF/Excel（后续迭代） |
+| 权限 | RBAC，角色：系统管理员、院系管理员、实验室管理员、教师、学生、临时人员 |
+| 审计 | 全操作留痕，变更审批可追溯 |
+| 导入导出 | openpyxl，统一 ImportExportService |
+| 消息 | 站内信 + 微信/钉钉 Webhook |
+| 文件 | 本地/MinIO 对象存储 |
+| 部署 | Docker Compose 开发，K8s 生产 |
 
-## 7. 开发阶段规划
+## 10. 开发阶段
 
-| 阶段 | 内容 |
+详见 [roadmap.md](./roadmap.md)。
+
+| 阶段 | 重点 |
 |------|------|
-| **P0 — 骨架** | 项目脚手架、实验 CRUD、状态机、列表/详情 API |
-| **P1 — 执行** | 实验运行记录（ExperimentRun）、步骤与结果录入 |
-| **P2 — 关联** | 对接样品、设备、方案、课题 |
-| **P3 — 工作流** | 审批流、通知、报告导出 |
-| **P4 — 合规** | 电子签名、不可篡改日志、权限细化 |
+| **P0** | 空间管理、实验室信息、用户 RBAC、SSO |
+| **P1** | 仪器台账、预约审批、门禁对接、数据中心同步 |
+| **P2** | 实验项目、故障上报、统计、移动端 |
+| **P3** | 数据填报、大屏、智能体 API、收费支付 ★ |
