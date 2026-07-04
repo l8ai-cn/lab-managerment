@@ -1,6 +1,7 @@
+import io
 import secrets
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -35,6 +36,25 @@ from src.modules.lab_bookings.schemas import (
 from src.modules.labs.repository import LabRepository
 from src.modules.users.models import User
 from src.shared.notification_service import NotificationService
+from src.shared.push import send_push
+
+
+def _expand_recurring_slots(
+    start: datetime, end: datetime, rule: dict | None
+) -> list[tuple[datetime, datetime]]:
+    if not rule:
+        return [(start, end)]
+    frequency = rule.get("frequency", "weekly")
+    count = int(rule.get("count", 1))
+    interval = int(rule.get("interval", 1))
+    delta_map = {"daily": timedelta(days=interval), "weekly": timedelta(weeks=interval), "monthly": timedelta(days=30 * interval)}
+    delta = delta_map.get(frequency, timedelta(weeks=interval))
+    duration = end - start
+    slots = []
+    for i in range(count):
+        slot_start = start + delta * i
+        slots.append((slot_start, slot_start + duration))
+    return slots
 
 
 def _booking_response(b: LabBooking) -> LabBookingResponse:
@@ -104,16 +124,32 @@ class LabBookingService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="实验室不存在")
         if data.end_time <= data.start_time:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="结束时间须晚于开始时间")
-        if await self.repo.overlapping_bookings(data.lab_id, data.start_time, data.end_time):
-            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="时段冲突")
-        booking = LabBooking(user_id=user.id, status=LabBookingStatus.PENDING, **data.model_dump())
-        created = await self.repo.create_booking(booking)
-        if lab.manager_id:
+
+        slots = _expand_recurring_slots(data.start_time, data.end_time, data.recurrence_rule if data.is_recurring else None)
+        created_booking = None
+        for slot_start, slot_end in slots:
+            if await self.repo.overlapping_bookings(data.lab_id, slot_start, slot_end):
+                raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"时段冲突: {slot_start.isoformat()}")
+            booking = LabBooking(
+                user_id=user.id,
+                status=LabBookingStatus.PENDING,
+                lab_id=data.lab_id,
+                start_time=slot_start,
+                end_time=slot_end,
+                usage_type=data.usage_type,
+                purpose=data.purpose,
+                expected_count=data.expected_count,
+                is_recurring=data.is_recurring,
+                recurrence_rule=data.recurrence_rule,
+            )
+            created_booking = await self.repo.create_booking(booking)
+
+        if lab.manager_id and created_booking:
             await self.notify.send(
                 lab.manager_id, "实验室预约待审批", f"{user.name} 申请预约 {lab.name}", "lab_booking"
             )
         await self.db.commit()
-        refreshed = await self.repo.get_booking(created.id)
+        refreshed = await self.repo.get_booking(created_booking.id)  # type: ignore[union-attr]
         return _booking_response(refreshed)  # type: ignore[arg-type]
 
     async def get_booking(self, booking_id: uuid.UUID) -> LabBookingResponse:
@@ -179,6 +215,13 @@ class LabBookingService:
             )
         )
         await self.notify.send(booking.user_id, "实验室预约已通过", "您的预约申请已批准", "lab_booking")
+        await send_push(
+            self.db,
+            user_id=booking.user_id,
+            title="实验室预约已通过",
+            content="您的预约申请已批准，请按时签到",
+            category="lab_booking",
+        )
         await self.db.commit()
         refreshed = await self.repo.get_booking(booking_id)
         return _booking_response(refreshed)  # type: ignore[arg-type]
@@ -258,3 +301,49 @@ class LabBookingService:
         await self.db.commit()
         await self.db.refresh(record)
         return UsageRecordResponse.model_validate(record)
+
+    async def get_access_grants(self, booking_id: uuid.UUID) -> list:
+        booking = await self.repo.get_booking(booking_id)
+        if not booking:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="预约不存在")
+        from src.modules.lab_bookings.schemas import AccessGrantResponse
+
+        return [AccessGrantResponse.model_validate(g) for g in booking.access_grants]
+
+    async def export_bookings(self, fmt: str = "xlsx", **kwargs) -> tuple[bytes, str, str]:
+        items, _ = await self.repo.list_bookings(page_size=5000, **kwargs)
+        if fmt == "csv":
+            lines = ["id,lab_id,user_id,start_time,end_time,usage_type,status,purpose"]
+            for b in items:
+                lines.append(
+                    f"{b.id},{b.lab_id},{b.user_id},{b.start_time.isoformat()},{b.end_time.isoformat()},"
+                    f"{b.usage_type.value},{b.status.value},\"{b.purpose.replace(chr(34), chr(39))}\""
+                )
+            content = "\n".join(lines).encode("utf-8-sig")
+            return content, "text/csv", "lab_bookings.csv"
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="openpyxl 未安装") from e
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "实验室预约"
+        ws.append(["ID", "实验室", "用户ID", "开始时间", "结束时间", "用途类型", "状态", "目的"])
+        for b in items:
+            ws.append([
+                str(b.id),
+                b.lab.name if b.lab else str(b.lab_id),
+                str(b.user_id),
+                b.start_time.isoformat(),
+                b.end_time.isoformat(),
+                b.usage_type.value,
+                b.status.value,
+                b.purpose,
+            ])
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return (
+            buffer.getvalue(),
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            "lab_bookings.xlsx",
+        )

@@ -1,6 +1,7 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -111,6 +112,29 @@ async def submission_stats(
     service: DataReportingService = Depends(get_service),
 ):
     return await service.aggregate_stats()
+
+
+@router.get("/submissions/export")
+async def export_submissions(
+    template_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    service: DataReportingService = Depends(get_service),
+):
+    content = await service.export_submissions(template_id=template_id)
+    return StreamingResponse(
+        iter([content]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": "attachment; filename=data_report_submissions.xlsx"},
+    )
+
+
+@router.post("/submissions/import")
+async def import_submissions(
+    file: UploadFile = File(...),
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.DEPT_ADMIN)),
+    service: DataReportingService = Depends(get_service),
+):
+    return await service.import_submissions(file)
 
 
 @router.get("/submissions/{submission_id}", response_model=SubmissionResponse)

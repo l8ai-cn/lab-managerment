@@ -189,3 +189,33 @@ class ExperimentProjectService:
         buffer = io.BytesIO()
         wb.save(buffer)
         return buffer.getvalue()
+
+    async def import_projects(self, file) -> dict:
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="openpyxl 未安装") from e
+        content = await file.read()
+        wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True)
+        ws = wb.active
+        imported = 0
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not row or not row[2]:
+                continue
+            course_code = str(row[0]).strip() if row[0] else None
+            course = await self.repo.get_course_by_code(course_code) if course_code else None
+            if not course:
+                continue
+            from src.modules.experiment_projects.models import ProjectType
+
+            project = ExperimentProject(
+                course_id=course.id,
+                name=str(row[2]),
+                type=ProjectType(str(row[3])) if len(row) > 3 and row[3] else ProjectType.VERIFICATION,
+                hours=int(row[4]) if len(row) > 4 and row[4] else None,
+                semester=str(row[5]) if len(row) > 5 and row[5] else None,
+            )
+            await self.repo.create_project(project)
+            imported += 1
+        await self.db.commit()
+        return {"imported": imported}

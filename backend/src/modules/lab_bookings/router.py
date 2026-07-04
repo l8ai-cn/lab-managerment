@@ -2,12 +2,14 @@ import uuid
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query, status
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.deps import get_current_user, require_roles
 from src.modules.lab_bookings.models import LabBookingStatus
 from src.modules.lab_bookings.schemas import (
+    AccessGrantResponse,
     ApprovalRequest,
     BookingRuleCreate,
     BookingRuleResponse,
@@ -23,6 +25,8 @@ from src.modules.lab_bookings.schemas import (
     UsageRecordResponse,
 )
 from src.modules.lab_bookings.service import LabBookingService
+from src.modules.payments.schemas import PayResponse
+from src.modules.payments.service import PaymentService
 from src.modules.users.models import User, UserRole
 
 router = APIRouter(prefix="/lab-bookings", tags=["实验室预约"])
@@ -56,6 +60,29 @@ async def create_booking(
     return await service.create_booking(data, user)
 
 
+def get_payment_service(db: AsyncSession = Depends(get_db)) -> PaymentService:
+    return PaymentService(db)
+
+
+@router.get("/export")
+async def export_bookings(
+    fmt: str = Query("xlsx", pattern="^(xlsx|csv)$"),
+    lab_id: uuid.UUID | None = None,
+    status: LabBookingStatus | None = None,
+    user: User = Depends(get_current_user),
+    service: LabBookingService = Depends(get_service),
+):
+    user_id = user.id if user.role == UserRole.STUDENT else None
+    content, media_type, filename = await service.export_bookings(
+        fmt=fmt, lab_id=lab_id, user_id=user_id, status=status
+    )
+    return StreamingResponse(
+        iter([content]),
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
 @router.get("/calendar", response_model=list[CalendarSlot])
 async def get_calendar(
     lab_id: uuid.UUID,
@@ -65,6 +92,24 @@ async def get_calendar(
     service: LabBookingService = Depends(get_service),
 ):
     return await service.calendar(lab_id, from_time, to_time)
+
+
+@router.get("/{booking_id}/access-grants", response_model=list[AccessGrantResponse])
+async def get_access_grants(
+    booking_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    service: LabBookingService = Depends(get_service),
+):
+    return await service.get_access_grants(booking_id)
+
+
+@router.post("/{booking_id}/pay", response_model=PayResponse)
+async def pay_lab_booking(
+    booking_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    payment_service: PaymentService = Depends(get_payment_service),
+):
+    return await payment_service.pay_for_lab_booking(booking_id, user)
 
 
 @router.get("/{booking_id}", response_model=LabBookingResponse)

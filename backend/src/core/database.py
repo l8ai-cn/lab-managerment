@@ -23,19 +23,19 @@ async def init_database() -> None:
     """SQLite 开发模式：自动建表"""
     if not settings.is_sqlite:
         return
-    # 确保 data 目录存在
     from pathlib import Path
 
     db_path = settings.database_url.split("///")[-1]
     Path(db_path).parent.mkdir(parents=True, exist_ok=True)
 
-    # 导入所有模型以注册到 metadata
+    import src.modules.access_control.models  # noqa: F401
     import src.modules.data_reporting.models  # noqa: F401
     import src.modules.experiment_projects.models  # noqa: F401
     import src.modules.experiments.models  # noqa: F401
     import src.modules.faults.models  # noqa: F401
     import src.modules.integrations.models  # noqa: F401
     import src.modules.instruments.models  # noqa: F401
+    import src.modules.knowledge.models  # noqa: F401
     import src.modules.lab_bookings.models  # noqa: F401
     import src.modules.lab_changes.models  # noqa: F401
     import src.modules.lab_staff.models  # noqa: F401

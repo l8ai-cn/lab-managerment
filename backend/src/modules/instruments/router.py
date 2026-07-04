@@ -1,7 +1,8 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -50,6 +51,30 @@ async def create_instrument(
     service: InstrumentService = Depends(svc),
 ):
     return await service.create(data)
+
+
+@router.get("/export")
+async def export_instruments(
+    fmt: str = Query("xlsx", pattern="^(xlsx|csv)$"),
+    lab_id: uuid.UUID | None = None,
+    user: User = Depends(get_current_user),
+    service: InstrumentService = Depends(svc),
+):
+    content, media_type, filename = await service.export_instruments(fmt=fmt, lab_id=lab_id)
+    return StreamingResponse(
+        iter([content]),
+        media_type=media_type,
+        headers={"Content-Disposition": f"attachment; filename={filename}"},
+    )
+
+
+@router.post("/import")
+async def import_instruments(
+    file: UploadFile = File(...),
+    user: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN)),
+    service: InstrumentService = Depends(svc),
+):
+    return await service.import_instruments(file, user)
 
 
 @router.get("/{instrument_id}", response_model=InstrumentResponse)

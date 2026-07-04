@@ -1,16 +1,19 @@
+import io
 import uuid
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
 from src.core.deps import get_current_user
+from src.modules.experiment_projects.models import ExperimentProject
 from src.modules.faults.models import FaultReport, FaultStatus
 from src.modules.instruments.models import Instrument, InstrumentBooking
-from src.modules.lab_bookings.models import LabBooking, LabBookingStatus
+from src.modules.lab_bookings.models import LabBooking, LabBookingStatus, LabCheckIn
 from src.modules.labs.models import Lab
 from src.modules.users.models import User
 
@@ -43,6 +46,20 @@ class FaultStats(BaseModel):
     by_type: dict[str, int]
     by_lab: dict[str, int]
     by_status: dict[str, int]
+
+
+class EquipmentValueStats(BaseModel):
+    total_value: float
+    by_category: dict[str, float]
+    by_lab: dict[str, float]
+    instrument_count: int
+
+
+class ExperimentProjectStats(BaseModel):
+    total_projects: int
+    by_type: dict[str, int]
+    by_semester: dict[str, int]
+    total_hours: int
 
 
 @router.get("/overview", response_model=OverviewStats)
@@ -172,3 +189,101 @@ async def fault_statistics(
         by_status[r.status.value] = by_status.get(r.status.value, 0) + 1
 
     return FaultStats(by_type=by_type, by_lab=by_lab, by_status=by_status)
+
+
+@router.get("/equipment-value", response_model=EquipmentValueStats)
+async def equipment_value(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(Instrument).where(Instrument.deleted_at.is_(None)))
+    instruments = list(result.scalars().all())
+    by_category: dict[str, float] = {}
+    by_lab: dict[str, float] = {}
+    total = 0.0
+    for inst in instruments:
+        price = float(inst.purchase_price or 0)
+        total += price
+        cat = inst.category or "未分类"
+        by_category[cat] = by_category.get(cat, 0) + price
+        lab_key = str(inst.lab_id) if inst.lab_id else "未分配"
+        by_lab[lab_key] = by_lab.get(lab_key, 0) + price
+    return EquipmentValueStats(
+        total_value=round(total, 2),
+        by_category={k: round(v, 2) for k, v in by_category.items()},
+        by_lab={k: round(v, 2) for k, v in by_lab.items()},
+        instrument_count=len(instruments),
+    )
+
+
+@router.get("/experiment-projects", response_model=ExperimentProjectStats)
+async def experiment_project_stats(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(ExperimentProject))
+    projects = list(result.scalars().all())
+    by_type: dict[str, int] = {}
+    by_semester: dict[str, int] = {}
+    total_hours = 0
+    for p in projects:
+        by_type[p.type.value] = by_type.get(p.type.value, 0) + 1
+        sem = p.semester or "未指定"
+        by_semester[sem] = by_semester.get(sem, 0) + 1
+        total_hours += p.hours or 0
+    return ExperimentProjectStats(
+        total_projects=len(projects),
+        by_type=by_type,
+        by_semester=by_semester,
+        total_hours=total_hours,
+    )
+
+
+@router.get("/export/{export_type}")
+async def export_statistics(
+    export_type: str,
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        import openpyxl
+    except ImportError as e:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=500, detail="openpyxl 未安装") from e
+
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    if export_type == "overview":
+        ws.title = "概览统计"
+        ws.append(["指标", "数值"])
+        overview = await overview(user=user, db=db)
+        for field, value in overview.model_dump().items():
+            ws.append([field, value])
+    elif export_type == "equipment-value":
+        ws.title = "设备资产"
+        ws.append(["分类", "价值"])
+        ev = await equipment_value(user=user, db=db)
+        ws.append(["总计", ev.total_value])
+        for cat, val in ev.by_category.items():
+            ws.append([cat, val])
+    elif export_type == "faults":
+        ws.title = "故障统计"
+        fs = await fault_statistics(user=user, db=db)
+        ws.append(["状态", "数量"])
+        for k, v in fs.by_status.items():
+            ws.append([k, v])
+    else:
+        from fastapi import HTTPException
+
+        raise HTTPException(status_code=400, detail=f"不支持的导出类型: {export_type}")
+
+    import io
+
+    buffer = io.BytesIO()
+    wb.save(buffer)
+    return StreamingResponse(
+        iter([buffer.getvalue()]),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={"Content-Disposition": f"attachment; filename=statistics_{export_type}.xlsx"},
+    )

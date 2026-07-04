@@ -21,6 +21,7 @@ from src.modules.faults.schemas import (
 from src.modules.labs.repository import LabRepository
 from src.modules.users.models import User
 from src.shared.notification_service import NotificationService
+from src.shared.push import send_push
 
 
 def _report_response(r: FaultReport) -> FaultReportResponse:
@@ -109,6 +110,13 @@ class FaultService:
             )
         )
         await self.notify.send(data.assignee_id, "故障已指派", f"您被指派处理故障 {report.fault_type}", "fault")
+        await send_push(
+            self.db,
+            user_id=data.assignee_id,
+            title="故障已指派",
+            content=f"您被指派处理故障: {report.fault_type}",
+            category="fault",
+        )
         await self.db.commit()
         refreshed = await self.repo.get_report(report_id)
         return _report_response(refreshed)  # type: ignore[arg-type]
@@ -170,3 +178,14 @@ class FaultService:
             qr_token=token,
             url=f"/fault-report?lab_id={lab_id}&token={token}",
         )
+
+    async def add_attachment(self, report_id: uuid.UUID, url: str) -> FaultReportResponse:
+        report = await self.repo.get_report(report_id)
+        if not report:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="故障报告不存在")
+        attachments = list(report.attachments or [])
+        attachments.append(url)
+        report.attachments = attachments
+        await self.db.commit()
+        refreshed = await self.repo.get_report(report_id)
+        return _report_response(refreshed)  # type: ignore[arg-type]

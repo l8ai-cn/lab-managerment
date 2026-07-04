@@ -31,6 +31,9 @@ class User(Base):
         Enum(UserRole, name="user_role"), default=UserRole.TEACHER, nullable=False, index=True
     )
     department: Mapped[str | None] = mapped_column(String(200))
+    card_no: Mapped[str | None] = mapped_column(String(30), index=True)
+    campus_id: Mapped[str | None] = mapped_column(String(30), index=True)
+    face_registered: Mapped[bool | None] = mapped_column(Boolean, default=False)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False

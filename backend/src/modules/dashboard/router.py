@@ -9,7 +9,8 @@ from src.core.database import get_db
 from src.core.deps import get_current_user
 from src.modules.faults.models import FaultReport, FaultStatus
 from src.modules.instruments.models import Instrument
-from src.modules.lab_bookings.models import LabBooking, LabBookingStatus
+from src.modules.integrations.models import SafetyExamRecord
+from src.modules.lab_bookings.models import LabBooking, LabBookingStatus, LabCheckIn
 from src.modules.labs.models import Lab, OpenStatus
 from src.modules.users.models import User
 
@@ -24,6 +25,20 @@ class DashboardOverview(BaseModel):
     active_bookings: int
     pending_faults: int
     online_users_estimate: int
+
+
+class SafetyPanel(BaseModel):
+    total_exam_records: int
+    passed_count: int
+    pass_rate: float
+    pending_faults: int
+
+
+class AssetPanel(BaseModel):
+    total_instruments: int
+    total_asset_value: float
+    synced_from_asset: int
+    maintenance_count: int
 
 
 class TrendPoint(BaseModel):
@@ -55,9 +70,7 @@ async def dashboard_overview(
         await db.execute(select(func.count()).where(Instrument.deleted_at.is_(None)))
     ).scalar_one()
     today_bookings = (
-        await db.execute(
-            select(func.count()).where(LabBooking.created_at >= today_start)
-        )
+        await db.execute(select(func.count()).where(LabBooking.created_at >= today_start))
     ).scalar_one()
     active_bookings = (
         await db.execute(
@@ -75,6 +88,11 @@ async def dashboard_overview(
             )
         )
     ).scalar_one()
+    check_in_count = (
+        await db.execute(
+            select(func.count()).where(LabCheckIn.checked_in_at >= today_start)
+        )
+    ).scalar_one()
 
     return DashboardOverview(
         total_labs=total_labs,
@@ -83,7 +101,52 @@ async def dashboard_overview(
         today_bookings=today_bookings,
         active_bookings=active_bookings,
         pending_faults=pending_faults,
-        online_users_estimate=active_bookings * 3 + 5,
+        online_users_estimate=check_in_count,
+    )
+
+
+@router.get("/safety-panel", response_model=SafetyPanel)
+async def safety_panel(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    total = (await db.execute(select(func.count()).select_from(SafetyExamRecord))).scalar_one()
+    passed = (
+        await db.execute(select(func.count()).where(SafetyExamRecord.passed.is_(True)))
+    ).scalar_one()
+    pending_faults = (
+        await db.execute(
+            select(func.count()).where(
+                FaultReport.status.in_([FaultStatus.PENDING, FaultStatus.ASSIGNED, FaultStatus.PROCESSING])
+            )
+        )
+    ).scalar_one()
+    pass_rate = round(passed / total * 100, 1) if total else 0.0
+    return SafetyPanel(
+        total_exam_records=total,
+        passed_count=passed,
+        pass_rate=pass_rate,
+        pending_faults=pending_faults,
+    )
+
+
+@router.get("/asset-panel", response_model=AssetPanel)
+async def asset_panel(
+    user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from src.modules.instruments.models import InstrumentStatus
+
+    result = await db.execute(select(Instrument).where(Instrument.deleted_at.is_(None)))
+    instruments = list(result.scalars().all())
+    total_value = sum(float(i.purchase_price or 0) for i in instruments)
+    synced = sum(1 for i in instruments if i.synced_from_asset)
+    maintenance = sum(1 for i in instruments if i.status == InstrumentStatus.MAINTENANCE)
+    return AssetPanel(
+        total_instruments=len(instruments),
+        total_asset_value=round(total_value, 2),
+        synced_from_asset=synced,
+        maintenance_count=maintenance,
     )
 
 

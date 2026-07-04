@@ -1,6 +1,8 @@
+import io
+import json
 import uuid
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.data_reporting.models import DataReportSubmission, DataReportTemplate, ReportSubmissionStatus
@@ -167,3 +169,61 @@ class DataReportingService:
             by_period=by_period,
             by_template=by_template,
         )
+
+    async def export_submissions(self, template_id: uuid.UUID | None = None) -> bytes:
+        items, _ = await self.repo.list_submissions(page_size=5000, template_id=template_id)
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=500, detail="openpyxl 未安装") from e
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "数据报送"
+        ws.append(["单位", "周期", "模板", "状态", "数据"])
+        for s in items:
+            ws.append([
+                s.unit_name,
+                s.period,
+                s.template.name if s.template else "",
+                s.status.value,
+                json.dumps(s.data, ensure_ascii=False),
+            ])
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return buffer.getvalue()
+
+    async def import_submissions(self, file: UploadFile) -> dict:
+        content = await file.read()
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=500, detail="openpyxl 未安装") from e
+        wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True)
+        ws = wb.active
+        imported = 0
+        for row in ws.iter_rows(min_row=2, values_only=True):
+            if not row or not row[0]:
+                continue
+            template_name = str(row[2]) if len(row) > 2 and row[2] else None
+            template = None
+            if template_name:
+                templates, _ = await self.repo.list_templates(page_size=100, keyword=template_name)
+                template = templates[0] if templates else None
+            if not template:
+                continue
+            data = {}
+            if len(row) > 4 and row[4]:
+                try:
+                    data = json.loads(str(row[4]))
+                except json.JSONDecodeError:
+                    data = {"raw": str(row[4])}
+            submission = DataReportSubmission(
+                template_id=template.id,
+                unit_name=str(row[0]),
+                period=str(row[1]) if row[1] else "2025",
+                data=data,
+            )
+            await self.repo.create_submission(submission)
+            imported += 1
+        await self.db.commit()
+        return {"imported": imported}

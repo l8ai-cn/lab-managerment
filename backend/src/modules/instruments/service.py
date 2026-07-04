@@ -1,9 +1,10 @@
 from __future__ import annotations
 
+import io
 import uuid
 from datetime import UTC, datetime
 
-from fastapi import HTTPException, status
+from fastapi import HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.modules.instruments.models import (
@@ -199,3 +200,62 @@ class InstrumentService:
         await self.db.commit()
         await self.db.refresh(record)
         return UsageRecordResponse.model_validate(record)
+
+    async def export_instruments(self, fmt: str = "xlsx", **kwargs) -> tuple[bytes, str, str]:
+        items, _ = await self.repo.list_instruments(page_size=5000, **kwargs)
+        if fmt == "csv":
+            lines = ["code,name,model,category,asset_no,status,lab_id,purchase_price"]
+            for i in items:
+                price = float(i.purchase_price) if i.purchase_price else ""
+                lines.append(f"{i.code},{i.name},{i.model or ''},{i.category or ''},{i.asset_no or ''},{i.status.value},{i.lab_id or ''},{price}")
+            return "\n".join(lines).encode("utf-8-sig"), "text/csv", "instruments.csv"
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=500, detail="openpyxl 未安装") from e
+        wb = openpyxl.Workbook()
+        ws = wb.active
+        ws.title = "仪器设备"
+        ws.append(["编号", "名称", "型号", "分类", "资产号", "状态", "实验室", "购置价格"])
+        for i in items:
+            ws.append([
+                i.code, i.name, i.model, i.category, i.asset_no, i.status.value,
+                i.lab.name if i.lab else "", float(i.purchase_price) if i.purchase_price else "",
+            ])
+        buffer = io.BytesIO()
+        wb.save(buffer)
+        return buffer.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "instruments.xlsx"
+
+    async def import_instruments(self, file: UploadFile, user: User) -> dict:
+        try:
+            import openpyxl
+        except ImportError as e:
+            raise HTTPException(status_code=500, detail="openpyxl 未安装") from e
+        content = await file.read()
+        wb = openpyxl.load_workbook(io.BytesIO(content), read_only=True)
+        ws = wb.active
+        rows = list(ws.iter_rows(min_row=2, values_only=True))
+        imported = 0
+        for row in rows:
+            if not row or not row[0]:
+                continue
+            code = str(row[0]).strip()
+            existing = await self.repo.get_instrument_by_code(code)
+            if existing:
+                if row[1]:
+                    existing.name = str(row[1])
+                if len(row) > 3 and row[3]:
+                    existing.category = str(row[3])
+            else:
+                inst = Instrument(
+                    code=code,
+                    name=str(row[1]) if row[1] else code,
+                    model=str(row[2]) if len(row) > 2 and row[2] else None,
+                    category=str(row[3]) if len(row) > 3 and row[3] else None,
+                    asset_no=str(row[4]) if len(row) > 4 and row[4] else None,
+                    manager_id=user.id,
+                )
+                await self.repo.create_instrument(inst)
+            imported += 1
+        await self.db.commit()
+        return {"imported": imported}

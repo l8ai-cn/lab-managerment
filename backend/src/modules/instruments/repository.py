@@ -50,6 +50,12 @@ class InstrumentRepository:
         await self.db.refresh(inst)
         return inst
 
+    async def get_instrument_by_code(self, code: str) -> Instrument | None:
+        result = await self.db.execute(
+            select(Instrument).where(Instrument.code == code, Instrument.deleted_at.is_(None))
+        )
+        return result.scalar_one_or_none()
+
     async def get_max_code_seq(self, year: int) -> int:
         prefix = f"INS-{year}-"
         result = await self.db.execute(select(Instrument.code).where(Instrument.code.like(f"{prefix}%")).order_by(Instrument.code.desc()).limit(1))

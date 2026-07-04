@@ -149,6 +149,57 @@ async def _handle_platform_overview() -> str:
     return await _platform_overview()
 
 
+async def _create_fault_report(lab_code: str, fault_type: str, description: str) -> str:
+    async with async_session_factory() as db:
+        from src.modules.faults.models import FaultReport, FaultStatus
+        from src.modules.labs.models import Lab
+        from src.modules.users.models import User, UserRole
+        import secrets
+
+        lab_result = await db.execute(select(Lab).where(Lab.code == lab_code, Lab.deleted_at.is_(None)))
+        lab = lab_result.scalar_one_or_none()
+        if not lab:
+            return f"未找到实验室: {lab_code}"
+        user_result = await db.execute(select(User).where(User.role == UserRole.SYSTEM_ADMIN).limit(1))
+        user = user_result.scalar_one_or_none()
+        if not user:
+            user_result = await db.execute(select(User).limit(1))
+            user = user_result.scalar_one_or_none()
+        if not user:
+            return "系统中无可用用户"
+        report = FaultReport(
+            lab_id=lab.id,
+            reporter_id=user.id,
+            fault_type=fault_type,
+            description=description,
+            status=FaultStatus.PENDING,
+            qr_code_token=secrets.token_urlsafe(16),
+        )
+        db.add(report)
+        await db.commit()
+        return f"故障报告已创建，ID: {report.id}，类型: {fault_type}，实验室: {lab.name}"
+
+
+async def _search_knowledge(query: str, limit: int = 5) -> str:
+    async with async_session_factory() as db:
+        from src.modules.knowledge.service import KnowledgeService
+
+        service = KnowledgeService(db)
+        results = await service.search(query, limit=min(int(limit), 10))
+    if not results:
+        return f"知识库中未找到与「{query}」相关的内容。"
+    lines = [f"- {r.title}: {r.snippet}" for r in results]
+    return f"知识库搜索「{query}」结果：\n" + "\n".join(lines)
+
+
+async def _handle_create_fault_report(lab_code: str, fault_type: str, description: str) -> str:
+    return await _create_fault_report(lab_code, fault_type, description)
+
+
+async def _handle_search_knowledge(query: str, limit: int = 5) -> str:
+    return await _search_knowledge(query, int(limit))
+
+
 def build_copilot_sdk() -> CopilotKitRemoteEndpoint:
     return CopilotKitRemoteEndpoint(
         actions=[
@@ -203,6 +254,25 @@ def build_copilot_sdk() -> CopilotKitRemoteEndpoint:
                 description="获取平台运行概览（实验室/仪器/预约统计）",
                 parameters=[],
                 handler=_handle_platform_overview,
+            ),
+            Action(
+                name="create_fault_report",
+                description="创建故障报修记录",
+                parameters=[
+                    {"name": "lab_code", "type": "string", "description": "实验室编号", "required": True},
+                    {"name": "fault_type", "type": "string", "description": "故障类型", "required": True},
+                    {"name": "description", "type": "string", "description": "故障描述", "required": True},
+                ],
+                handler=_handle_create_fault_report,
+            ),
+            Action(
+                name="search_knowledge",
+                description="搜索知识库文档（安全规范、预约政策等）",
+                parameters=[
+                    {"name": "query", "type": "string", "description": "搜索关键词", "required": True},
+                    {"name": "limit", "type": "number", "description": "返回条数", "required": False},
+                ],
+                handler=_handle_search_knowledge,
             ),
         ]
     )

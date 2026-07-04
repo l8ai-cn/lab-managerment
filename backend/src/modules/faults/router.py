@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -20,6 +20,7 @@ from src.modules.faults.schemas import (
 )
 from src.modules.faults.service import FaultService
 from src.modules.users.models import User, UserRole
+from src.shared.file_storage import save_upload
 
 router = APIRouter(prefix="/faults", tags=["故障报修"])
 lab_qr_router = APIRouter(tags=["故障报修"])
@@ -85,6 +86,17 @@ async def delete_fault(
     service: FaultService = Depends(get_service),
 ):
     await service.delete(report_id)
+
+
+@router.post("/{report_id}/attachments", response_model=FaultReportResponse)
+async def upload_attachment(
+    report_id: uuid.UUID,
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    service: FaultService = Depends(get_service),
+):
+    url = await save_upload(file, subdir="faults")
+    return await service.add_attachment(report_id, url)
 
 
 @router.post("/{report_id}/assign", response_model=FaultReportResponse)

@@ -11,6 +11,7 @@ from src.modules.payments.schemas import (
     PaymentOrderCreate,
     PaymentOrderListResponse,
     PaymentOrderResponse,
+    PaymentReceiptResponse,
 )
 from src.modules.payments.service import PaymentService
 from src.modules.users.models import User
@@ -38,6 +39,15 @@ async def pay_order(
     service: PaymentService = Depends(get_service),
 ):
     return await service.pay_order(order_id, user)
+
+
+@router.get("/orders/{order_id}/receipt", response_model=PaymentReceiptResponse)
+async def get_receipt(
+    order_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    service: PaymentService = Depends(get_service),
+):
+    return await service.get_receipt(order_id, user)
 
 
 @router.get("/orders", response_model=PaymentOrderListResponse)

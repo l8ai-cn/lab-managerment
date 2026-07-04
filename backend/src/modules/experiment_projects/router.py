@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -124,6 +124,15 @@ async def export_projects(
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         headers={"Content-Disposition": "attachment; filename=experiment_projects.xlsx"},
     )
+
+
+@router.post("/import")
+async def import_projects(
+    file: UploadFile = File(...),
+    user: User = Depends(get_current_user),
+    service: ExperimentProjectService = Depends(get_service),
+):
+    return await service.import_projects(file)
 
 
 @router.post("/batch-copy", response_model=BatchCopyResult)

@@ -41,3 +41,9 @@ class PayResponse(BaseModel):
     status: PaymentStatus
     bank_ref: str
     message: str
+
+
+class PaymentReceiptResponse(BaseModel):
+    order_id: uuid.UUID
+    receipt_data: dict
+    created_at: datetime
