@@ -19,10 +19,11 @@ import {
   WarningOutlined,
   ApartmentOutlined,
   UserOutlined,
+  RobotOutlined,
 } from "@ant-design/icons";
-import { Avatar, Dropdown, Layout, Menu } from "antd";
+import { Avatar, Dropdown, Layout, Menu, Button } from "antd";
 import type { MenuProps } from "antd";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { CopilotSidebar } from "@copilotkit/react-core/v2";
 import { NotificationBell } from "@/features/notifications/components/NotificationBell";
@@ -114,6 +115,42 @@ const ROUTE_KEYS = [
   "/mobile",
 ];
 
+function getMenuItemsByRole(role: string): MenuProps["items"] {
+  if (role === "student" || role === "guest") {
+    return [
+      {
+        key: "lab-group",
+        label: "实验室服务",
+        type: "group",
+        children: [
+          { key: "/labs", icon: <HomeOutlined />, label: "实验室" },
+          { key: "/knowledge", icon: <FileSearchOutlined />, label: "知识库" },
+        ],
+      },
+      {
+        key: "booking-group",
+        label: "设备与预约",
+        type: "group",
+        children: [
+          { key: "/instruments", icon: <ToolOutlined />, label: "仪器台账" },
+          { key: "/instrument-bookings", icon: <CalendarOutlined />, label: "仪器预约" },
+          { key: "/lab-bookings", icon: <BookOutlined />, label: "实验室预约" },
+        ],
+      },
+      {
+        key: "ops-group",
+        label: "运维与工具",
+        type: "group",
+        children: [
+          { key: "/faults", icon: <WarningOutlined />, label: "故障上报" },
+          { key: "/mobile/dashboard", icon: <MobileOutlined />, label: "移动端入口" },
+        ],
+      },
+    ];
+  }
+  return MENU_ITEMS;
+}
+
 function findSelectedKey(pathname: string): string {
   if (pathname.startsWith("/mobile")) return "/mobile/dashboard";
   return ROUTE_KEYS.find((key) => pathname === key || pathname.startsWith(`${key}/`)) ?? "/dashboard";
@@ -121,6 +158,7 @@ function findSelectedKey(pathname: string): string {
 
 export function AppShell() {
   const [collapsed, setCollapsed] = useState(false);
+  const [copilotVisible, setCopilotVisible] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -128,6 +166,18 @@ export function AppShell() {
   const selectedKey = findSelectedKey(location.pathname);
   const isFullWidth = location.pathname.startsWith("/dashboard");
   const pageMeta = getRouteMeta(location.pathname);
+
+  useEffect(() => {
+    if (user && (user.role === "student" || user.role === "guest")) {
+      const allowedPaths = [
+        "/labs", "/knowledge", "/instruments", "/instrument-bookings", "/lab-bookings", "/faults", "/mobile"
+      ];
+      const isAllowed = allowedPaths.some(path => location.pathname === path || location.pathname.startsWith(`${path}/`));
+      if (!isAllowed) {
+        navigate("/labs", { replace: true });
+      }
+    }
+  }, [user, location.pathname, navigate]);
 
   const userMenuItems: MenuProps["items"] = [
     { key: "role", label: ROLE_LABELS[user?.role ?? ""] ?? user?.role, disabled: true },
@@ -160,7 +210,7 @@ export function AppShell() {
           theme="dark"
           mode="inline"
           selectedKeys={[selectedKey]}
-          items={MENU_ITEMS}
+          items={getMenuItemsByRole(user?.role ?? "")}
           onClick={({ key }) => navigate(key)}
         />
       </Sider>
@@ -175,6 +225,19 @@ export function AppShell() {
           </div>
 
           <div className="app-shell__header-right">
+            <Button
+              type={copilotVisible ? "primary" : "default"}
+              icon={<RobotOutlined />}
+              onClick={() => setCopilotVisible(!copilotVisible)}
+              style={{
+                borderRadius: "6px",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+              }}
+            >
+              {copilotVisible ? "关闭智能助手" : "智能助手"}
+            </Button>
             <div className="app-shell__notif-btn">
               <NotificationBell />
             </div>
@@ -198,15 +261,17 @@ export function AppShell() {
         </Content>
       </Layout>
       </Layout>
-      <CopilotSidebar
-        agentId="default"
-        defaultOpen={false}
-        labels={{
-          modalHeaderTitle: "LabOS 智能助手",
-          welcomeMessageText: "你好，我是 LabOS 实验室管理助手。可以帮你查询实验室、仪器、预约和故障信息，或跳转到相关页面。",
-          chatInputPlaceholder: "输入问题，例如：列出所有实验室",
-        }}
-      />
+      <div style={{ display: copilotVisible ? "block" : "none" }}>
+        <CopilotSidebar
+          agentId="default"
+          defaultOpen={true}
+          labels={{
+            modalHeaderTitle: "LabOS 智能助手",
+            welcomeMessageText: "你好，我是 LabOS 实验室管理助手。可以帮你查询实验室、仪器、预约和故障信息，或跳转到相关页面。",
+            chatInputPlaceholder: "输入问题，例如：列出所有实验室",
+          }}
+        />
+      </div>
     </>
   );
 }
