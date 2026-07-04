@@ -1,9 +1,0 @@
-[
-  {"device_code": "AC-LG-A-101", "name": "理工楼A101门禁", "lab_code": "LAB-2026-0001", "location": "理工楼1层101室", "device_type": "door", "is_online": true},
-  {"device_code": "AC-LG-A-201", "name": "理工楼A201门禁", "lab_code": "LAB-2026-0002", "location": "理工楼2层201室", "device_type": "door", "is_online": true},
-  {"device_code": "AC-LG-B-102", "name": "理工楼B102班牌", "lab_code": "LAB-2026-0003", "location": "理工楼1层102室", "device_type": "class_board", "is_online": true},
-  {"device_code": "AC-LG-B-202", "name": "理工楼B202门禁", "lab_code": "LAB-2026-0004", "location": "理工楼2层202室", "device_type": "door", "is_online": false},
-  {"device_code": "AC-SY-301", "name": "实验楼301门禁", "lab_code": "LAB-2026-0005", "location": "实验楼3层301室", "device_type": "door", "is_online": true},
-  {"device_code": "AC-SY-302", "name": "实验楼302班牌", "lab_code": "LAB-2026-0006", "location": "实验楼3层302室", "device_type": "class_board", "is_online": true},
-  {"device_code": "AC-KJ-401", "name": "科技楼401门禁", "lab_code": "LAB-2026-0007", "location": "科技楼4层401室", "device_type": "door", "is_online": true}
-]
