@@ -6,7 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.modules.knowledge.embedding import cosine_similarity, term_vector
+from src.modules.knowledge.embedding import cosine_similarity, fts_query, space_cjk, term_vector
 from src.modules.knowledge.models import KnowledgeDocument
 from src.modules.knowledge.schemas import (
     KnowledgeDocumentCreate,
@@ -36,8 +36,22 @@ async def _sync_fts(db: AsyncSession, doc: KnowledgeDocument) -> None:
     await db.execute(text("DELETE FROM knowledge_fts WHERE doc_id = :doc_id"), {"doc_id": str(doc.id)})
     await db.execute(
         text("INSERT INTO knowledge_fts (title, content, doc_id) VALUES (:title, :content, :doc_id)"),
-        {"title": doc.title, "content": doc.content, "doc_id": str(doc.id)},
+        {"title": space_cjk(doc.title), "content": space_cjk(doc.content), "doc_id": str(doc.id)},
     )
+
+
+async def rebuild_all_fts(db: AsyncSession) -> int:
+    """Rebuild FTS index with CJK-aware tokenization for all documents."""
+    await db.execute(text("DROP TABLE IF EXISTS knowledge_fts"))
+    await ensure_fts_table(db)
+    result = await db.execute(select(KnowledgeDocument))
+    docs = list(result.scalars().all())
+    for doc in docs:
+        await db.execute(
+            text("INSERT INTO knowledge_fts (title, content, doc_id) VALUES (:title, :content, :doc_id)"),
+            {"title": space_cjk(doc.title), "content": space_cjk(doc.content), "doc_id": str(doc.id)},
+        )
+    return len(docs)
 
 
 class KnowledgeService:
@@ -99,7 +113,10 @@ class KnowledgeService:
 
     async def search(self, q: str, *, limit: int = 20) -> list[KnowledgeSearchResult]:
         await ensure_fts_table(self.db)
-        safe_q = q.replace('"', '""')
+        query = fts_query(q)
+        if not query:
+            return []
+        safe_q = query.replace('"', '""')
         result = await self.db.execute(
             text(
                 "SELECT doc_id, snippet(knowledge_fts, 1, '<b>', '</b>', '...', 32) AS snippet "
@@ -109,8 +126,8 @@ class KnowledgeService:
         )
         rows = result.fetchall()
         if not rows:
-            return []
-        doc_ids = [uuid.UUID(row[0]) for row in rows]
+            return await self._fallback_search(q, limit=limit)
+        doc_ids = [uuid.UUID(str(row[0])) for row in rows]
         docs_result = await self.db.execute(select(KnowledgeDocument).where(KnowledgeDocument.id.in_(doc_ids)))
         doc_map = {d.id: d for d in docs_result.scalars().all()}
         return [
@@ -120,13 +137,29 @@ class KnowledgeService:
                 snippet=snippet or doc_map[doc_id].content[:120],
                 category=doc_map[doc_id].category,
             )
-            for doc_id, snippet in rows
+            for doc_id, snippet in ((uuid.UUID(str(row[0])), row[1]) for row in rows)
             if doc_id in doc_map
+        ]
+
+    async def _fallback_search(self, q: str, *, limit: int = 20) -> list[KnowledgeSearchResult]:
+        """LIKE fallback when FTS index hasn't been rebuilt yet."""
+        result = await self.db.execute(select(KnowledgeDocument).limit(500))
+        docs = list(result.scalars().all())
+        matches = [d for d in docs if q in d.title or q in d.content]
+        return [
+            KnowledgeSearchResult(
+                id=d.id,
+                title=d.title,
+                snippet=d.content[:120],
+                category=d.category,
+            )
+            for d in matches[:limit]
         ]
 
     async def search_hybrid(self, q: str, *, limit: int = 20) -> list[KnowledgeSearchResult]:
         fts_results = await self.search(q, limit=limit * 2)
-        fts_ids = {r.id for r in fts_results}
+        if fts_results:
+            return fts_results[:limit]
         query_vec = term_vector(q)
         result = await self.db.execute(select(KnowledgeDocument).limit(500))
         docs = list(result.scalars().all())
@@ -134,7 +167,7 @@ class KnowledgeService:
         for doc in docs:
             doc_vec = term_vector(f"{doc.title} {doc.content}")
             score = cosine_similarity(query_vec, doc_vec)
-            if score > 0.05 or doc.id in fts_ids:
+            if score > 0.01:
                 scored.append((score, doc))
         scored.sort(key=lambda x: x[0], reverse=True)
         results: list[KnowledgeSearchResult] = []

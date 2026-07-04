@@ -77,7 +77,7 @@
 |------|----------|------|----------|------|
 | 2.3.1 | 按仪器逐台/分组设置开放时段（精确到小时） | ✅ | `open_hours` JSON；`/instruments/rules` 规则页 | ![仪器规则](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
 | 2.3.2 | 单次时长上下限、每日/每周次数、提前预约时间 | ✅ | `min/max_duration_minutes`、`daily_limit`、`advance_hours` 字段与 API | 同上 |
-| 2.3.3 | 校内外用户差异化规则（优先级/收费/审批差异） | ✅ | 后端 `external_rules` + 仪器规则页校外差异配置 UI | ![仪器规则](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
+| 2.3.3 | 校内外用户差异化规则（优先级/收费/审批差异） | ✅ | 后端 `external_rules` + UI 配置 + **预约时校验校外规则** | ![仪器规则](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
 
 ### 2.4 仪器在线预约功能
 
@@ -119,7 +119,7 @@
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
 | 3.1.1 | 按实验室逐间设置开放时段/可预约范围/单日限额 | ✅ | `CRUD /lab-booking-rules`；`/lab-bookings/rules` | ![预约规则](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
-| 3.1.2 | 按使用类型设置差异化规则与审批流程 | ✅ | `usage_type_rules` JSON + 规则页按类型配置 UI（日限额/审批） | ![预约规则](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
+| 3.1.2 | 按使用类型设置差异化规则与审批流程 | ✅ | `usage_type_rules` + UI + **预约时按类型校验/自动审批** | ![预约规则](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
 
 ### 3.2 预约申请功能
 
@@ -294,8 +294,8 @@
 |------|----------|------|----------|------|
 | 10.1.1 | 开放 MCP/API 覆盖核心能力，自然语言对话操作 | ⚠️ | REST Agent API + CopilotKit + **MCP JSON-RPC 端点** `/api/v1/mcp`；**非完整 MCP stdio/SSE** | ![Copilot](/opt/cursor/artifacts/screenshots/23-copilot.png) |
 | 10.1.2 | 实时推送门禁/签到供违规监测；AI 待办推送 | ⚠️ | 签到/门禁 API ✅；站内通知 ✅；**实时 SSE 违规流 ⚠️** | 同上 |
-| 10.2.1 | Text-to-SQL 自然语言透视查询 | ⚠️ | `POST /agent/text-to-sql` 只读安全 SQL ✅；**自动化决策报告 ❌** | 同上 |
-| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ⚠️ | 知识库 CRUD + FTS5 + **混合向量检索** `/knowledge/search/hybrid`；**非 pgvector 生产级 embedding** | 同上 |
+| 10.2.1 | Text-to-SQL 自然语言透视查询 | ⚠️ | `POST /agent/text-to-sql` 支持 `question` 自然语言 + 只读 SQL 执行 | 同上 |
+| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ⚠️ | FTS5 中文分词 + 混合向量检索 ✅；**非 pgvector 生产级 embedding** | 同上 |
 
 ---
 

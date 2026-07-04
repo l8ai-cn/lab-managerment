@@ -69,13 +69,15 @@ class AgentFaultSummary(BaseModel):
 
 
 class TextToSqlRequest(BaseModel):
-    sql: str = Field(..., min_length=6, max_length=2000)
+    sql: str | None = Field(None, min_length=6, max_length=2000)
+    question: str | None = Field(None, min_length=2, max_length=500)
 
 
 class TextToSqlResponse(BaseModel):
     columns: list[str]
     rows: list[list]
     row_count: int
+    generated_sql: str | None = None
 
 
 @router.get("/labs", response_model=list[AgentLabSummary])
@@ -218,7 +220,16 @@ async def text_to_sql(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    sql = body.sql.strip().rstrip(";")
+    from src.modules.agent_api.nl_to_sql import nl_to_sql
+
+    sql = body.sql
+    generated = None
+    if not sql and body.question:
+        generated = nl_to_sql(body.question)
+        sql = generated
+    if not sql:
+        raise HTTPException(status_code=400, detail="请提供 sql 或 question 参数")
+    sql = sql.strip().rstrip(";")
     if not sql.upper().startswith("SELECT"):
         raise HTTPException(status_code=400, detail="仅允许 SELECT 查询")
     if _FORBIDDEN_SQL.search(sql):
@@ -235,6 +246,7 @@ async def text_to_sql(
         columns=columns,
         rows=[list(row) for row in rows],
         row_count=len(rows),
+        generated_sql=generated,
     )
 
 

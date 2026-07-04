@@ -35,6 +35,16 @@ from src.modules.instruments.schemas import (
     UsageRecordResponse,
 )
 from src.modules.users.models import User
+from src.shared.booking_rules import (
+    day_bounds,
+    resolve_instrument_user_rules,
+    should_auto_approve_instrument,
+    validate_advance_hours,
+    validate_daily_limit,
+    validate_duration_minutes,
+    validate_open_hours,
+    week_bounds,
+)
 from src.shared.notification_service import NotificationService
 
 
@@ -139,9 +149,39 @@ class InstrumentService:
             raise HTTPException(400, "结束时间须晚于开始时间")
         if await self.repo.overlapping_bookings(data.instrument_id, data.start_time, data.end_time):
             raise HTTPException(409, "时段冲突")
-        booking = InstrumentBooking(user_id=user.id, status=BookingStatus.PENDING, **data.model_dump())
+
+        rule = await self.repo.get_rule(data.instrument_id)
+        auto_approve = False
+        if rule:
+            if not rule.is_active:
+                raise HTTPException(400, "该仪器预约规则已停用")
+            validate_open_hours(rule.open_hours, data.start_time, data.end_time)
+            validate_duration_minutes(
+                data.start_time, data.end_time, rule.min_duration_minutes, rule.max_duration_minutes
+            )
+            validate_advance_hours(data.start_time, rule.advance_hours)
+            user_rules = resolve_instrument_user_rules(rule, user)
+            day_start, day_end = day_bounds(data.start_time)
+            week_start, week_end = week_bounds(data.start_time)
+            daily_limit = user_rules.get("daily_limit") or rule.daily_limit
+            daily_count = await self.repo.count_user_bookings_in_range(
+                data.instrument_id, user.id, day_start, day_end
+            )
+            validate_daily_limit(daily_count, daily_limit)
+            if rule.weekly_limit is not None:
+                weekly_count = await self.repo.count_user_bookings_in_range(
+                    data.instrument_id, user.id, week_start, week_end
+                )
+                validate_daily_limit(weekly_count, rule.weekly_limit, label="每周")
+            auto_approve = should_auto_approve_instrument(rule, user)
+
+        booking = InstrumentBooking(
+            user_id=user.id,
+            status=BookingStatus.APPROVED if auto_approve else BookingStatus.PENDING,
+            **data.model_dump(),
+        )
         created = await self.repo.create_booking(booking)
-        if inst.manager_id:
+        if inst.manager_id and not auto_approve:
             await self.notify.send(inst.manager_id, "仪器预约待审批", f"{user.name} 申请预约 {inst.name}", "booking")
         await self.db.commit()
         refreshed = await self.repo.get_booking(created.id)

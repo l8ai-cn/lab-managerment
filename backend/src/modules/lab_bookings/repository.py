@@ -108,6 +108,30 @@ class LabBookingRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def count_user_bookings_in_range(
+        self,
+        lab_id: uuid.UUID,
+        user_id: uuid.UUID,
+        from_time: datetime,
+        to_time: datetime,
+        *,
+        usage_type: str | None = None,
+    ) -> int:
+        query = select(func.count()).select_from(LabBooking).where(
+            LabBooking.lab_id == lab_id,
+            LabBooking.user_id == user_id,
+            LabBooking.start_time >= from_time,
+            LabBooking.start_time < to_time,
+            LabBooking.status.in_(
+                [LabBookingStatus.PENDING, LabBookingStatus.APPROVED, LabBookingStatus.COMPLETED]
+            ),
+        )
+        if usage_type:
+            from src.modules.lab_bookings.models import UsageType
+
+            query = query.where(LabBooking.usage_type == UsageType(usage_type))
+        return (await self.db.execute(query)).scalar_one()
+
     async def add_approval(self, record: LabBookingApproval) -> None:
         self.db.add(record)
         await self.db.flush()

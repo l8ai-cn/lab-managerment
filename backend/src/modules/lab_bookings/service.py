@@ -35,6 +35,14 @@ from src.modules.lab_bookings.schemas import (
 )
 from src.modules.labs.repository import LabRepository
 from src.modules.users.models import User
+from src.shared.booking_rules import (
+    day_bounds,
+    resolve_lab_type_rules,
+    should_auto_approve_lab,
+    validate_allowed_roles,
+    validate_daily_limit,
+    validate_open_hours,
+)
 from src.shared.notification_service import NotificationService
 from src.shared.push import send_push
 
@@ -125,14 +133,34 @@ class LabBookingService:
         if data.end_time <= data.start_time:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="结束时间须晚于开始时间")
 
+        rule = await self.repo.get_rule(data.lab_id)
+        auto_approve = False
+        if rule:
+            validate_allowed_roles(rule.allowed_roles, user)
+            validate_open_hours(rule.open_hours, data.start_time, data.end_time)
+            day_start, day_end = day_bounds(data.start_time)
+            daily_count = await self.repo.count_user_bookings_in_range(
+                data.lab_id, user.id, day_start, day_end
+            )
+            validate_daily_limit(daily_count, rule.daily_limit)
+            type_rule = resolve_lab_type_rules(rule.usage_type_rules, data.usage_type.value)
+            if type_rule.get("daily_limit") is not None:
+                type_count = await self.repo.count_user_bookings_in_range(
+                    data.lab_id, user.id, day_start, day_end, usage_type=data.usage_type.value
+                )
+                validate_daily_limit(type_count, type_rule["daily_limit"], label="该类型每日")
+            auto_approve = should_auto_approve_lab(rule.usage_type_rules, data.usage_type.value)
+
         slots = _expand_recurring_slots(data.start_time, data.end_time, data.recurrence_rule if data.is_recurring else None)
         created_booking = None
         for slot_start, slot_end in slots:
+            if rule:
+                validate_open_hours(rule.open_hours, slot_start, slot_end)
             if await self.repo.overlapping_bookings(data.lab_id, slot_start, slot_end):
                 raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=f"时段冲突: {slot_start.isoformat()}")
             booking = LabBooking(
                 user_id=user.id,
-                status=LabBookingStatus.PENDING,
+                status=LabBookingStatus.APPROVED if auto_approve else LabBookingStatus.PENDING,
                 lab_id=data.lab_id,
                 start_time=slot_start,
                 end_time=slot_end,
@@ -143,8 +171,17 @@ class LabBookingService:
                 recurrence_rule=data.recurrence_rule,
             )
             created_booking = await self.repo.create_booking(booking)
+            if auto_approve:
+                await self.repo.add_access_grant(
+                    LabAccessGrant(
+                        booking_id=created_booking.id,
+                        access_method=AccessMethod.QR,
+                        access_token=secrets.token_urlsafe(32),
+                        expires_at=slot_end,
+                    )
+                )
 
-        if lab.manager_id and created_booking:
+        if lab.manager_id and created_booking and not auto_approve:
             await self.notify.send(
                 lab.manager_id, "实验室预约待审批", f"{user.name} 申请预约 {lab.name}", "lab_booking"
             )

@@ -1,4 +1,4 @@
-"""Lightweight term-frequency embedding for hybrid knowledge search."""
+"""Chinese-aware text tokenization for knowledge search."""
 
 from __future__ import annotations
 
@@ -7,8 +7,26 @@ import re
 from collections import Counter
 
 
+def space_cjk(text: str) -> str:
+    """Insert spaces between CJK characters so FTS unicode61 can index them individually."""
+    parts: list[str] = []
+    for ch in text:
+        if "\u4e00" <= ch <= "\u9fff":
+            parts.append(ch)
+            parts.append(" ")
+        else:
+            parts.append(ch)
+    return "".join(parts).strip()
+
+
 def _tokenize(text: str) -> list[str]:
-    return re.findall(r"[\u4e00-\u9fff]+|[a-zA-Z0-9_]+", text.lower())
+    tokens: list[str] = []
+    for segment in re.findall(r"[\u4e00-\u9fff]+|[a-zA-Z0-9_]+", text.lower()):
+        if re.fullmatch(r"[\u4e00-\u9fff]+", segment):
+            tokens.extend(list(segment))
+        else:
+            tokens.append(segment)
+    return tokens
 
 
 def term_vector(text: str) -> dict[str, float]:
@@ -30,3 +48,14 @@ def cosine_similarity(a: dict[str, float], b: dict[str, float]) -> float:
     if norm_a == 0 or norm_b == 0:
         return 0.0
     return dot / (norm_a * norm_b)
+
+
+def fts_query(q: str) -> str:
+    """Build an FTS5 MATCH string from user query (supports partial Chinese)."""
+    safe = q.replace('"', '""').strip()
+    if not safe:
+        return ""
+    cjk_chars = [c for c in safe if "\u4e00" <= c <= "\u9fff"]
+    if cjk_chars:
+        return " ".join(cjk_chars)
+    return safe

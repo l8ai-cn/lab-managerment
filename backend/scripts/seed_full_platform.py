@@ -14,10 +14,11 @@ from src.modules.instruments.models import (
     BookingStatus,
     Instrument,
     InstrumentBooking,
+    InstrumentBookingRule,
     InstrumentStatus,
 )
 from src.modules.knowledge.models import KnowledgeDocument
-from src.modules.knowledge.service import _sync_fts, ensure_fts_table
+from src.modules.knowledge.service import _sync_fts, ensure_fts_table, rebuild_all_fts
 from src.modules.lab_bookings.models import (
     LabBooking,
     LabBookingRule,
@@ -142,13 +143,17 @@ async def seed():
         await db.flush()
 
         # --- Booking rules for all labs ---
+        all_days_hours = {
+            day: [{"start": "08:00", "end": "22:00"}]
+            for day in ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+        }
         for lab in labs:
             db.add(
                 LabBookingRule(
                     id=uuid.uuid4(),
                     lab_id=lab.id,
-                    open_hours={"mon": [{"start": "08:00", "end": "22:00"}], "tue": [{"start": "08:00", "end": "22:00"}]},
-                    allowed_roles=["teacher", "student", "lab_admin"],
+                    open_hours=all_days_hours,
+                    allowed_roles=["teacher", "student", "lab_admin", "system_admin"],
                     daily_limit=3,
                 )
             )
@@ -189,6 +194,24 @@ async def seed():
             )
             db.add(inst)
             instruments.append(inst)
+        await db.flush()
+
+        inst_all_days = {day: [{"start": "00:00", "end": "23:59"}] for day in ("mon", "tue", "wed", "thu", "fri", "sat", "sun")}
+        for inst in instruments:
+            db.add(
+                InstrumentBookingRule(
+                    id=uuid.uuid4(),
+                    instrument_id=inst.id,
+                    open_hours=inst_all_days,
+                    min_duration_minutes=30,
+                    max_duration_minutes=480,
+                    daily_limit=5,
+                    weekly_limit=15,
+                    advance_hours=0,
+                    approval_mode="manager",
+                    is_active=True,
+                )
+            )
         await db.flush()
 
         now = datetime.now(UTC)
@@ -346,6 +369,14 @@ async def seed():
             db.add(doc)
             await db.flush()
             await _sync_fts(db, doc)
+
+        # --- Access control devices (class boards + doors) ---
+        from src.modules.integrations.adapters.access import AccessAdapter
+
+        access_result = await AccessAdapter(db).sync()
+        print(f"  门禁/班牌同步: {access_result.message}")
+
+        await rebuild_all_fts(db)
 
         # --- Safety exam records ---
         for emp_no, score, passed in [

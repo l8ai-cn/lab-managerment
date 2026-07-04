@@ -113,6 +113,22 @@ class InstrumentRepository:
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
+    async def count_user_bookings_in_range(
+        self,
+        instrument_id: uuid.UUID,
+        user_id: uuid.UUID,
+        from_time: datetime,
+        to_time: datetime,
+    ) -> int:
+        query = select(func.count()).select_from(InstrumentBooking).where(
+            InstrumentBooking.instrument_id == instrument_id,
+            InstrumentBooking.user_id == user_id,
+            InstrumentBooking.start_time >= from_time,
+            InstrumentBooking.start_time < to_time,
+            InstrumentBooking.status.in_([BookingStatus.PENDING, BookingStatus.APPROVED, BookingStatus.COMPLETED, BookingStatus.IN_USE]),
+        )
+        return (await self.db.execute(query)).scalar_one()
+
     async def add_approval(self, record: InstrumentBookingApproval) -> None:
         self.db.add(record)
         await self.db.flush()

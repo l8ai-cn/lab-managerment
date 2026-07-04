@@ -324,11 +324,15 @@ def test_instruments(c: Client) -> None:
         "/instruments/booking-rules",
         json={
             "instrument_id": inst_id,
-            "open_hours": {"mon": [{"start": "08:00", "end": "18:00"}]},
+            "open_hours": {
+                day: [{"start": "08:00", "end": "18:00"}]
+                for day in ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+            },
             "min_duration_minutes": 30,
             "max_duration_minutes": 240,
-            "advance_hours": 24,
-            "approval_mode": "owner",
+            "advance_hours": 0,
+            "approval_mode": "manager",
+            "is_active": True,
         },
     ) if inst_id else None
 
