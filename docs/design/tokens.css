@@ -1,0 +1,174 @@
+/**
+ * LabOS Design Tokens v1.0.0 — CSS Custom Properties
+ * Import in global.css: @import "../docs/design/tokens.css";
+ * @see docs/design/DESIGN.md
+ */
+
+:root {
+  /* ── Color: Surfaces ── */
+  --canvas: #F8FAFC;
+  --surface: #FFFFFF;
+  --surface-raised: #FFFFFF;
+  --surface-inset: #F1F5F9;
+
+  /* ── Color: Ink ── */
+  --ink-primary: #0F172A;
+  --ink-secondary: #475569;
+  --ink-tertiary: #64748B;
+  --ink-muted: #94A3B8;
+
+  /* ── Color: Border ── */
+  --border-default: rgba(15, 23, 42, 0.08);
+  --border-subtle: rgba(15, 23, 42, 0.05);
+  --border-strong: rgba(15, 23, 42, 0.12);
+
+  /* ── Color: Brand ── */
+  --brand: #2563EB;
+  --brand-hover: #1D4ED8;
+  --brand-subtle: #EFF6FF;
+
+  /* ── Color: Status (Instrument Status Rail) ── */
+  --status-ready: #059669;
+  --status-ready-subtle: #ECFDF5;
+  --status-pending: #2563EB;
+  --status-pending-subtle: #EFF6FF;
+  --status-maintenance: #D97706;
+  --status-maintenance-subtle: #FFFBEB;
+  --status-fault: #E11D48;
+  --status-fault-subtle: #FFF1F2;
+  --status-offline: #64748B;
+  --status-offline-subtle: #F1F5F9;
+
+  /* ── Focus ── */
+  --focus-ring: rgba(37, 99, 235, 0.24);
+
+  /* ── Typography ── */
+  --font-sans: "Geist", "Noto Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+  --font-mono: "IBM Plex Mono", "Geist Mono", "Noto Sans Mono SC", monospace;
+
+  --text-display: 28px;
+  --text-h1: 22px;
+  --text-h2: 18px;
+  --text-h3: 16px;
+  --text-body: 14px;
+  --text-label: 12px;
+  --text-caption: 11px;
+  --text-metric: 28px;
+
+  /* ── Spacing (4px base) ── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* ── Radius ── */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-full: 9999px;
+
+  /* ── Layout ── */
+  --sidebar-width: 260px;
+  --sidebar-collapsed: 72px;
+  --header-height: 56px;
+  --content-padding: 24px;
+
+  /* ── Elevation ── */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+  /* ── Motion ── */
+  --duration-instant: 100ms;
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+
+  /* ── shadcn/ui bridge ── */
+  --background: var(--canvas);
+  --foreground: var(--ink-primary);
+  --card: var(--surface);
+  --card-foreground: var(--ink-primary);
+  --primary: var(--brand);
+  --primary-foreground: #FFFFFF;
+  --secondary: var(--surface-inset);
+  --muted: var(--surface-inset);
+  --muted-foreground: var(--ink-tertiary);
+  --accent: var(--brand-subtle);
+  --destructive: var(--status-fault);
+  --border: var(--border-default);
+  --input: var(--border-default);
+  --ring: var(--focus-ring);
+  --radius: 6px;
+}
+
+.dark {
+  --canvas: #0B0F14;
+  --surface: #111827;
+  --surface-raised: #1A2332;
+  --surface-inset: #0F172A;
+
+  --ink-primary: #F1F5F9;
+  --ink-secondary: #94A3B8;
+  --ink-tertiary: #64748B;
+  --ink-muted: #475569;
+
+  --border-default: rgba(255, 255, 255, 0.08);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  --brand: #3B82F6;
+  --brand-hover: #2563EB;
+  --brand-subtle: #1E3A5F;
+
+  --status-ready: #34D399;
+  --status-ready-subtle: #064E3B;
+  --status-pending: #60A5FA;
+  --status-pending-subtle: #1E3A5F;
+  --status-maintenance: #FBBF24;
+  --status-maintenance-subtle: #78350F;
+  --status-fault: #FB7185;
+  --status-fault-subtle: #881337;
+  --status-offline: #94A3B8;
+  --status-offline-subtle: #1E293B;
+
+  --focus-ring: rgba(59, 130, 246, 0.32);
+
+  --shadow-sm: 0 0 0 1px rgba(255, 255, 255, 0.08);
+  --shadow-md: 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+/* ── Utility: Status Rail ── */
+.status-rail {
+  border-left: 3px solid var(--status-offline);
+}
+.status-rail--ready { border-left-color: var(--status-ready); }
+.status-rail--pending { border-left-color: var(--status-pending); }
+.status-rail--maintenance { border-left-color: var(--status-maintenance); }
+.status-rail--fault { border-left-color: var(--status-fault); }
+.status-rail--offline { border-left-color: var(--status-offline); }
+
+/* ── Utility: Tabular numbers for metrics ── */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/* ── Root smoothing ── */
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

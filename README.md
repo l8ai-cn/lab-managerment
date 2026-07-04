@@ -2,6 +2,19 @@
 
 > **状态：** 代码已清除（2026-07-04），仅保留需求、架构与功能交付文档。
 
+## 设计系统（第四步）
+
+| 文档 | 说明 |
+|------|------|
+| [docs/design/DESIGN.md](docs/design/DESIGN.md) | **Design Token 完整规范**（颜色/字体/间距/组件） |
+| [docs/design/tokens.css](docs/design/tokens.css) | CSS Custom Properties（可直接 import） |
+| [docs/design/tokens.ts](docs/design/tokens.ts) | TypeScript Token 常量 |
+| [docs/design/layout.md](docs/design/layout.md) | **功能布局设计**（App Shell + 5 种页面模板 + 路由地图） |
+| [docs/design/PRODUCT.md](docs/design/PRODUCT.md) | 产品上下文（用户/原则/反例） |
+| [.interface-design/system.md](.interface-design/system.md) | Agent 运行时设计系统 |
+
+**方向代号：** Precision Campus · Linear/Stripe + OpenELIS + Cal.com
+
 ## 核心文档
 
 | 文档 | 说明 |
