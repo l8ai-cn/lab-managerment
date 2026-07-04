@@ -5,8 +5,11 @@ import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 import { AppShell } from "@/shared/layout/AppShell";
 import { LoginPage } from "@/app/LoginPage";
 import { DashboardPage } from "@/features/dashboard/components/DashboardPage";
+import { LabListPage } from "@/features/labs/components/LabListPage";
+import { SpaceManagementPage } from "@/features/spaces/components/SpaceManagementPage";
+import { LabStaffListPage } from "@/features/lab-staff/components/LabStaffListPage";
+import { LabChangeListPage } from "@/features/lab-changes/components/LabChangeListPage";
 
-// Initialized clean QueryClient for our state synchronization
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -17,17 +20,12 @@ const queryClient = new QueryClient({
   },
 });
 
-/**
- * 100% Brand-new Written App entry point (Core of Batch 1 Router & Layout)
- * Strictly zero AntD ConfigProvider or Locale wrap. Fully standard lightweight SPA routing.
- */
 export function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
           <Routes>
-            {/* Authenticated Base Layout wrap with Protected guards */}
             <Route
               element={
                 <ProtectedRoute>
@@ -36,12 +34,14 @@ export function App() {
               }
             >
               <Route path="/dashboard" element={<DashboardPage />} />
-              {/* Fallback index route redirecting directly to premium telemetry dashboard */}
+              <Route path="/labs" element={<LabListPage />} />
+              <Route path="/spaces" element={<SpaceManagementPage />} />
+              <Route path="/lab-staff" element={<LabStaffListPage />} />
+              <Route path="/lab-changes" element={<LabChangeListPage />} />
+              
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<div className="p-8 text-center text-xs text-[var(--ink-secondary)]">页面正在 clean-sheet 重新书写中...</div>} />
             </Route>
-
-            {/* Public Entry Gate portal */}
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </BrowserRouter>
