@@ -1,0 +1,672 @@
+{
+  "test_time": "2026-07-04T10:23:12.811542+00:00",
+  "summary": {
+    "PASS": 19,
+    "PARTIAL": 24,
+    "FAIL": 0,
+    "SKIP": 0,
+    "NOT_IMPL": 23
+  },
+  "results": [
+    {
+      "module": "M09",
+      "req_id": "M09-001",
+      "requirement": "系统健康检查 / 后端可用",
+      "status": "PASS",
+      "api_evidence": "GET /health → 200",
+      "ui_evidence": "LoginPage 检测 /health 连接状态",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-002",
+      "requirement": "用户登录（admin/admin123）",
+      "status": "PASS",
+      "api_evidence": "POST /auth/login → 200",
+      "ui_evidence": "路由 /login 存在",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-003",
+      "requirement": "RBAC 角色识别（system_admin）",
+      "status": "PASS",
+      "api_evidence": "GET /auth/me role=system_admin",
+      "ui_evidence": "",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-004",
+      "requirement": "SSO 单点登录",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "无 SSO 入口",
+      "gap": "未对接统一身份认证，仅本地 JWT 登录",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-005",
+      "requirement": "空间管理：楼栋→楼层→房间层级",
+      "status": "PARTIAL",
+      "api_evidence": "POST buildings/floors/rooms + GET tree → 200/422/422/200",
+      "ui_evidence": "无独立空间管理页面，仅在 LabForm 中间接使用",
+      "gap": "缺少空间管理独立 UI 页面",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-001",
+      "requirement": "实验室信息录入（名称/编号/位置/面积/分区/人数/开放状态）",
+      "status": "PASS",
+      "api_evidence": "POST /labs → 201, fields present",
+      "ui_evidence": "页面 /labs, /labs/new, /labs/:id",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-002",
+      "requirement": "多维检索（楼栋/楼层/类型/开放状态/关键词）",
+      "status": "PASS",
+      "api_evidence": "GET /labs?keyword&open_status → 200",
+      "ui_evidence": "LabList FilterBar 筛选控件",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-003",
+      "requirement": "Excel 批量导入导出",
+      "status": "PARTIAL",
+      "api_evidence": "GET /labs/export → 200",
+      "ui_evidence": "LabList 导入/导出按钮",
+      "gap": "导入需真实 xlsx 文件人工验证；LabDetail 无编辑页",
+      "notes": "PATCH /labs/{id} API 存在但前端无编辑表单"
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-004",
+      "requirement": "责任负责人字段",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "Lab 模型/API 无 dedicated 负责人字段，仅有实验员关联",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-005",
+      "requirement": "实验员管理（工号/姓名/电话/办公室/责任实验室）",
+      "status": "PASS",
+      "api_evidence": "POST/GET /lab-staff → 201/200",
+      "ui_evidence": "页面 /lab-staff",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-006",
+      "requirement": "变更申请（功能/负责人/设备/区域）",
+      "status": "PASS",
+      "api_evidence": "POST /lab-changes → 201",
+      "ui_evidence": "页面 /lab-changes, /lab-changes/:id",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-007",
+      "requirement": "多级审批（单位→管理中心）",
+      "status": "PARTIAL",
+      "api_evidence": "POST submit + GET detail → 200",
+      "ui_evidence": "LabChangeDetail Steps 审批流 UI",
+      "gap": "消息推送未对接微信/钉钉；dept_admin 角色需单独账号验证",
+      "notes": ""
+    },
+    {
+      "module": "M01",
+      "req_id": "M01-008",
+      "requirement": "变更进度追踪与留痕",
+      "status": "PARTIAL",
+      "api_evidence": "approval_records 字段在详情 API",
+      "ui_evidence": "LabChangeDetail 审批记录展示",
+      "gap": "无实时消息推送",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-001",
+      "requirement": "资产系统对接自动同步",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "IntegrationPage 仅有 Mock 同步按钮",
+      "gap": "integrations Mock，无真实资产系统对接",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-002",
+      "requirement": "仪器台账 CRUD（名称/型号/厂家/编号/资产号/状态）",
+      "status": "PASS",
+      "api_evidence": "POST/GET /instruments → 200/200",
+      "ui_evidence": "页面 /instruments",
+      "gap": "无 InstrumentForm 新建/编辑页（仅列表）",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-003",
+      "requirement": "仪器批量导入导出 Excel",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "instruments 模块无 import/export API 与 UI",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-004",
+      "requirement": "仪器预约规则配置（时段/时长/次数/校内外差异）",
+      "status": "PARTIAL",
+      "api_evidence": "POST /instruments/booking-rules → 200",
+      "ui_evidence": "",
+      "gap": "无前端规则配置 UI",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-005",
+      "requirement": "仪器在线预约（查询+提交）",
+      "status": "PASS",
+      "api_evidence": "POST /instrument-bookings → 200",
+      "ui_evidence": "页面 /instrument-bookings",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-006",
+      "requirement": "日历/时间轴展示空闲占用",
+      "status": "NOT_IMPL",
+      "api_evidence": "GET /instruments/{id}/calendar → 422",
+      "ui_evidence": "",
+      "gap": "前端无日历 UI，仅 API",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-007",
+      "requirement": "仪器预约审批",
+      "status": "PASS",
+      "api_evidence": "POST approve → 200",
+      "ui_evidence": "InstrumentBookingList 通过/拒绝按钮",
+      "gap": "微信/钉钉消息推送未实现",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-008",
+      "requirement": "仪器使用记录（参数/耗材/附件/审核）",
+      "status": "PARTIAL",
+      "api_evidence": "POST /instrument-bookings/{id}/usage API 存在",
+      "ui_evidence": "",
+      "gap": "前端无使用记录填报 UI；附件上传未测",
+      "notes": ""
+    },
+    {
+      "module": "M02",
+      "req_id": "M02-009",
+      "requirement": "设备统计分析（频次/时长/价值分层/导出）",
+      "status": "PARTIAL",
+      "api_evidence": "GET /statistics/instrument-usage",
+      "ui_evidence": "StatisticsPage 按实验室统计表",
+      "gap": "无价值分层、无报表导出",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-001",
+      "requirement": "实验室预约规则配置",
+      "status": "PARTIAL",
+      "api_evidence": "POST /lab-booking-rules → 201",
+      "ui_evidence": "",
+      "gap": "无前端规则配置 UI",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-002",
+      "requirement": "预约申请（时段/用途/人数）",
+      "status": "PASS",
+      "api_evidence": "POST /lab-bookings → 201",
+      "ui_evidence": "页面 /lab-bookings",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-003",
+      "requirement": "周期性批量预约",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "模型有 recurrence_rule 字段但 API/UI 未暴露",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-004",
+      "requirement": "预约审批",
+      "status": "PASS",
+      "api_evidence": "",
+      "ui_evidence": "LabBookingList 通过/取消",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-005",
+      "requirement": "门禁联动（二维码/人脸/密码/课表）",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "access_grants API 存在但未与真实门禁对接；前端无授权展示",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-006",
+      "requirement": "签到核验（刷卡/扫码/人脸/人数比对）",
+      "status": "PARTIAL",
+      "api_evidence": "POST check-in → 200",
+      "ui_evidence": "",
+      "gap": "无一卡通/人脸实机对接；前端无签到 UI",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-007",
+      "requirement": "使用记录填报与审核",
+      "status": "PARTIAL",
+      "api_evidence": "POST /lab-bookings/{id}/usage API 存在",
+      "ui_evidence": "",
+      "gap": "前端无填报/审核 UI",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-008",
+      "requirement": "预约记录导出",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "无 export API 与 UI",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-009",
+      "requirement": "实验室使用统计（类型分布/多维度）",
+      "status": "PARTIAL",
+      "api_evidence": "GET /statistics/lab-usage",
+      "ui_evidence": "StatisticsPage",
+      "gap": "无周/月/学期维度切换；无导出",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-010",
+      "requirement": "日历视图",
+      "status": "NOT_IMPL",
+      "api_evidence": "GET /lab-bookings/calendar → 422",
+      "ui_evidence": "",
+      "gap": "前端无日历 UI",
+      "notes": ""
+    },
+    {
+      "module": "M03",
+      "req_id": "M03-011",
+      "requirement": "班牌及门禁对接",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M04",
+      "req_id": "M04-001",
+      "requirement": "实验项目 CRUD（课程/类型/学时/仪器/专业）",
+      "status": "PASS",
+      "api_evidence": "POST /experiment-projects → 201",
+      "ui_evidence": "页面 /experiment-projects, /new, /:id/edit",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M04",
+      "req_id": "M04-002",
+      "requirement": "批量复制至其他课程",
+      "status": "PARTIAL",
+      "api_evidence": "POST batch-copy → 422",
+      "ui_evidence": "ProjectList 批量复制按钮",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M04",
+      "req_id": "M04-003",
+      "requirement": "统计与 Excel 导入导出",
+      "status": "PARTIAL",
+      "api_evidence": "GET export → 200",
+      "ui_evidence": "",
+      "gap": "无 import API；无统计维度 UI",
+      "notes": ""
+    },
+    {
+      "module": "M04",
+      "req_id": "M04-004",
+      "requirement": "科研实验全生命周期（P0 已实现）",
+      "status": "PASS",
+      "api_evidence": "POST /experiments → 201",
+      "ui_evidence": "页面 /experiments, /new, /:id",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M05",
+      "req_id": "M05-001",
+      "requirement": "在线故障上报",
+      "status": "PASS",
+      "api_evidence": "POST /faults → 201",
+      "ui_evidence": "页面 /faults, /faults/:id",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M05",
+      "req_id": "M05-002",
+      "requirement": "照片/视频附件",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "模型有 attachments 字段但前端表单未提供上传",
+      "notes": ""
+    },
+    {
+      "module": "M05",
+      "req_id": "M05-003",
+      "requirement": "实验室专属二维码扫码上报",
+      "status": "PARTIAL",
+      "api_evidence": "GET /labs/{id}/fault-qr → 200",
+      "ui_evidence": "",
+      "gap": "无二维码展示/扫码入口 UI",
+      "notes": ""
+    },
+    {
+      "module": "M05",
+      "req_id": "M05-004",
+      "requirement": "指派/进度更新/结果反馈",
+      "status": "PARTIAL",
+      "api_evidence": "handle/status API → 200",
+      "ui_evidence": "FaultDetail 处理操作区",
+      "gap": "消息推送未实现；assign API 前端未用",
+      "notes": ""
+    },
+    {
+      "module": "M05",
+      "req_id": "M05-005",
+      "requirement": "故障统计分析",
+      "status": "PASS",
+      "api_evidence": "GET /faults/stats → 200",
+      "ui_evidence": "FaultList StatCard + StatisticsPage",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M06",
+      "req_id": "M06-001",
+      "requirement": "教育部基表标准化模板",
+      "status": "PARTIAL",
+      "api_evidence": "POST templates → 201",
+      "ui_evidence": "DataReportingPage 模板 Tab",
+      "gap": "无预置教育部基表模板；schema 编辑 UI 缺失",
+      "notes": ""
+    },
+    {
+      "module": "M06",
+      "req_id": "M06-002",
+      "requirement": "在线填报/审核/汇总",
+      "status": "PARTIAL",
+      "api_evidence": "submissions CRUD + submit/approve",
+      "ui_evidence": "SubmissionList",
+      "gap": "批量导入导出未实现",
+      "notes": ""
+    },
+    {
+      "module": "M06",
+      "req_id": "M06-003",
+      "requirement": "可视化展示",
+      "status": "PARTIAL",
+      "api_evidence": "GET submissions/stats → 200",
+      "ui_evidence": "",
+      "gap": "无图表可视化",
+      "notes": ""
+    },
+    {
+      "module": "M07",
+      "req_id": "M07-001",
+      "requirement": "学校数据中心对接（人员/组织/场地/资产）",
+      "status": "PARTIAL",
+      "api_evidence": "sync/status → 200/200",
+      "ui_evidence": "IntegrationPage Mock 同步",
+      "gap": "全部为 Mock，无真实对接",
+      "notes": ""
+    },
+    {
+      "module": "M07",
+      "req_id": "M07-002",
+      "requirement": "安全考试/检查系统",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "Mock 或未实现",
+      "notes": ""
+    },
+    {
+      "module": "M07",
+      "req_id": "M07-003",
+      "requirement": "人脸数据中台",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "Mock 或未实现",
+      "notes": ""
+    },
+    {
+      "module": "M07",
+      "req_id": "M07-004",
+      "requirement": "设备价值统计",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "Mock 或未实现",
+      "notes": ""
+    },
+    {
+      "module": "M08",
+      "req_id": "M08-001",
+      "requirement": "设备使用率统计",
+      "status": "PASS",
+      "api_evidence": "/statistics/overview:200; /statistics/instrument-usage:200; /statistics/lab-usage:200; /statistics/faults:200",
+      "ui_evidence": "StatisticsPage",
+      "gap": "无价值分层、无导出",
+      "notes": ""
+    },
+    {
+      "module": "M08",
+      "req_id": "M08-002",
+      "requirement": "预约与人时数统计",
+      "status": "PARTIAL",
+      "api_evidence": "GET /statistics/lab-usage",
+      "ui_evidence": "",
+      "gap": "无按课程/项目维度",
+      "notes": ""
+    },
+    {
+      "module": "M08",
+      "req_id": "M08-003",
+      "requirement": "实验项目统计",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "无 dedicated 实验项目统计 API/UI",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-006",
+      "requirement": "可视化大屏（运行态势/使用率/预约/安全/资产）",
+      "status": "PARTIAL",
+      "api_evidence": "overview/trends → 200/200",
+      "ui_evidence": "页面 /dashboard",
+      "gap": "大屏数据部分为 Mock/占位；安全数据、设备价值未完整",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-007",
+      "requirement": "站内通知",
+      "status": "PASS",
+      "api_evidence": "GET notifications → 200/200",
+      "ui_evidence": "NotificationBell 组件",
+      "gap": "微信/钉钉推送未实现",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-008",
+      "requirement": "移动端（微信/钉钉小程序）",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未开发",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-009",
+      "requirement": "一卡通刷卡签到",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "check-in API 支持 qr/card/face 枚举但无实机对接",
+      "notes": ""
+    },
+    {
+      "module": "M10",
+      "req_id": "M10-001",
+      "requirement": "REST API 开放（实验室/设备/预约/故障/统计）",
+      "status": "PARTIAL",
+      "api_evidence": "/agent/labs:200; /agent/instruments:200; /agent/bookings:200",
+      "ui_evidence": "",
+      "gap": "仅 3 个 agent 查询端点；无 MCP、无故障/使用记录/统计 agent API",
+      "notes": ""
+    },
+    {
+      "module": "M10",
+      "req_id": "M10-002",
+      "requirement": "实时推送门禁/签到供违规监测",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M10",
+      "req_id": "M10-003",
+      "requirement": "待办事项 AI 助理推送",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M10",
+      "req_id": "M10-004",
+      "requirement": "Text-to-SQL 查询",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M10",
+      "req_id": "M10-005",
+      "requirement": "知识库/向量索引",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M11",
+      "req_id": "M11-001",
+      "requirement": "经营性收费订单（Mock）",
+      "status": "PARTIAL",
+      "api_evidence": "create/pay/list → 201",
+      "ui_evidence": "页面 /payments",
+      "gap": "Mock 支付，无银校直连/分账/电子回单",
+      "notes": ""
+    },
+    {
+      "module": "M12",
+      "req_id": "M12-001",
+      "requirement": "实名制预约支付（校园卡/银校借记卡）",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "未实现",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-010",
+      "requirement": "用户管理（CRUD/RBAC）",
+      "status": "PARTIAL",
+      "api_evidence": "GET /users → 200",
+      "ui_evidence": "",
+      "gap": "后端 API 存在，前端无用户管理页面",
+      "notes": ""
+    },
+    {
+      "module": "UI",
+      "req_id": "UI-001",
+      "requirement": "前端全部路由可访问（SPA）",
+      "status": "PASS",
+      "api_evidence": "",
+      "ui_evidence": "测试 15 条路由",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "UI",
+      "req_id": "UI-002",
+      "requirement": "需求对应但缺失的前端页面",
+      "status": "NOT_IMPL",
+      "api_evidence": "",
+      "ui_evidence": "",
+      "gap": "空间管理独立页; 仪器新建/编辑页; 实验室编辑页; 预约日历视图; 仪器/实验室规则配置页; 使用记录填报页; 用户管理页; 故障二维码展示页",
+      "notes": ""
+    }
+  ]
+}
