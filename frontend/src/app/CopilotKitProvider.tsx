@@ -11,6 +11,7 @@ export function CopilotKitProvider({ children }: CopilotKitProviderProps) {
     <CopilotKit
       runtimeUrl="/api/copilotkit"
       credentials="include"
+      showDevConsole={false}
       onError={(event) => {
         console.error("[CopilotKit]", event);
       }}
