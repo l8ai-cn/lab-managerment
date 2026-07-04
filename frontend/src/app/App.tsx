@@ -31,6 +31,7 @@ import { SpaceManagementPage } from "@/features/spaces/components/SpaceManagemen
 import { UserListPage } from "@/features/users/components/UserListPage";
 import { AuthProvider } from "@/shared/auth/AuthContext";
 import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
+import { CopilotKitProvider } from "@/app/CopilotKitProvider";
 import { AppShell } from "@/shared/layout/AppShell";
 import { appTheme } from "@/shared/theme/appTheme";
 
@@ -50,7 +51,8 @@ export function App() {
       <ConfigProvider locale={zhCN} theme={appTheme}>
         <AntApp message={{ maxCount: 3 }}>
           <AuthProvider>
-            <BrowserRouter>
+            <CopilotKitProvider>
+              <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
                 <Route
@@ -89,7 +91,8 @@ export function App() {
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Route>
               </Routes>
-            </BrowserRouter>
+              </BrowserRouter>
+            </CopilotKitProvider>
           </AuthProvider>
         </AntApp>
       </ConfigProvider>

@@ -12,6 +12,10 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
+      "/api/copilotkit": {
+        target: "http://localhost:3001",
+        changeOrigin: true,
+      },
       "/api": {
         target: "http://localhost:8000",
         changeOrigin: true,

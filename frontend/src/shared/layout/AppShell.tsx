@@ -20,7 +20,9 @@ import { Avatar, Dropdown, Layout, Menu } from "antd";
 import type { MenuProps } from "antd";
 import { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { CopilotSidebar } from "@copilotkit/react-core/v2";
 import { NotificationBell } from "@/features/notifications/components/NotificationBell";
+import { LabCopilotActions } from "@/features/copilot/LabCopilotActions";
 import { useAuth } from "@/shared/auth/AuthContext";
 import { getRouteMeta } from "@/shared/layout/routeMeta";
 import "./AppShell.css";
@@ -119,7 +121,9 @@ export function AppShell() {
   ];
 
   return (
-    <Layout className="app-shell">
+    <>
+      <LabCopilotActions />
+      <Layout className="app-shell">
       <Sider
         className="app-shell__sider"
         width={240}
@@ -178,6 +182,16 @@ export function AppShell() {
           </div>
         </Content>
       </Layout>
-    </Layout>
+      </Layout>
+      <CopilotSidebar
+        agentId="default"
+        defaultOpen={false}
+        labels={{
+          modalHeaderTitle: "LabOS 智能助手",
+          welcomeMessageText: "你好，我是 LabOS 实验室管理助手。可以帮你查询实验室、仪器、预约和故障信息，或跳转到相关页面。",
+          chatInputPlaceholder: "输入问题，例如：列出所有实验室",
+        }}
+      />
+    </>
   );
 }

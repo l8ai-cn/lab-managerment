@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from src.modules.copilot.setup import register_copilotkit_routes
 from src.core.config import settings
 from src.core.database import async_session_factory, init_database
 from src.modules.agent_api import get_routers as agent_api_routers
@@ -82,6 +83,8 @@ def create_app() -> FastAPI:
     @app.get("/health")
     async def health_check():
         return {"status": "ok"}
+
+    register_copilotkit_routes(app)
 
     return app
 
