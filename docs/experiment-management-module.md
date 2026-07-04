@@ -279,4 +279,3 @@ sorting by planned start date, priority, and status.
 - Should experiment codes be globally sequential, team-scoped, or category
   scoped?
 - Which attachment file types and size limits are allowed?
-

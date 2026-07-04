@@ -9,4 +9,3 @@ domain model, lifecycle, permissions, API draft, and implementation checkpoints
 are documented in:
 
 - [Experiment Management Module](docs/experiment-management-module.md)
-
