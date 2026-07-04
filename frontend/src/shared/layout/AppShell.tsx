@@ -63,6 +63,7 @@ const MENU_ITEMS: MenuProps["items"] = [
       { key: "/instruments/rules", icon: <SettingOutlined />, label: "仪器规则" },
       { key: "/lab-bookings", icon: <BookOutlined />, label: "实验室预约" },
       { key: "/lab-bookings/rules", icon: <SettingOutlined />, label: "实验室规则" },
+      { key: "/lab-bookings/usage-approval", icon: <FormOutlined />, label: "使用记录审核" },
     ],
   },
   {
@@ -92,6 +93,7 @@ const MENU_ITEMS: MenuProps["items"] = [
       { key: "/dashboard", icon: <DashboardOutlined />, label: "可视化大屏" },
       { key: "/statistics", icon: <BarChartOutlined />, label: "统计分析" },
       { key: "/integrations", icon: <ApiOutlined />, label: "系统对接" },
+      { key: "/class-boards", icon: <MobileOutlined />, label: "电子班牌" },
       { key: "/users", icon: <UserOutlined />, label: "用户管理" },
       { key: "/payments", icon: <BankOutlined />, label: "收费管理" },
       { key: "/mobile/dashboard", icon: <MobileOutlined />, label: "移动端" },
@@ -102,7 +104,8 @@ const MENU_ITEMS: MenuProps["items"] = [
 const ROUTE_KEYS = [
   "/labs", "/spaces", "/lab-staff", "/lab-changes",
   "/instruments", "/instruments/rules", "/instrument-bookings",
-  "/lab-bookings", "/lab-bookings/rules",
+  "/lab-bookings", "/lab-bookings/rules", "/lab-bookings/usage-approval",
+  "/class-boards",
   "/courses", "/experiment-projects", "/experiments",
   "/faults", "/data-reporting",
   "/dashboard", "/statistics", "/integrations", "/users", "/payments",

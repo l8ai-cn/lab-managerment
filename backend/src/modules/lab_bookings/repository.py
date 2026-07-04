@@ -133,3 +133,18 @@ class LabBookingRepository:
         await self.db.flush()
         await self.db.refresh(record)
         return record
+
+    async def list_pending_usage(self, *, page: int = 1, page_size: int = 50) -> tuple[list[LabUsageRecord], int]:
+        from src.modules.lab_bookings.models import UsageReviewStatus
+
+        query = (
+            select(LabUsageRecord)
+            .join(LabBooking, LabUsageRecord.booking_id == LabBooking.id)
+            .where(LabUsageRecord.review_status == UsageReviewStatus.PENDING)
+            .options(selectinload(LabUsageRecord.booking).selectinload(LabBooking.lab))
+        )
+        total = (await self.db.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
+        result = await self.db.execute(
+            query.order_by(LabUsageRecord.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+        )
+        return list(result.scalars().all()), total

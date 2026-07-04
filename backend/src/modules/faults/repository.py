@@ -69,6 +69,11 @@ class FaultRepository:
         return result.scalar_one_or_none()
 
     async def stats(self) -> tuple[list[FaultReport], int]:
-        result = await self.db.execute(select(FaultReport).options(selectinload(FaultReport.lab)))
+        result = await self.db.execute(
+            select(FaultReport).options(
+                selectinload(FaultReport.lab),
+                selectinload(FaultReport.handling_records),
+            )
+        )
         reports = list(result.scalars().all())
         return reports, len(reports)

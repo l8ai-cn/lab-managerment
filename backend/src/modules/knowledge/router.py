@@ -32,6 +32,16 @@ async def search_knowledge(
     return await service.search(q, limit=limit)
 
 
+@router.get("/search/hybrid", response_model=list[KnowledgeSearchResult])
+async def search_knowledge_hybrid(
+    q: str = Query(..., min_length=1),
+    limit: int = Query(20, ge=1, le=50),
+    user: User = Depends(get_current_user),
+    service: KnowledgeService = Depends(get_service),
+):
+    return await service.search_hybrid(q, limit=limit)
+
+
 @router.get("", response_model=KnowledgeDocumentListResponse)
 async def list_documents(
     page: int = Query(1, ge=1),

@@ -122,6 +122,15 @@ export interface InstrumentBookingRule {
   advance_hours?: number;
   approval_mode?: string;
   is_active?: boolean;
+  external_rules?: ExternalRules;
+  internal_rules?: Record<string, unknown>;
+}
+
+export interface ExternalRules {
+  priority?: number;
+  fee_per_hour?: number;
+  require_approval?: boolean;
+  daily_limit?: number;
 }
 
 export interface InstrumentBookingRuleCreate {
@@ -134,6 +143,7 @@ export interface InstrumentBookingRuleCreate {
   advance_hours?: number;
   approval_mode?: string;
   is_active?: boolean;
+  external_rules?: ExternalRules;
 }
 
 export interface InstrumentUsageRecord {
@@ -146,6 +156,15 @@ export interface InstrumentUsageRecord {
   attachments?: unknown[];
   review_status: ReviewStatus;
   reviewer_comment?: string;
+  created_at: string;
+}
+
+export interface PendingInstrumentUsageItem {
+  booking_id: string;
+  instrument_id: string;
+  instrument_name?: string;
+  content?: string;
+  review_status: ReviewStatus;
   created_at: string;
 }
 
@@ -222,6 +241,20 @@ export const instrumentBookingsApi = {
   rejectUsage: (id: string, comment: string) =>
     api
       .post<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage/reject`, { comment })
+      .then((r) => r.data),
+
+  listPendingUsage: () =>
+    api
+      .get<{ items: PendingInstrumentUsageItem[]; total: number }>("/instrument-bookings/usage/pending")
+      .then((r) => r.data),
+
+  batchReviewUsage: (bookingIds: string[], approve: boolean, comment?: string) =>
+    api
+      .post<{ processed: number; failed: string[] }>("/instrument-bookings/usage/batch-review", {
+        booking_ids: bookingIds,
+        approve,
+        comment,
+      })
       .then((r) => r.data),
 
   calendar: (instrumentId: string, fromTime: string, toTime: string) =>

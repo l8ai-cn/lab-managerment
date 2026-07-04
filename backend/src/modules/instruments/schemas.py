@@ -141,6 +141,31 @@ class UsageRecordResponse(UsageRecordCreate):
     created_at: datetime
 
 
+class PendingInstrumentUsageItem(BaseModel):
+    booking_id: uuid.UUID
+    instrument_id: uuid.UUID
+    instrument_name: str | None = None
+    content: str | None = None
+    review_status: ReviewStatus
+    created_at: datetime
+
+
+class PendingInstrumentUsageListResponse(BaseModel):
+    items: list[PendingInstrumentUsageItem]
+    total: int
+
+
+class BatchUsageReviewRequest(BaseModel):
+    booking_ids: list[uuid.UUID] = Field(..., min_length=1)
+    approve: bool = True
+    comment: str | None = None
+
+
+class BatchUsageReviewResponse(BaseModel):
+    processed: int
+    failed: list[uuid.UUID] = []
+
+
 class CalendarSlot(BaseModel):
     start_time: datetime
     end_time: datetime

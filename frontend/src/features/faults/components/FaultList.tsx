@@ -86,21 +86,42 @@ export function FaultList() {
       />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={8} lg={4}>
           <StatCard title="故障总数" value={stats?.total ?? 0} icon={<WarningOutlined />} color="#ef4444" />
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={8} lg={4}>
           <StatCard
             title="待处理"
             value={stats?.by_status?.pending ?? 0}
             color="#f59e0b"
           />
         </Col>
-        <Col xs={24} sm={8}>
+        <Col xs={24} sm={8} lg={4}>
           <StatCard
             title="处理中"
             value={(stats?.by_status?.assigned ?? 0) + (stats?.by_status?.processing ?? 0)}
             color="#0ea5e9"
+          />
+        </Col>
+        <Col xs={24} sm={8} lg={4}>
+          <StatCard
+            title="平均响应(h)"
+            value={stats?.avg_response_hours ?? "-"}
+            color="#8b5cf6"
+          />
+        </Col>
+        <Col xs={24} sm={8} lg={4}>
+          <StatCard
+            title="平均处理(h)"
+            value={stats?.avg_resolution_hours ?? "-"}
+            color="#10b981"
+          />
+        </Col>
+        <Col xs={24} sm={8} lg={4}>
+          <StatCard
+            title="24h SLA"
+            value={stats?.sla_within_24h ?? 0}
+            color="#6366f1"
           />
         </Col>
       </Row>
@@ -211,8 +232,9 @@ export function FaultReportForm({ open, onClose, defaultLabId }: FaultReportForm
         <Form.Item name="description" label="故障描述" rules={[{ required: true }]}>
           <Input.TextArea rows={4} placeholder="请详细描述故障情况" />
         </Form.Item>
-        <Form.Item label="附件">
+        <Form.Item label="附件（图片/视频/文件）">
           <Upload
+            accept="image/*,video/*,.pdf,.doc,.docx"
             customRequest={async ({ file, onSuccess, onError }) => {
               try {
                 const result = await uploadApi.upload(file as File);
@@ -223,7 +245,7 @@ export function FaultReportForm({ open, onClose, defaultLabId }: FaultReportForm
               }
             }}
           >
-            <Button size="small">上传图片/文件</Button>
+            <Button size="small">上传图片/视频/文件</Button>
           </Upload>
         </Form.Item>
       </Form>

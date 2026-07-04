@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { App as AntApp, ConfigProvider } from "antd";
 import zhCN from "antd/locale/zh_CN";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { ClassBoardPage } from "@/features/access-control/components/ClassBoardPage";
 import { LoginPage } from "@/app/LoginPage";
 import { DashboardPage } from "@/features/dashboard/components/DashboardPage";
 import { DataReportingPage } from "@/features/data-reporting/components/DataReportingPage";
@@ -21,6 +22,7 @@ import { InstrumentBookingList } from "@/features/instruments/components/Instrum
 import { InstrumentBookingRulesPage } from "@/features/instruments/components/InstrumentBookingRulesPage";
 import { InstrumentList } from "@/features/instruments/components/InstrumentList";
 import { IntegrationPage } from "@/features/integrations/components/IntegrationPage";
+import { UsageApprovalPage } from "@/features/lab-bookings/components/UsageApprovalPage";
 import { LabBookingList } from "@/features/lab-bookings/components/LabBookingList";
 import { LabBookingRulesPage } from "@/features/lab-bookings/components/LabBookingRulesPage";
 import { LabChangeDetail } from "@/features/lab-changes/components/LabChangeDetail";
@@ -91,6 +93,8 @@ export function App() {
                   <Route path="/instrument-bookings" element={<InstrumentBookingList />} />
                   <Route path="/lab-bookings" element={<LabBookingList />} />
                   <Route path="/lab-bookings/rules" element={<LabBookingRulesPage />} />
+                  <Route path="/lab-bookings/usage-approval" element={<UsageApprovalPage />} />
+                  <Route path="/class-boards" element={<ClassBoardPage />} />
                   <Route path="/courses" element={<CourseListPage />} />
                   <Route path="/experiment-projects" element={<ProjectList />} />
                   <Route path="/experiment-projects/new" element={<ProjectFormPage />} />

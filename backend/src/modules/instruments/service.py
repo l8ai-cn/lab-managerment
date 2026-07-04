@@ -201,6 +201,40 @@ class InstrumentService:
         await self.db.refresh(record)
         return UsageRecordResponse.model_validate(record)
 
+    async def list_pending_usage(self, *, page: int = 1, page_size: int = 50):
+        from src.modules.instruments.schemas import PendingInstrumentUsageItem, PendingInstrumentUsageListResponse
+
+        records, total = await self.repo.list_pending_usage(page=page, page_size=page_size)
+        items = [
+            PendingInstrumentUsageItem(
+                booking_id=r.booking_id,
+                instrument_id=r.booking.instrument_id if r.booking else r.booking_id,
+                instrument_name=r.booking.instrument.name if r.booking and r.booking.instrument else None,
+                content=r.content,
+                review_status=r.review_status,
+                created_at=r.created_at,
+            )
+            for r in records
+        ]
+        return PendingInstrumentUsageListResponse(items=items, total=total)
+
+    async def batch_review_usage(self, booking_ids: list[uuid.UUID], approve: bool, user: User, comment: str | None = None):
+        from src.modules.instruments.schemas import BatchUsageReviewResponse
+
+        processed = 0
+        failed: list[uuid.UUID] = []
+        for bid in booking_ids:
+            record = await self.repo.get_usage(bid)
+            if not record or record.review_status != ReviewStatus.PENDING:
+                failed.append(bid)
+                continue
+            record.review_status = ReviewStatus.APPROVED if approve else ReviewStatus.REJECTED
+            record.reviewer_id = user.id
+            record.reviewer_comment = comment
+            processed += 1
+        await self.db.commit()
+        return BatchUsageReviewResponse(processed=processed, failed=failed)
+
     async def export_instruments(self, fmt: str = "xlsx", **kwargs) -> tuple[bytes, str, str]:
         items, _ = await self.repo.list_instruments(page_size=5000, **kwargs)
         if fmt == "csv":

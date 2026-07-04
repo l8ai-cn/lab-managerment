@@ -23,6 +23,9 @@ from src.modules.lab_bookings.schemas import (
     LabBookingUpdate,
     UsageRecordCreate,
     UsageRecordResponse,
+    BatchUsageReviewRequest,
+    BatchUsageReviewResponse,
+    PendingUsageListResponse,
 )
 from src.modules.lab_bookings.service import LabBookingService
 from src.modules.payments.schemas import PayResponse
@@ -92,6 +95,25 @@ async def get_calendar(
     service: LabBookingService = Depends(get_service),
 ):
     return await service.calendar(lab_id, from_time, to_time)
+
+
+@router.get("/usage/pending", response_model=PendingUsageListResponse)
+async def list_pending_usage(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    _: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)),
+    service: LabBookingService = Depends(get_service),
+):
+    return await service.list_pending_usage(page=page, page_size=page_size)
+
+
+@router.post("/usage/batch-review", response_model=BatchUsageReviewResponse)
+async def batch_review_usage(
+    body: BatchUsageReviewRequest,
+    user: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)),
+    service: LabBookingService = Depends(get_service),
+):
+    return await service.batch_review_usage(body.booking_ids, body.approve, user, body.comment)
 
 
 @router.get("/{booking_id}/access-grants", response_model=list[AccessGrantResponse])

@@ -136,6 +136,15 @@ export interface UsageRecordCreate {
   attachments?: unknown[];
 }
 
+export interface PendingUsageItem {
+  booking_id: string;
+  lab_id: string;
+  lab_name?: string;
+  content?: string;
+  review_status: UsageReviewStatus;
+  created_at: string;
+}
+
 export interface LabBookingListParams {
   page?: number;
   page_size?: number;
@@ -172,6 +181,18 @@ export const labBookingsApi = {
 
   rejectUsage: (id: string, comment: string) =>
     api.post<UsageRecord>(`/lab-bookings/${id}/usage/reject`, { comment }).then((r) => r.data),
+
+  listPendingUsage: () =>
+    api.get<{ items: PendingUsageItem[]; total: number }>("/lab-bookings/usage/pending").then((r) => r.data),
+
+  batchReviewUsage: (bookingIds: string[], approve: boolean, comment?: string) =>
+    api
+      .post<{ processed: number; failed: string[] }>("/lab-bookings/usage/batch-review", {
+        booking_ids: bookingIds,
+        approve,
+        comment,
+      })
+      .then((r) => r.data),
 
   getAccessGrants: (bookingId: string) =>
     api.get<AccessGrant[]>(`/lab-bookings/${bookingId}/access-grants`).then((r) => r.data),

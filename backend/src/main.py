@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.modules.copilot.setup import register_copilotkit_routes
 from src.core.config import settings
 from src.core.database import async_session_factory, init_database
+from src.modules.mcp_server import get_routers as mcp_routers
 from src.modules.agent_api import get_routers as agent_api_routers
 from src.modules.access_control import get_routers as access_control_routers
 from src.modules.dashboard import get_routers as dashboard_routers
@@ -88,6 +89,7 @@ def create_app() -> FastAPI:
         agent_api_routers,
         knowledge_routers,
         access_control_routers,
+        mcp_routers,
     ):
         _register_module_routers(app, get_routers_fn)
 

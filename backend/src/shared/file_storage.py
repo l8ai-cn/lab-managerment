@@ -9,7 +9,10 @@ from fastapi import HTTPException, UploadFile, status
 
 from src.core.config import settings
 
-ALLOWED_EXTENSIONS = {".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt"}
+ALLOWED_EXTENSIONS = {
+    ".jpg", ".jpeg", ".png", ".gif", ".webp", ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".txt",
+    ".mp4", ".mov", ".avi", ".webm", ".mkv",
+}
 
 
 def get_upload_dir() -> Path:

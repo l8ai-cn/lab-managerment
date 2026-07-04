@@ -138,6 +138,31 @@ class UsageRecordResponse(BaseModel):
     updated_at: datetime
 
 
+class PendingUsageItem(BaseModel):
+    booking_id: uuid.UUID
+    lab_id: uuid.UUID
+    lab_name: str | None = None
+    content: str | None = None
+    review_status: UsageReviewStatus
+    created_at: datetime
+
+
+class PendingUsageListResponse(BaseModel):
+    items: list[PendingUsageItem]
+    total: int
+
+
+class BatchUsageReviewRequest(BaseModel):
+    booking_ids: list[uuid.UUID] = Field(..., min_length=1)
+    approve: bool = True
+    comment: str | None = None
+
+
+class BatchUsageReviewResponse(BaseModel):
+    processed: int
+    failed: list[uuid.UUID] = []
+
+
 class CalendarSlot(BaseModel):
     start_time: datetime
     end_time: datetime

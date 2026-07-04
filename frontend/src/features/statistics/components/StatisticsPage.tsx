@@ -8,10 +8,15 @@ import {
   WarningOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Col, DatePicker, Row, Space, Table } from "antd";
+import { Button, Col, DatePicker, Row, Segmented, Space, Table } from "antd";
 import dayjs from "dayjs";
 import { useMemo, useState } from "react";
 import { USAGE_TYPE_LABELS } from "@/features/lab-bookings/api/labBookingsApi";
+import {
+  getDateRangeForPreset,
+  TIME_PRESET_LABELS,
+  type TimePreset,
+} from "@/shared/utils/datePresets";
 import {
   coursesApi,
   experimentProjectsApi,
@@ -40,6 +45,12 @@ function exportCsv(filename: string, rows: string[][]) {
 
 export function StatisticsPage() {
   const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+  const [preset, setPreset] = useState<TimePreset>("all");
+
+  const handlePresetChange = (value: TimePreset) => {
+    setPreset(value);
+    setDateRange(getDateRangeForPreset(value));
+  };
 
   const params = useMemo(() => {
     if (!dateRange) return {};
@@ -137,10 +148,18 @@ export function StatisticsPage() {
     <>
       <PageHeader
         extra={
-          <Space>
+          <Space wrap>
+            <Segmented
+              options={Object.entries(TIME_PRESET_LABELS).map(([value, label]) => ({ value, label }))}
+              value={preset}
+              onChange={(v) => handlePresetChange(v as TimePreset)}
+            />
             <DatePicker.RangePicker
               value={dateRange}
-              onChange={(v) => setDateRange(v as [dayjs.Dayjs, dayjs.Dayjs] | null)}
+              onChange={(v) => {
+                setDateRange(v as [dayjs.Dayjs, dayjs.Dayjs] | null);
+                setPreset("all");
+              }}
             />
             <Button icon={<DownloadOutlined />} onClick={handleExportLabUsage}>
               导出实验室统计

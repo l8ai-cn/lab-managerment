@@ -61,6 +61,11 @@ export interface FaultStats {
   by_status: Record<string, number>;
   by_type: Record<string, number>;
   by_lab: Record<string, number>;
+  avg_response_hours?: number | null;
+  avg_resolution_hours?: number | null;
+  resolved_count?: number;
+  sla_within_24h?: number;
+  sla_within_72h?: number;
 }
 
 export interface FaultListParams {

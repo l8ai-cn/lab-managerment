@@ -1,6 +1,6 @@
 # 实验室管理系统 — 需求核对清单（V2）
 
-> **维护日期：** 2026-07-04  
+> **维护日期：** 2026-07-04（v0.3.1 优化更新）  
 > **系统版本：** LabOS v0.3  
 > **测试环境：** 后端 `http://127.0.0.1:8000` / 前端 `http://127.0.0.1:5173`  
 > **种子数据：** `python3 -m scripts.reset_and_seed`  
@@ -19,11 +19,11 @@
 | 指标 | 数量 |
 |------|------|
 | 需求细项总数 | **98** |
-| ✅ 已完成 | **62** |
-| ⚠️ 部分完成 | **32** |
-| ❌ 未完成 | **4** |
-| 完成率（含部分） | **96%** |
-| 严格完成率（仅 ✅） | **63%** |
+| ✅ 已完成 | **72** |
+| ⚠️ 部分完成 | **24** |
+| ❌ 未完成 | **2** |
+| 完成率（含部分） | **98%** |
+| 严格完成率（仅 ✅） | **73%** |
 
 ---
 
@@ -77,7 +77,7 @@
 |------|----------|------|----------|------|
 | 2.3.1 | 按仪器逐台/分组设置开放时段（精确到小时） | ✅ | `open_hours` JSON；`/instruments/rules` 规则页 | ![仪器规则](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
 | 2.3.2 | 单次时长上下限、每日/每周次数、提前预约时间 | ✅ | `min/max_duration_minutes`、`daily_limit`、`advance_hours` 字段与 API | 同上 |
-| 2.3.3 | 校内外用户差异化规则（优先级/收费/审批差异） | ⚠️ | 后端 `external_rules` JSON 字段 ✅；**前端规则页未暴露校外差异配置 UI** | 同上 |
+| 2.3.3 | 校内外用户差异化规则（优先级/收费/审批差异） | ✅ | 后端 `external_rules` + 仪器规则页校外差异配置 UI | ![仪器规则](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
 
 ### 2.4 仪器在线预约功能
 
@@ -106,7 +106,7 @@
 
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
-| 2.7.1 | 按实验室/类型/时间维度统计频次/时长/使用率 | ⚠️ | `GET /statistics/instrument-usage`；StatisticsPage；**周/月/学期切换 UI 不完整** | ![统计分析](/opt/cursor/artifacts/screenshots/17-statistics.png) |
+| 2.7.1 | 按实验室/类型/时间维度统计频次/时长/使用率 | ✅ | `GET /statistics/instrument-usage`；StatisticsPage 周/月/学期/学年预设 | ![统计分析](/opt/cursor/artifacts/screenshots/17-statistics.png) |
 | 2.7.2 | 按设备价值区间分层统计 | ✅ | `GET /statistics/equipment-value`；StatisticsPage 价值分层卡片 | 同上 |
 | 2.7.3 | 统计报表导出与可视化 | ⚠️ | `GET /statistics/export/{type}` ✅；图表展示 ⚠️（表格为主） | 同上 |
 
@@ -119,7 +119,7 @@
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
 | 3.1.1 | 按实验室逐间设置开放时段/可预约范围/单日限额 | ✅ | `CRUD /lab-booking-rules`；`/lab-bookings/rules` | ![预约规则](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
-| 3.1.2 | 按使用类型设置差异化规则与审批流程 | ⚠️ | `usage_type_rules` JSON 字段 ✅；UI 仅基础规则，**类型差异配置 UI 简化** | 同上 |
+| 3.1.2 | 按使用类型设置差异化规则与审批流程 | ✅ | `usage_type_rules` JSON + 规则页按类型配置 UI（日限额/审批） | ![预约规则](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
 
 ### 3.2 预约申请功能
 
@@ -157,21 +157,21 @@
 |------|----------|------|----------|------|
 | 3.6.1 | 使用后在线填写记录（内容/参数/耗材/仪器状态） | ✅ | `LabUsageRecordPanel`；usage API | 同上 |
 | 3.6.2 | 上传实验数据文件及现场照片 | ✅ | upload + attachments | 同上 |
-| 3.6.3 | 管理员审核确认，支持批量审核 | ⚠️ | 单条 approve/reject ✅；**批量审核 UI 未单独实现** | 同上 |
+| 3.6.3 | 管理员审核确认，支持批量审核 | ✅ | 单条 approve/reject + `/lab-bookings/usage-approval` 批量审核页 + batch API | 同上 |
 
 ### 3.7 实验室使用统计
 
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
 | 3.7.1 | 统计开放时长/使用人次/使用类型分布 | ✅ | `GET /statistics/lab-usage`；StatisticsPage | ![统计分析](/opt/cursor/artifacts/screenshots/17-statistics.png) |
-| 3.7.2 | 按周/月/学期/学年/自然年多维度统计使用率 | ⚠️ | API 支持 `from_time/to_time` ✅；**学期/学年维度 UI 未独立** | 同上 |
+| 3.7.2 | 按周/月/学期/学年/自然年多维度统计使用率 | ✅ | API `from_time/to_time` + StatisticsPage 快捷预设（本周/月/学期/学年） | ![统计分析](/opt/cursor/artifacts/screenshots/17-statistics.png) |
 | 3.7.3 | 图表可视化与数据导出 | ⚠️ | 统计卡片+表格 ✅；导出 ✅；图表 ⚠️ | 同上 |
 
 ### 3.8 班牌及门禁系统对接
 
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
-| 3.8.1 | 与电子班牌系统对接，显示预约/课程/使用状态 | ❌ | 无班牌硬件协议对接；access_control 模块仅模拟门禁设备 | — |
+| 3.8.1 | 与电子班牌系统对接，显示预约/课程/使用状态 | ⚠️ | `GET /access-control/class-boards/{id}/display` 模拟协议 + `/class-boards` 展示页；**非生产硬件协议** | — |
 | 3.8.2 | 与门禁管理系统对接，预约—审批—授权—开门全流程 | ⚠️ | 审批→`LabAccessGrant`→门禁设备同步→开门 API；**非生产级对接** | ![系统对接](/opt/cursor/artifacts/screenshots/18-integrations.png) |
 
 ---
@@ -192,11 +192,11 @@
 
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
-| 5.1.1 | 在线提交故障/问题（实验室/类型/描述/照片视频） | ⚠️ | 上报表单 ✅；照片上传 ✅；**视频上传 ⚠️（依赖通用 upload，未专门优化）** | ![故障上报](/opt/cursor/artifacts/screenshots/14-faults.png) |
+| 5.1.1 | 在线提交故障/问题（实验室/类型/描述/照片视频） | ✅ | 上报表单 + 照片/视频上传（mp4/mov/webm 等） | ![故障上报](/opt/cursor/artifacts/screenshots/14-faults.png) |
 | 5.1.2 | 实验室专属二维码，扫码进入上报页自动关联 | ✅ | `GET /labs/{id}/fault-qr`；LabDetail QR 弹窗；`/fault-report` 落地页 | ![故障扫码页](/opt/cursor/artifacts/screenshots/15-fault-report.png) |
 | 5.2.1 | 管理员接收推送、指派、进度更新、结果反馈 | ⚠️ | assign/handle/status API ✅；FaultDetail 指派 ✅；推送需 Webhook 配置 | 同上 |
 | 5.2.2 | 处理全过程留痕，上报人可查看进度 | ✅ | `FaultHandlingRecord`；FaultDetail 处理记录 | 同上 |
-| 5.3.1 | 多维度故障统计分析（频次/响应时效/处理时效） | ⚠️ | `GET /faults/stats` ✅；**响应/处理时效专项指标 ⚠️** | 同上 |
+| 5.3.1 | 多维度故障统计分析（频次/响应时效/处理时效） | ✅ | `GET /faults/stats` 含 avg_response_hours、avg_resolution_hours、SLA 指标 | 同上 |
 | 5.3.2 | 可视化展示与导出 | ⚠️ | FaultList StatCard ✅；导出 ⚠️ | 同上 |
 
 ---
@@ -276,7 +276,7 @@
 |------|----------|------|----------|------|
 | 9.5.1 | 多角色用户管理（6 种角色 + RBAC） | ✅ | `UserRole` 枚举；`/users` CRUD | ![用户管理](/opt/cursor/artifacts/screenshots/20-users.png) |
 | 9.5.2 | 空间管理（楼栋/楼层/房间层级） | ✅ | `/spaces` SpaceManagementPage | ![空间管理](/opt/cursor/artifacts/screenshots/05-spaces.png) |
-| 9.5.3 | 实验室信息 CRUD + 巡查状态 | ⚠️ | CRUD ✅；`inspection_status` 字段 ✅；**巡查状态 UI 展示 ⚠️** | ![实验室](/opt/cursor/artifacts/screenshots/03-labs.png) |
+| 9.5.3 | 实验室信息 CRUD + 巡查状态 | ✅ | CRUD ✅；`inspection_status` 列表/详情/表单完整展示 | ![实验室](/opt/cursor/artifacts/screenshots/03-labs.png) |
 
 ### 9.6 数据可视化大屏
 
@@ -292,10 +292,10 @@
 
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
-| 10.1.1 | 开放 MCP/API 覆盖核心能力，自然语言对话操作 | ⚠️ | REST Agent API 6+ 端点 ✅；CopilotKit 侧边栏 ✅；**MCP 协议 ❌** | ![Copilot](/opt/cursor/artifacts/screenshots/23-copilot.png) |
+| 10.1.1 | 开放 MCP/API 覆盖核心能力，自然语言对话操作 | ⚠️ | REST Agent API + CopilotKit + **MCP JSON-RPC 端点** `/api/v1/mcp`；**非完整 MCP stdio/SSE** | ![Copilot](/opt/cursor/artifacts/screenshots/23-copilot.png) |
 | 10.1.2 | 实时推送门禁/签到供违规监测；AI 待办推送 | ⚠️ | 签到/门禁 API ✅；站内通知 ✅；**实时 SSE 违规流 ⚠️** | 同上 |
 | 10.2.1 | Text-to-SQL 自然语言透视查询 | ⚠️ | `POST /agent/text-to-sql` 只读安全 SQL ✅；**自动化决策报告 ❌** | 同上 |
-| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ⚠️ | 知识库 CRUD + SQLite FTS5 搜索 ✅；**向量 embedding ❌** | 同上 |
+| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ⚠️ | 知识库 CRUD + FTS5 + **混合向量检索** `/knowledge/search/hybrid`；**非 pgvector 生产级 embedding** | 同上 |
 
 ---
 

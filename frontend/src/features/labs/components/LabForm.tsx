@@ -7,10 +7,11 @@ import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi, spacesApi } from "../api/labsApi";
 import { usersApi } from "@/features/users/api/usersApi";
-import { LAB_TYPE_LABELS, OPEN_STATUS_LABELS, type BuildingTree, type LabType, type OpenStatus } from "../types/lab";
+import { LAB_TYPE_LABELS, INSPECTION_STATUS_LABELS, OPEN_STATUS_LABELS, type BuildingTree, type InspectionStatus, type LabType, type OpenStatus } from "../types/lab";
 
 const LAB_TYPE_OPTIONS = Object.entries(LAB_TYPE_LABELS).map(([value, label]) => ({ value, label }));
 const OPEN_STATUS_OPTIONS = Object.entries(OPEN_STATUS_LABELS).map(([value, label]) => ({ value, label }));
+const INSPECTION_STATUS_OPTIONS = Object.entries(INSPECTION_STATUS_LABELS).map(([value, label]) => ({ value, label }));
 
 interface LabFormFieldsProps {
   labId?: string;
@@ -80,6 +81,7 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
       capacity: lab.capacity,
       lab_type: lab.lab_type,
       open_status: lab.open_status,
+      inspection_status: lab.inspection_status,
       manager_id: lab.manager_id,
       description: lab.description,
     });
@@ -130,6 +132,7 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
               capacity: values.capacity,
               lab_type: values.lab_type as LabType,
               open_status: values.open_status as OpenStatus,
+              inspection_status: values.inspection_status as InspectionStatus,
               manager_id: values.manager_id,
               description: values.description,
             };
@@ -169,6 +172,9 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
           </Form.Item>
           <Form.Item name="open_status" label="开放状态" initialValue="open">
             <Select options={OPEN_STATUS_OPTIONS} />
+          </Form.Item>
+          <Form.Item name="inspection_status" label="巡查状态" initialValue="normal">
+            <Select options={INSPECTION_STATUS_OPTIONS} />
           </Form.Item>
           <Form.Item name="manager_id" label="实验室管理员">
             <Select allowClear options={managerOptions} placeholder="选择管理员" />

@@ -1,6 +1,6 @@
-import { DeleteOutlined, SaveOutlined } from "@ant-design/icons";
+import { DeleteOutlined, PlusOutlined, SaveOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, InputNumber, Popconfirm, Select, Space, Spin, TimePicker, message } from "antd";
+import { Button, Form, InputNumber, Popconfirm, Select, Space, Spin, Switch, TimePicker, message } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { labsApi } from "@/features/labs/api/labsApi";
@@ -8,7 +8,7 @@ import { ROLE_LABELS } from "@/features/users/api/usersApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { FilterBar } from "@/shared/components/FilterBar";
 import { PageHeader } from "@/shared/components/PageHeader";
-import { labBookingRulesApi, type BookingRuleCreate } from "../api/labBookingsApi";
+import { labBookingRulesApi, type BookingRuleCreate, USAGE_TYPE_LABELS, type UsageType } from "../api/labBookingsApi";
 
 const WEEKDAYS = [
   { key: "mon", label: "周一" },
@@ -21,6 +21,13 @@ const WEEKDAYS = [
 ];
 
 const ROLE_OPTIONS = Object.entries(ROLE_LABELS).map(([value, label]) => ({ value, label }));
+const USAGE_TYPE_OPTIONS = Object.entries(USAGE_TYPE_LABELS).map(([value, label]) => ({ value, label }));
+
+type UsageTypeRuleForm = {
+  usage_type: UsageType;
+  daily_limit?: number;
+  require_approval?: boolean;
+};
 
 type OpenHoursForm = Record<string, [dayjs.Dayjs, dayjs.Dayjs][]>;
 
@@ -63,9 +70,15 @@ export function LabBookingRulesPage() {
 
   useEffect(() => {
     if (rule) {
+      const typeRules = (rule.usage_type_rules ?? {}) as Record<string, UsageTypeRuleForm>;
       form.setFieldsValue({
         allowed_roles: rule.allowed_roles ?? [],
         daily_limit: rule.daily_limit,
+        usage_type_rules_list: Object.entries(typeRules).map(([usage_type, cfg]) => ({
+          usage_type,
+          daily_limit: cfg.daily_limit,
+          require_approval: cfg.require_approval ?? true,
+        })),
         ...openHoursToForm(rule.open_hours ?? {}),
       });
     } else if (labId) {
@@ -76,11 +89,23 @@ export function LabBookingRulesPage() {
   const saveMutation = useMutation({
     mutationFn: async (values: Record<string, unknown>) => {
       const open_hours = formToOpenHours(values as OpenHoursForm);
+      const typeRulesList = (values.usage_type_rules_list as UsageTypeRuleForm[] | undefined) ?? [];
+      const usage_type_rules: Record<string, UsageTypeRuleForm> = {};
+      for (const item of typeRulesList) {
+        if (item?.usage_type) {
+          usage_type_rules[item.usage_type] = {
+            usage_type: item.usage_type,
+            daily_limit: item.daily_limit,
+            require_approval: item.require_approval,
+          };
+        }
+      }
       const payload: BookingRuleCreate = {
         lab_id: labId!,
         open_hours,
         allowed_roles: values.allowed_roles as string[],
         daily_limit: values.daily_limit as number | undefined,
+        usage_type_rules,
       };
       if (rule) {
         return labBookingRulesApi.update(labId!, payload);
@@ -156,6 +181,32 @@ export function LabBookingRulesPage() {
             <Form.Item name="daily_limit" label="每日预约上限">
               <InputNumber min={1} style={{ width: 200 }} placeholder="不限制则留空" />
             </Form.Item>
+            <Form.List name="usage_type_rules_list">
+              {(fields, { add, remove }) => (
+                <>
+                  <div style={{ marginBottom: 8, fontWeight: 600, color: "#334155" }}>按使用类型差异化规则</div>
+                  {fields.map((field) => (
+                    <Space key={field.key} align="baseline" style={{ display: "flex", marginBottom: 8 }}>
+                      <Form.Item {...field} name={[field.name, "usage_type"]} rules={[{ required: true, message: "选择类型" }]}>
+                        <Select options={USAGE_TYPE_OPTIONS} placeholder="使用类型" style={{ width: 120 }} />
+                      </Form.Item>
+                      <Form.Item {...field} name={[field.name, "daily_limit"]}>
+                        <InputNumber min={1} placeholder="日限额" style={{ width: 100 }} />
+                      </Form.Item>
+                      <Form.Item {...field} name={[field.name, "require_approval"]} valuePropName="checked">
+                        <Switch checkedChildren="需审批" unCheckedChildren="自动" defaultChecked />
+                      </Form.Item>
+                      <Button type="link" danger onClick={() => remove(field.name)}>
+                        删除
+                      </Button>
+                    </Space>
+                  ))}
+                  <Button type="dashed" onClick={() => add()} icon={<PlusOutlined />} style={{ marginBottom: 16 }}>
+                    添加类型规则
+                  </Button>
+                </>
+              )}
+            </Form.List>
             <Form.Item>
               <Space>
                 <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saveMutation.isPending}>

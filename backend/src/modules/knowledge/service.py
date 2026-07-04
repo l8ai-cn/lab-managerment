@@ -6,6 +6,7 @@ from fastapi import HTTPException, status
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from src.modules.knowledge.embedding import cosine_similarity, term_vector
 from src.modules.knowledge.models import KnowledgeDocument
 from src.modules.knowledge.schemas import (
     KnowledgeDocumentCreate,
@@ -122,3 +123,30 @@ class KnowledgeService:
             for doc_id, snippet in rows
             if doc_id in doc_map
         ]
+
+    async def search_hybrid(self, q: str, *, limit: int = 20) -> list[KnowledgeSearchResult]:
+        fts_results = await self.search(q, limit=limit * 2)
+        fts_ids = {r.id for r in fts_results}
+        query_vec = term_vector(q)
+        result = await self.db.execute(select(KnowledgeDocument).limit(500))
+        docs = list(result.scalars().all())
+        scored: list[tuple[float, KnowledgeDocument]] = []
+        for doc in docs:
+            doc_vec = term_vector(f"{doc.title} {doc.content}")
+            score = cosine_similarity(query_vec, doc_vec)
+            if score > 0.05 or doc.id in fts_ids:
+                scored.append((score, doc))
+        scored.sort(key=lambda x: x[0], reverse=True)
+        results: list[KnowledgeSearchResult] = []
+        for score, doc in scored[:limit]:
+            snippet = doc.content[:120] + ("..." if len(doc.content) > 120 else "")
+            results.append(
+                KnowledgeSearchResult(
+                    id=doc.id,
+                    title=doc.title,
+                    snippet=snippet,
+                    category=doc.category,
+                    score=round(score, 4),
+                )
+            )
+        return results

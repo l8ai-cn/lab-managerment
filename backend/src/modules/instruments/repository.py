@@ -127,6 +127,19 @@ class InstrumentRepository:
         await self.db.refresh(record)
         return record
 
+    async def list_pending_usage(self, *, page: int = 1, page_size: int = 50) -> tuple[list[InstrumentUsageRecord], int]:
+        query = (
+            select(InstrumentUsageRecord)
+            .join(InstrumentBooking, InstrumentUsageRecord.booking_id == InstrumentBooking.id)
+            .where(InstrumentUsageRecord.review_status == ReviewStatus.PENDING)
+            .options(selectinload(InstrumentUsageRecord.booking).selectinload(InstrumentBooking.instrument))
+        )
+        total = (await self.db.execute(select(func.count()).select_from(query.subquery()))).scalar_one()
+        result = await self.db.execute(
+            query.order_by(InstrumentUsageRecord.created_at.desc()).offset((page - 1) * page_size).limit(page_size)
+        )
+        return list(result.scalars().all()), total
+
     async def add_status_log(self, log: InstrumentStatusLog) -> None:
         self.db.add(log)
         await self.db.flush()

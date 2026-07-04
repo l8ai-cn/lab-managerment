@@ -72,6 +72,11 @@ class FaultStatsResponse(BaseModel):
     by_status: dict[str, int]
     by_type: dict[str, int]
     by_lab: dict[str, int]
+    avg_response_hours: float | None = None
+    avg_resolution_hours: float | None = None
+    resolved_count: int = 0
+    sla_within_24h: int = 0
+    sla_within_72h: int = 0
 
 
 class FaultQrResponse(BaseModel):

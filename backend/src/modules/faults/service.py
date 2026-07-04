@@ -161,12 +161,51 @@ class FaultService:
         by_status: dict[str, int] = {}
         by_type: dict[str, int] = {}
         by_lab: dict[str, int] = {}
+        response_hours: list[float] = []
+        resolution_hours: list[float] = []
+        resolved_count = 0
+        sla_within_24h = 0
+        sla_within_72h = 0
+
         for r in reports:
             by_status[r.status.value] = by_status.get(r.status.value, 0) + 1
             by_type[r.fault_type] = by_type.get(r.fault_type, 0) + 1
             lab_name = r.lab.name if r.lab else str(r.lab_id)
             by_lab[lab_name] = by_lab.get(lab_name, 0) + 1
-        return FaultStatsResponse(total=total, by_status=by_status, by_type=by_type, by_lab=by_lab)
+
+            first_action = None
+            resolved_at = None
+            for record in sorted(r.handling_records, key=lambda x: x.created_at):
+                if record.action in ("assign", "status_change", "handle") and first_action is None:
+                    first_action = record.created_at
+                if record.action in ("status_change", "handle") and "resolved" in (record.comment or "").lower():
+                    resolved_at = record.created_at
+            if r.status in (FaultStatus.RESOLVED, FaultStatus.CLOSED):
+                resolved_at = resolved_at or r.updated_at
+                resolved_count += 1
+                hours = (resolved_at - r.created_at).total_seconds() / 3600
+                resolution_hours.append(hours)
+                if hours <= 24:
+                    sla_within_24h += 1
+                if hours <= 72:
+                    sla_within_72h += 1
+            if first_action:
+                response_hours.append((first_action - r.created_at).total_seconds() / 3600)
+
+        avg_response = round(sum(response_hours) / len(response_hours), 1) if response_hours else None
+        avg_resolution = round(sum(resolution_hours) / len(resolution_hours), 1) if resolution_hours else None
+
+        return FaultStatsResponse(
+            total=total,
+            by_status=by_status,
+            by_type=by_type,
+            by_lab=by_lab,
+            avg_response_hours=avg_response,
+            avg_resolution_hours=avg_resolution,
+            resolved_count=resolved_count,
+            sla_within_24h=sla_within_24h,
+            sla_within_72h=sla_within_72h,
+        )
 
     async def get_lab_fault_qr(self, lab_id: uuid.UUID) -> FaultQrResponse:
         lab = await self.lab_repo.get_by_id(lab_id)

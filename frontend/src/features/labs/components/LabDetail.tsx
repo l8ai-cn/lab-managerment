@@ -7,7 +7,7 @@ import { usersApi } from "@/features/users/api/usersApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi } from "../api/labsApi";
-import { LAB_TYPE_LABELS, OPEN_STATUS_COLORS, OPEN_STATUS_LABELS } from "../types/lab";
+import { LAB_TYPE_LABELS, INSPECTION_STATUS_COLORS, INSPECTION_STATUS_LABELS, OPEN_STATUS_COLORS, OPEN_STATUS_LABELS } from "../types/lab";
 
 export function LabDetail() {
   const { id } = useParams<{ id: string }>();
@@ -114,6 +114,11 @@ export function LabDetail() {
           <Descriptions.Item label="具体位置">{data.location_detail || "-"}</Descriptions.Item>
           <Descriptions.Item label="类型">
             {data.lab_type ? LAB_TYPE_LABELS[data.lab_type] : "-"}
+          </Descriptions.Item>
+          <Descriptions.Item label="巡查状态">
+            <Tag color={INSPECTION_STATUS_COLORS[data.inspection_status]}>
+              {INSPECTION_STATUS_LABELS[data.inspection_status]}
+            </Tag>
           </Descriptions.Item>
           <Descriptions.Item label="面积(㎡)">{data.area_sqm ?? "-"}</Descriptions.Item>
           <Descriptions.Item label="容纳人数">{data.capacity ?? "-"}</Descriptions.Item>

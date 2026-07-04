@@ -41,8 +41,21 @@ export interface LabCreate {
   lab_type?: LabType;
   manager_id?: string;
   open_status?: OpenStatus;
+  inspection_status?: InspectionStatus;
   description?: string;
 }
+
+export const INSPECTION_STATUS_LABELS: Record<InspectionStatus, string> = {
+  normal: "正常",
+  pending: "待巡查",
+  issue: "存在问题",
+};
+
+export const INSPECTION_STATUS_COLORS: Record<InspectionStatus, string> = {
+  normal: "success",
+  pending: "warning",
+  issue: "error",
+};
 
 export const LAB_TYPE_LABELS: Record<LabType, string> = {
   teaching: "教学实验室",

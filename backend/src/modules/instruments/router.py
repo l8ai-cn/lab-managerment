@@ -23,6 +23,9 @@ from src.modules.instruments.schemas import (
     StatusChangeRequest,
     UsageRecordCreate,
     UsageRecordResponse,
+    BatchUsageReviewRequest,
+    BatchUsageReviewResponse,
+    PendingInstrumentUsageListResponse,
 )
 from src.modules.instruments.service import InstrumentService
 from src.modules.users.models import User, UserRole
@@ -132,6 +135,25 @@ async def approve_booking(booking_id: uuid.UUID, body: ApprovalRequest = Approva
 @bookings_router.post("/{booking_id}/reject", response_model=InstrumentBookingResponse)
 async def reject_booking(booking_id: uuid.UUID, body: ApprovalRequest, user: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)), service: InstrumentService = Depends(svc)):
     return await service.reject_booking(booking_id, user, body)
+
+
+@bookings_router.get("/usage/pending", response_model=PendingInstrumentUsageListResponse)
+async def list_pending_instrument_usage(
+    page: int = Query(1, ge=1),
+    page_size: int = Query(50, ge=1, le=100),
+    _: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)),
+    service: InstrumentService = Depends(svc),
+):
+    return await service.list_pending_usage(page=page, page_size=page_size)
+
+
+@bookings_router.post("/usage/batch-review", response_model=BatchUsageReviewResponse)
+async def batch_review_instrument_usage(
+    body: BatchUsageReviewRequest,
+    user: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)),
+    service: InstrumentService = Depends(svc),
+):
+    return await service.batch_review_usage(body.booking_ids, body.approve, user, body.comment)
 
 
 @bookings_router.post("/{booking_id}/usage", response_model=UsageRecordResponse)

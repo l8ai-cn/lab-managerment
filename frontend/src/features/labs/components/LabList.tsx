@@ -8,10 +8,13 @@ import { FilterBar } from "@/shared/components/FilterBar";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi, spacesApi } from "../api/labsApi";
 import {
+  INSPECTION_STATUS_COLORS,
+  INSPECTION_STATUS_LABELS,
   LAB_TYPE_LABELS,
   OPEN_STATUS_COLORS,
   OPEN_STATUS_LABELS,
   type BuildingTree,
+  type InspectionStatus,
   type Lab,
   type LabType,
   type OpenStatus,
@@ -84,6 +87,14 @@ export function LabList() {
       width: 100,
       render: (status: OpenStatus) => (
         <Tag color={OPEN_STATUS_COLORS[status]}>{OPEN_STATUS_LABELS[status]}</Tag>
+      ),
+    },
+    {
+      title: "巡查状态",
+      dataIndex: "inspection_status",
+      width: 100,
+      render: (status: InspectionStatus) => (
+        <Tag color={INSPECTION_STATUS_COLORS[status]}>{INSPECTION_STATUS_LABELS[status]}</Tag>
       ),
     },
     { title: "容纳人数", dataIndex: "capacity", width: 90, render: (v: number | undefined) => v ?? "-" },

@@ -73,6 +73,7 @@ export function InstrumentBookingRulesPage() {
 
   useEffect(() => {
     if (rule) {
+      const ext = (rule.external_rules ?? {}) as Record<string, unknown>;
       form.setFieldsValue({
         min_duration_minutes: rule.min_duration_minutes ?? 30,
         max_duration_minutes: rule.max_duration_minutes ?? 480,
@@ -81,6 +82,10 @@ export function InstrumentBookingRulesPage() {
         advance_hours: rule.advance_hours ?? 24,
         approval_mode: rule.approval_mode ?? "manager",
         is_active: rule.is_active ?? true,
+        ext_priority: ext.priority,
+        ext_fee_per_hour: ext.fee_per_hour,
+        ext_require_approval: ext.require_approval ?? true,
+        ext_daily_limit: ext.daily_limit,
         ...openHoursToForm(rule.open_hours ?? {}),
       });
     } else if (instrumentId) {
@@ -102,6 +107,12 @@ export function InstrumentBookingRulesPage() {
         advance_hours: values.advance_hours as number,
         approval_mode: values.approval_mode as string,
         is_active: values.is_active as boolean,
+        external_rules: {
+          priority: values.ext_priority as number | undefined,
+          fee_per_hour: values.ext_fee_per_hour as number | undefined,
+          require_approval: values.ext_require_approval as boolean | undefined,
+          daily_limit: values.ext_daily_limit as number | undefined,
+        },
       };
       return instrumentBookingRulesApi.set(payload);
     },
@@ -174,6 +185,19 @@ export function InstrumentBookingRulesPage() {
             </Form.Item>
             <Form.Item name="is_active" label="启用规则" valuePropName="checked">
               <Switch />
+            </Form.Item>
+            <div style={{ marginBottom: 16, fontWeight: 600, color: "#334155" }}>校外用户差异化规则</div>
+            <Form.Item name="ext_priority" label="校外用户优先级（数字越小越优先）">
+              <InputNumber min={1} style={{ width: 200 }} placeholder="如 2" />
+            </Form.Item>
+            <Form.Item name="ext_fee_per_hour" label="校外收费(元/小时)">
+              <InputNumber min={0} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="ext_daily_limit" label="校外每日预约上限">
+              <InputNumber min={1} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="ext_require_approval" label="校外需审批" valuePropName="checked">
+              <Switch defaultChecked />
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saveMutation.isPending}>
