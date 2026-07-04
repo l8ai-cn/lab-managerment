@@ -1,7 +1,11 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Select, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   FEE_TYPE_LABELS,
   PAYMENT_STATUS_COLORS,
@@ -97,33 +101,41 @@ export function PaymentOrderList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <>
+      <PageHeader
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+            创建订单
+          </Button>
+        }
+      />
+
+      <FilterBar>
         <Select
           placeholder="状态筛选"
           allowClear
           options={STATUS_OPTIONS}
-          style={{ width: 120 }}
+          style={{ width: 140 }}
           onChange={setStatusFilter}
         />
-        <Button type="primary" onClick={() => setCreateOpen(true)}>
-          创建订单
-        </Button>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
-      />
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <Modal
         title="创建支付订单"
@@ -131,6 +143,7 @@ export function PaymentOrderList() {
         onCancel={() => setCreateOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
+        destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={(v) => createMutation.mutate(v)}>
           <Form.Item name="fee_type" label="费用类型" rules={[{ required: true }]}>
@@ -147,6 +160,6 @@ export function PaymentOrderList() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }

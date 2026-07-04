@@ -8,4 +8,5 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 backend/.pytest_cache/
+backend/data/
 frontend/tsconfig.tsbuildinfo

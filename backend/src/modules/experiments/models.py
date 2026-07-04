@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from src.core.types import JSONType, UUIDType
 
 from src.core.database import Base
 
@@ -40,7 +40,7 @@ STATUS_TRANSITIONS: dict[ExperimentStatus, set[ExperimentStatus]] = {
 class Experiment(Base):
     __tablename__ = "experiments"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     code: Mapped[str] = mapped_column(String(20), unique=True, nullable=False, index=True)
     title: Mapped[str] = mapped_column(String(200), nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
@@ -51,10 +51,10 @@ class Experiment(Base):
         nullable=False,
         index=True,
     )
-    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
-    protocol_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
-    project_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True), index=True)
-    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONB, default=dict)
+    owner_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType, index=True)
+    protocol_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType)
+    project_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType, index=True)
+    metadata_: Mapped[dict | None] = mapped_column("metadata", JSONType, default=dict)
     planned_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     planned_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     actual_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))

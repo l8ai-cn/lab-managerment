@@ -1,9 +1,14 @@
+import { PlusOutlined, WarningOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, Select, Space, Statistic, Table, Tag, message } from "antd";
+import { Button, Col, Form, Input, Modal, Row, Select, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { labsApi } from "@/features/labs/api/labsApi";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
+import { StatCard } from "@/shared/components/StatCard";
 import {
   FAULT_STATUS_COLORS,
   FAULT_STATUS_LABELS,
@@ -70,58 +75,71 @@ export function FaultList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }} size="large">
-        <Statistic title="故障总数" value={stats?.total ?? 0} />
-        <Statistic
-          title="待处理"
-          value={stats?.by_status?.pending ?? 0}
-          valueStyle={{ color: "#fa8c16" }}
-        />
-        <Statistic
-          title="处理中"
-          value={
-            (stats?.by_status?.assigned ?? 0) + (stats?.by_status?.processing ?? 0)
-          }
-        />
-      </Space>
+    <>
+      <PageHeader
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setReportOpen(true)}>
+            上报故障
+          </Button>
+        }
+      />
 
-      <Space style={{ marginBottom: 16 }} wrap>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        <Col xs={24} sm={8}>
+          <StatCard title="故障总数" value={stats?.total ?? 0} icon={<WarningOutlined />} color="#ef4444" />
+        </Col>
+        <Col xs={24} sm={8}>
+          <StatCard
+            title="待处理"
+            value={stats?.by_status?.pending ?? 0}
+            color="#f59e0b"
+          />
+        </Col>
+        <Col xs={24} sm={8}>
+          <StatCard
+            title="处理中"
+            value={(stats?.by_status?.assigned ?? 0) + (stats?.by_status?.processing ?? 0)}
+            color="#0ea5e9"
+          />
+        </Col>
+      </Row>
+
+      <FilterBar>
         <Select
           placeholder="实验室"
           allowClear
           options={labOptions}
-          style={{ width: 160 }}
+          style={{ width: 180 }}
           onChange={setLabId}
         />
         <Select
           placeholder="状态"
           allowClear
           options={STATUS_OPTIONS}
-          style={{ width: 120 }}
+          style={{ width: 140 }}
           onChange={setStatusFilter}
         />
-        <Button type="primary" onClick={() => setReportOpen(true)}>
-          上报故障
-        </Button>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
-      />
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <FaultReportForm open={reportOpen} onClose={() => setReportOpen(false)} />
-    </div>
+    </>
   );
 }
 

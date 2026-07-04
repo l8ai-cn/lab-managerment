@@ -1,8 +1,16 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Badge, Dropdown, List, Typography } from "antd";
+import { Badge, Dropdown, Empty, List, Typography } from "antd";
 import { BellOutlined } from "@ant-design/icons";
 import dayjs from "dayjs";
 import { notificationsApi } from "../api/notificationsApi";
+import "./NotificationBell.css";
+
+const CATEGORY_LABELS: Record<string, string> = {
+  booking: "预约",
+  usage: "使用记录",
+  fault: "故障",
+  system: "系统",
+};
 
 export function NotificationBell() {
   const queryClient = useQueryClient();
@@ -10,10 +18,10 @@ export function NotificationBell() {
   const { data: countData } = useQuery({
     queryKey: ["notifications-unread-count"],
     queryFn: notificationsApi.unreadCount,
-    refetchInterval: 60000,
+    refetchInterval: 60_000,
   });
 
-  const { data: listData } = useQuery({
+  const { data: listData, isLoading } = useQuery({
     queryKey: ["notifications-list"],
     queryFn: () => notificationsApi.list({ limit: 20 }),
   });
@@ -27,49 +35,40 @@ export function NotificationBell() {
   });
 
   const dropdownContent = (
-    <div
-      style={{
-        width: 360,
-        maxHeight: 400,
-        overflow: "auto",
-        background: "#fff",
-        borderRadius: 8,
-        boxShadow: "0 6px 16px rgba(0,0,0,0.12)",
-      }}
-    >
+    <div className="notification-panel">
+      <div className="notification-panel__header">
+        <span className="notification-panel__title">通知消息</span>
+        {countData?.count ? (
+          <span className="notification-panel__badge">{countData.count} 条未读</span>
+        ) : null}
+      </div>
       <List
         size="small"
-        header={
-          <div style={{ padding: "8px 16px", fontWeight: 600 }}>
-            通知消息
-            {countData?.count ? (
-              <span style={{ marginLeft: 8, color: "#1677ff" }}>({countData.count} 未读)</span>
-            ) : null}
-          </div>
-        }
+        loading={isLoading}
         dataSource={listData?.items ?? []}
-        locale={{ emptyText: "暂无通知" }}
+        locale={{ emptyText: <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="暂无通知" /> }}
         renderItem={(item) => (
           <List.Item
-            style={{
-              padding: "8px 16px",
-              cursor: "pointer",
-              background: item.is_read ? undefined : "rgba(22,119,255,0.06)",
-            }}
+            className={`notification-panel__item ${item.is_read ? "" : "notification-panel__item--unread"}`}
             onClick={() => {
               if (!item.is_read) markReadMutation.mutate(item.id);
             }}
           >
             <List.Item.Meta
               title={
-                <Typography.Text strong={!item.is_read}>{item.title}</Typography.Text>
+                <div className="notification-panel__item-title">
+                  <Typography.Text strong={!item.is_read}>{item.title}</Typography.Text>
+                  <span className="notification-panel__category">
+                    {CATEGORY_LABELS[item.category] ?? item.category}
+                  </span>
+                </div>
               }
               description={
                 <>
-                  <div style={{ fontSize: 12, color: "rgba(0,0,0,0.45)" }}>
-                    {dayjs(item.created_at).format("MM-DD HH:mm")} · {item.category}
+                  <div className="notification-panel__time">
+                    {dayjs(item.created_at).format("YYYY-MM-DD HH:mm")}
                   </div>
-                  <div style={{ marginTop: 4 }}>{item.content}</div>
+                  <div className="notification-panel__content">{item.content}</div>
                 </>
               }
             />
@@ -82,7 +81,7 @@ export function NotificationBell() {
   return (
     <Dropdown dropdownRender={() => dropdownContent} trigger={["click"]} placement="bottomRight">
       <Badge count={countData?.count ?? 0} size="small" offset={[-2, 2]}>
-        <BellOutlined style={{ fontSize: 18, color: "#fff", cursor: "pointer" }} />
+        <BellOutlined className="notification-bell__icon" />
       </Badge>
     </Dropdown>
   );

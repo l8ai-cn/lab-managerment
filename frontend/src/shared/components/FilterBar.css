@@ -1,0 +1,12 @@
+.filter-bar {
+  margin-bottom: 16px;
+}
+
+.filter-bar__inner {
+  width: 100%;
+}
+
+.filter-bar .ant-input-search,
+.filter-bar .ant-select {
+  min-width: 0;
+}

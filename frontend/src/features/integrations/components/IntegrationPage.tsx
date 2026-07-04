@@ -1,6 +1,9 @@
+import { SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Space, Table, Tag, message } from "antd";
+import { Button, Space, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   INTEGRATION_TYPE_LABELS,
   SYNC_STATUS_COLORS,
@@ -69,6 +72,7 @@ export function IntegrationPage() {
         <Button
           type="primary"
           size="small"
+          icon={<SyncOutlined />}
           loading={syncMutation.isPending && syncMutation.variables === record.type}
           onClick={() => syncMutation.mutate(record.type)}
         >
@@ -79,12 +83,15 @@ export function IntegrationPage() {
   ];
 
   return (
-    <div>
-      <Card title="系统对接" style={{ marginBottom: 16 }}>
+    <>
+      <PageHeader />
+
+      <ContentCard title="快速同步" style={{ marginBottom: 16 }}>
         <Space wrap>
           {INTEGRATION_TYPES.map((type) => (
             <Button
               key={type}
+              icon={<SyncOutlined />}
               onClick={() => syncMutation.mutate(type)}
               loading={syncMutation.isPending && syncMutation.variables === type}
             >
@@ -92,15 +99,17 @@ export function IntegrationPage() {
             </Button>
           ))}
         </Space>
-      </Card>
+      </ContentCard>
 
-      <Table
-        rowKey="type"
-        loading={isLoading}
-        columns={columns}
-        dataSource={tableData}
-        pagination={false}
-      />
-    </div>
+      <ContentCard noPadding>
+        <Table
+          rowKey="type"
+          loading={isLoading}
+          columns={columns}
+          dataSource={tableData}
+          pagination={false}
+        />
+      </ContentCard>
+    </>
   );
 }

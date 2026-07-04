@@ -15,7 +15,9 @@ class UserRepository:
         return result.scalar_one_or_none()
 
     async def get_by_username(self, username: str) -> User | None:
-        result = await self.db.execute(select(User).where(User.username == username))
+        result = await self.db.execute(
+            select(User).where(User.username == username.strip().lower())
+        )
         return result.scalar_one_or_none()
 
     async def list_users(

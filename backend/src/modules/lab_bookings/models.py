@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import Boolean, DateTime, Enum, ForeignKey, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.core.types import JSONType, UUIDType
 
 from src.core.database import Base
 from src.modules.labs.models import Lab  # noqa: F401
@@ -48,12 +48,12 @@ class UsageReviewStatus(str, enum.Enum):
 class LabBookingRule(Base):
     __tablename__ = "lab_booking_rules"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lab_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("labs.id"), unique=True, index=True)
-    open_hours: Mapped[dict] = mapped_column(JSONB, default=dict)
-    allowed_roles: Mapped[list | None] = mapped_column(JSONB, default=list)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    lab_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("labs.id"), unique=True, index=True)
+    open_hours: Mapped[dict] = mapped_column(JSONType, default=dict)
+    allowed_roles: Mapped[list | None] = mapped_column(JSONType, default=list)
     daily_limit: Mapped[int | None] = mapped_column(Integer)
-    usage_type_rules: Mapped[dict | None] = mapped_column(JSONB, default=dict)
+    usage_type_rules: Mapped[dict | None] = mapped_column(JSONType, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
@@ -65,9 +65,9 @@ class LabBookingRule(Base):
 class LabBooking(Base):
     __tablename__ = "lab_bookings"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    lab_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("labs.id"), index=True)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    lab_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("labs.id"), index=True)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), index=True)
     start_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     end_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     usage_type: Mapped[UsageType] = mapped_column(Enum(UsageType, name="lab_usage_type"), nullable=False)
@@ -79,7 +79,7 @@ class LabBooking(Base):
         index=True,
     )
     is_recurring: Mapped[bool] = mapped_column(Boolean, default=False)
-    recurrence_rule: Mapped[dict | None] = mapped_column(JSONB, default=dict)
+    recurrence_rule: Mapped[dict | None] = mapped_column(JSONType, default=dict)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
@@ -95,9 +95,9 @@ class LabBooking(Base):
 class LabBookingApproval(Base):
     __tablename__ = "lab_booking_approvals"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_bookings.id"), index=True)
-    approver_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"))
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("lab_bookings.id"), index=True)
+    approver_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"))
     action: Mapped[str] = mapped_column(String(20))
     comment: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -108,8 +108,8 @@ class LabBookingApproval(Base):
 class LabCheckIn(Base):
     __tablename__ = "lab_check_ins"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_bookings.id"), index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("lab_bookings.id"), index=True)
     method: Mapped[CheckInMethod] = mapped_column(Enum(CheckInMethod, name="check_in_method"), nullable=False)
     actual_count: Mapped[int | None] = mapped_column(Integer)
     checked_in_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
@@ -120,8 +120,8 @@ class LabCheckIn(Base):
 class LabAccessGrant(Base):
     __tablename__ = "lab_access_grants"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_bookings.id"), index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("lab_bookings.id"), index=True)
     access_method: Mapped[AccessMethod] = mapped_column(Enum(AccessMethod, name="access_method"), nullable=False)
     access_token: Mapped[str] = mapped_column(String(200), nullable=False, index=True)
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -133,17 +133,17 @@ class LabAccessGrant(Base):
 class LabUsageRecord(Base):
     __tablename__ = "lab_usage_records"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    booking_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("lab_bookings.id"), unique=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    booking_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("lab_bookings.id"), unique=True)
     content: Mapped[str | None] = mapped_column(Text)
-    parameters: Mapped[dict | None] = mapped_column(JSONB, default=dict)
-    consumables: Mapped[dict | None] = mapped_column(JSONB, default=dict)
-    attachments: Mapped[list | None] = mapped_column(JSONB, default=list)
+    parameters: Mapped[dict | None] = mapped_column(JSONType, default=dict)
+    consumables: Mapped[dict | None] = mapped_column(JSONType, default=dict)
+    attachments: Mapped[list | None] = mapped_column(JSONType, default=list)
     review_status: Mapped[UsageReviewStatus] = mapped_column(
         Enum(UsageReviewStatus, name="lab_usage_review_status"),
         default=UsageReviewStatus.PENDING,
     )
-    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(UUID(as_uuid=True))
+    reviewer_id: Mapped[uuid.UUID | None] = mapped_column(UUIDType)
     reviewer_comment: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
     updated_at: Mapped[datetime] = mapped_column(

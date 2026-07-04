@@ -36,7 +36,7 @@ class UserService:
         if existing:
             raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="用户名已存在")
         user = User(
-            username=data.username,
+            username=data.username.strip().lower(),
             password_hash=hash_password(data.password),
             name=data.name,
             employee_no=data.employee_no,

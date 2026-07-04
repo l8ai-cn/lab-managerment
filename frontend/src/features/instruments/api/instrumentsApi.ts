@@ -16,6 +16,13 @@ export const INSTRUMENT_STATUS_LABELS: Record<InstrumentStatus, string> = {
   scrapped: "报废",
 };
 
+export const INSTRUMENT_STATUS_COLORS: Record<InstrumentStatus, string> = {
+  normal: "success",
+  maintenance: "warning",
+  disabled: "default",
+  scrapped: "error",
+};
+
 export const BOOKING_STATUS_LABELS: Record<BookingStatus, string> = {
   pending: "待审批",
   approved: "已通过",

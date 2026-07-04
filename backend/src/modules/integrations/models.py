@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, Integer, String, Text, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from src.core.types import JSONType, UUIDType
 
 from src.core.database import Base
 
@@ -26,7 +26,7 @@ class SyncStatus(str, enum.Enum):
 class IntegrationSyncLog(Base):
     __tablename__ = "integration_sync_logs"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     integration_type: Mapped[IntegrationType] = mapped_column(
         Enum(IntegrationType, name="integration_type"), nullable=False, index=True
     )

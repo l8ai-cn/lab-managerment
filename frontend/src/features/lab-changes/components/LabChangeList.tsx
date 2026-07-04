@@ -1,8 +1,12 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, Form, Input, Modal, Select, Table, Tag, message } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { labsApi } from "@/features/labs/api/labsApi";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   CHANGE_STATUS_COLORS,
   CHANGE_STATUS_LABELS,
@@ -92,8 +96,16 @@ export function LabChangeList() {
     labsData?.items.map((l) => ({ value: l.id, label: `${l.code} ${l.name}` })) ?? [];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <>
+      <PageHeader
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            新建变更申请
+          </Button>
+        }
+      />
+
+      <FilterBar>
         <Select
           placeholder="筛选状态"
           allowClear
@@ -101,24 +113,24 @@ export function LabChangeList() {
           style={{ width: 160 }}
           onChange={setStatusFilter}
         />
-        <Button type="primary" onClick={() => setModalOpen(true)}>
-          新建变更申请
-        </Button>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
-      />
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <Modal
         title="新建变更申请"
@@ -127,6 +139,7 @@ export function LabChangeList() {
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
         width={560}
+        destroyOnClose
       >
         <Form form={form} layout="vertical" onFinish={(v) => createMutation.mutate(v)}>
           <Form.Item name="lab_id" label="实验室" rules={[{ required: true }]}>
@@ -143,6 +156,6 @@ export function LabChangeList() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }

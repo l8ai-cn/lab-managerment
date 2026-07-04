@@ -1,6 +1,9 @@
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { Button, Card, Form, Input, InputNumber, Select, message } from "antd";
+import { Button, Form, Input, InputNumber, Select, message } from "antd";
 import { useNavigate } from "react-router-dom";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi, spacesApi } from "../api/labsApi";
 import { LAB_TYPE_LABELS, OPEN_STATUS_LABELS, type LabType, type OpenStatus } from "../types/lab";
 
@@ -38,7 +41,21 @@ export function LabForm() {
       ?.rooms.map((r) => ({ value: r.id, label: r.code ? `${r.name}(${r.code})` : r.name })) ?? [];
 
   return (
-    <Card title="新建实验室">
+    <>
+      <PageHeader
+        title="新建实验室"
+        breadcrumb={[
+          { title: "实验室管理" },
+          { title: "实验室", path: "/labs" },
+          { title: "新建" },
+        ]}
+        extra={
+          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/labs")}>
+            返回列表
+          </Button>
+        }
+      />
+      <ContentCard>
       <Form
         form={form}
         layout="vertical"
@@ -106,6 +123,7 @@ export function LabForm() {
           </Button>
         </Form.Item>
       </Form>
-    </Card>
+      </ContentCard>
+    </>
   );
 }

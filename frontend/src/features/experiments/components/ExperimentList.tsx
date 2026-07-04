@@ -1,7 +1,11 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Space, Table, Tag } from "antd";
+import { Button, Input, Select, Table, Tag } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import { experimentsApi } from "../api/experimentsApi";
 import {
   STATUS_COLORS,
@@ -64,8 +68,18 @@ export function ExperimentList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }} wrap>
+    <>
+      <PageHeader
+        extra={
+          <Link to="/experiments/new">
+            <Button type="primary" icon={<PlusOutlined />}>
+              新建实验
+            </Button>
+          </Link>
+        }
+      />
+
+      <FilterBar>
         <Input.Search
           placeholder="搜索编号或标题"
           allowClear
@@ -80,24 +94,24 @@ export function ExperimentList() {
           style={{ minWidth: 200 }}
           onChange={setStatusFilter}
         />
-        <Link to="/experiments/new">
-          <Button type="primary">新建实验</Button>
-        </Link>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (total) => `共 ${total} 条`,
-        }}
-      />
-    </div>
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (total) => `共 ${total} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
+    </>
   );
 }

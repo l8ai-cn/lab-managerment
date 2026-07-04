@@ -1,7 +1,11 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, DatePicker, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   BOOKING_STATUS_COLORS,
   BOOKING_STATUS_LABELS,
@@ -115,8 +119,16 @@ export function InstrumentBookingList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <>
+      <PageHeader
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            新建预约
+          </Button>
+        }
+      />
+
+      <FilterBar>
         <Select
           placeholder="状态筛选"
           allowClear
@@ -124,24 +136,24 @@ export function InstrumentBookingList() {
           style={{ width: 140 }}
           onChange={setStatusFilter}
         />
-        <Button type="primary" onClick={() => setModalOpen(true)}>
-          新建预约
-        </Button>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
-      />
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <Modal
         title="新建仪器预约"
@@ -149,6 +161,7 @@ export function InstrumentBookingList() {
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -199,6 +212,6 @@ export function InstrumentBookingList() {
           onChange={(e) => setRejectComment(e.target.value)}
         />
       </Modal>
-    </div>
+    </>
   );
 }

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.core.config import settings
-from src.core.database import async_session_factory
+from src.core.database import async_session_factory, init_database
 from src.modules.agent_api import get_routers as agent_api_routers
 from src.modules.dashboard import get_routers as dashboard_routers
 from src.modules.data_reporting import get_routers as data_reporting_routers
@@ -28,6 +28,7 @@ from src.modules.users.service import UserService
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await init_database()
     async with async_session_factory() as session:
         await UserService(session).ensure_admin_exists()
     yield

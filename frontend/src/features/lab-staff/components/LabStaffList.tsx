@@ -1,7 +1,11 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, Select, Space, Table, message } from "antd";
+import { Button, Form, Input, Modal, Select, Table, message } from "antd";
 import { useState } from "react";
 import { labsApi } from "@/features/labs/api/labsApi";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import { labStaffApi } from "../api/labStaffApi";
 
 export function LabStaffList() {
@@ -71,27 +75,40 @@ export function LabStaffList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
-        <Input.Search placeholder="搜索工号或姓名" onSearch={setKeyword} style={{ width: 220 }} />
-        <Button type="primary" onClick={() => setModalOpen(true)}>
-          新增实验员
-        </Button>
-      </Space>
-
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
+    <>
+      <PageHeader
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+            新增实验员
+          </Button>
+        }
       />
+
+      <FilterBar>
+        <Input.Search
+          placeholder="搜索工号或姓名"
+          allowClear
+          onSearch={setKeyword}
+          style={{ width: 240 }}
+        />
+      </FilterBar>
+
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <Modal
         title="新增实验员"
@@ -99,6 +116,7 @@ export function LabStaffList() {
         onCancel={() => setModalOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -122,6 +140,6 @@ export function LabStaffList() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }

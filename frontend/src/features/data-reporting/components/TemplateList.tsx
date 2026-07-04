@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { Input, Space, Table } from "antd";
+import { Input, Table } from "antd";
 import { useState } from "react";
+import { FilterBar } from "@/shared/components/FilterBar";
 import { dataReportingApi } from "../api/dataReportingApi";
 
 export function TemplateList() {
@@ -20,15 +21,16 @@ export function TemplateList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <>
+      <FilterBar>
         <Input.Search
           placeholder="搜索模板"
           allowClear
           onSearch={setKeyword}
-          style={{ width: 220 }}
+          style={{ width: 240 }}
         />
-      </Space>
+      </FilterBar>
+
       <Table
         rowKey="id"
         loading={isLoading}
@@ -40,8 +42,9 @@ export function TemplateList() {
           total: data?.total,
           onChange: setPage,
           showTotal: (t) => `共 ${t} 条`,
+          showSizeChanger: false,
         }}
       />
-    </div>
+    </>
   );
 }

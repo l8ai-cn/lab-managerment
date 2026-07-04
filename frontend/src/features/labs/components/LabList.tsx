@@ -1,7 +1,11 @@
+import { DownloadOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Space, Table, Tag, Upload, message } from "antd";
+import { Button, Input, Select, Table, Tag, Upload, message } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi, spacesApi } from "../api/labsApi";
 import {
   LAB_TYPE_LABELS,
@@ -92,18 +96,48 @@ export function LabList() {
 
   const buildingOptions = tree?.map((b) => ({ value: b.id, label: b.name })) ?? [];
   const floorOptions =
-    tree
-      ?.find((b) => b.id === buildingId)
-      ?.floors.map((f) => ({ value: f.id, label: f.name })) ?? [];
+    tree?.find((b) => b.id === buildingId)?.floors.map((f) => ({ value: f.id, label: f.name })) ?? [];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }} wrap>
+    <>
+      <PageHeader
+        extra={
+          <>
+            <Button icon={<DownloadOutlined />} onClick={handleExport}>
+              导出
+            </Button>
+            <Upload
+              accept=".xlsx,.xls"
+              showUploadList={false}
+              customRequest={async ({ file, onSuccess, onError }) => {
+                try {
+                  const result = await labsApi.import(file as File);
+                  message.success(`导入完成：成功 ${result.success_count} 条，失败 ${result.error_count} 条`);
+                  refetch();
+                  onSuccess?.(result);
+                } catch {
+                  message.error("导入失败");
+                  onError?.(new Error("import failed"));
+                }
+              }}
+            >
+              <Button icon={<UploadOutlined />}>导入</Button>
+            </Upload>
+            <Link to="/labs/new">
+              <Button type="primary" icon={<PlusOutlined />}>
+                新建实验室
+              </Button>
+            </Link>
+          </>
+        }
+      />
+
+      <FilterBar>
         <Input.Search
           placeholder="搜索编号或名称"
           allowClear
           onSearch={setKeyword}
-          style={{ width: 220 }}
+          style={{ width: 240 }}
         />
         <Select
           placeholder="楼栋"
@@ -138,45 +172,24 @@ export function LabList() {
           style={{ width: 120 }}
           onChange={setOpenStatus}
         />
-        <Link to="/labs/new">
-          <Button type="primary">新建实验室</Button>
-        </Link>
-        <Button onClick={handleExport}>导出 Excel</Button>
-        <Upload
-          accept=".xlsx,.xls"
-          showUploadList={false}
-          customRequest={async ({ file, onSuccess, onError }) => {
-            try {
-              const result = await labsApi.import(file as File);
-              message.success(`导入完成：成功 ${result.success_count} 条，失败 ${result.error_count} 条`);
-              if (result.errors.length) {
-                message.warning(result.errors.slice(0, 3).join("；"));
-              }
-              refetch();
-              onSuccess?.(result);
-            } catch {
-              message.error("导入失败");
-              onError?.(new Error("import failed"));
-            }
-          }}
-        >
-          <Button>导入 Excel</Button>
-        </Upload>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (total) => `共 ${total} 条`,
-        }}
-      />
-    </div>
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (total) => `共 ${total} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
+    </>
   );
 }

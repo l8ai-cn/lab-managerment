@@ -1,8 +1,11 @@
+import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Card, Descriptions, Input, Select, Space, Tag, message } from "antd";
+import { Button, Descriptions, Input, Select, Space, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   FAULT_STATUS_COLORS,
   FAULT_STATUS_LABELS,
@@ -50,12 +53,23 @@ export function FaultDetail() {
   if (isLoading || !data) return null;
 
   return (
-    <div>
-      <Button style={{ marginBottom: 16 }} onClick={() => navigate("/faults")}>
-        返回列表
-      </Button>
+    <>
+      <PageHeader
+        title={data.fault_type}
+        subtitle={data.lab_name ?? undefined}
+        breadcrumb={[
+          { title: "运维管理" },
+          { title: "故障上报", path: "/faults" },
+          { title: data.fault_type },
+        ]}
+        extra={
+          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/faults")}>
+            返回列表
+          </Button>
+        }
+      />
 
-      <Card title="故障详情">
+      <ContentCard title="故障详情" style={{ marginBottom: 16 }}>
         <Descriptions column={2}>
           <Descriptions.Item label="故障类型">{data.fault_type}</Descriptions.Item>
           <Descriptions.Item label="实验室">{data.lab_name ?? "-"}</Descriptions.Item>
@@ -71,9 +85,9 @@ export function FaultDetail() {
             {data.description}
           </Descriptions.Item>
         </Descriptions>
-      </Card>
+      </ContentCard>
 
-      <Card title="处理操作" style={{ marginTop: 16 }}>
+      <ContentCard title="处理操作">
         <Space direction="vertical" style={{ width: "100%" }}>
           <Space wrap>
             <Select
@@ -98,7 +112,7 @@ export function FaultDetail() {
             value={handleComment}
             onChange={(e) => setHandleComment(e.target.value)}
           />
-          <Space>
+          <Space wrap>
             <Button
               onClick={() =>
                 handleMutation.mutate({ action: "现场检查", comment: handleComment })
@@ -127,7 +141,7 @@ export function FaultDetail() {
             </Button>
           </Space>
         </Space>
-      </Card>
-    </div>
+      </ContentCard>
+    </>
   );
 }

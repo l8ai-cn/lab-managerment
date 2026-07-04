@@ -1,7 +1,9 @@
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { FilterBar } from "@/shared/components/FilterBar";
 import {
   SUBMISSION_STATUS_COLORS,
   SUBMISSION_STATUS_LABELS,
@@ -102,19 +104,19 @@ export function SubmissionList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }}>
+    <>
+      <FilterBar>
         <Select
           placeholder="状态筛选"
           allowClear
           options={STATUS_OPTIONS}
-          style={{ width: 120 }}
+          style={{ width: 140 }}
           onChange={setStatusFilter}
         />
-        <Button type="primary" onClick={() => setSubmitOpen(true)}>
+        <Button type="primary" icon={<PlusOutlined />} onClick={() => setSubmitOpen(true)}>
           新建填报
         </Button>
-      </Space>
+      </FilterBar>
 
       <Table
         rowKey="id"
@@ -127,6 +129,7 @@ export function SubmissionList() {
           total: data?.total,
           onChange: setPage,
           showTotal: (t) => `共 ${t} 条`,
+          showSizeChanger: false,
         }}
       />
 
@@ -136,6 +139,7 @@ export function SubmissionList() {
         onCancel={() => setSubmitOpen(false)}
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
+        destroyOnClose
       >
         <Form
           form={form}
@@ -163,6 +167,6 @@ export function SubmissionList() {
           </Form.Item>
         </Form>
       </Modal>
-    </div>
+    </>
   );
 }

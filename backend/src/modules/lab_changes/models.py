@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Text, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+from src.core.types import JSONType, UUIDType
 
 from src.core.database import Base
 from src.modules.labs.models import Lab  # noqa: F401 — register mapper for relationships
@@ -59,19 +59,19 @@ NODE_FOR_STATUS: dict[ChangeRequestStatus, ApprovalNode | None] = {
 class LabChangeRequest(Base):
     __tablename__ = "lab_change_requests"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     lab_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("labs.id"), nullable=False, index=True
+        UUIDType, ForeignKey("labs.id"), nullable=False, index=True
     )
     applicant_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False, index=True
+        UUIDType, ForeignKey("users.id"), nullable=False, index=True
     )
     change_type: Mapped[ChangeType] = mapped_column(
         Enum(ChangeType, name="change_type"), nullable=False
     )
     title: Mapped[str] = mapped_column(Text, nullable=False)
     description: Mapped[str | None] = mapped_column(Text)
-    change_content: Mapped[dict] = mapped_column(JSONB, default=dict)
+    change_content: Mapped[dict] = mapped_column(JSONType, default=dict)
     status: Mapped[ChangeRequestStatus] = mapped_column(
         Enum(ChangeRequestStatus, name="change_request_status"),
         default=ChangeRequestStatus.DRAFT,
@@ -95,12 +95,12 @@ class LabChangeRequest(Base):
 class LabChangeApprovalRecord(Base):
     __tablename__ = "lab_change_approval_records"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
     request_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("lab_change_requests.id"), nullable=False, index=True
+        UUIDType, ForeignKey("lab_change_requests.id"), nullable=False, index=True
     )
     approver_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id"), nullable=False
+        UUIDType, ForeignKey("users.id"), nullable=False
     )
     node: Mapped[ApprovalNode] = mapped_column(Enum(ApprovalNode, name="approval_node"), nullable=False)
     action: Mapped[ApprovalAction] = mapped_column(

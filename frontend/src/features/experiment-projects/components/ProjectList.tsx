@@ -1,7 +1,11 @@
+import { CopyOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Input, Select, Space, Table, message } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { ContentCard } from "@/shared/components/ContentCard";
+import { FilterBar } from "@/shared/components/FilterBar";
+import { PageHeader } from "@/shared/components/PageHeader";
 import {
   PROJECT_TYPE_LABELS,
   coursesApi,
@@ -90,8 +94,27 @@ export function ProjectList() {
   ];
 
   return (
-    <div>
-      <Space style={{ marginBottom: 16 }} wrap>
+    <>
+      <PageHeader
+        extra={
+          <>
+            <Button
+              icon={<CopyOutlined />}
+              disabled={!courseId}
+              onClick={() => setCopyOpen(true)}
+            >
+              批量复制
+            </Button>
+            <Link to="/experiment-projects/new">
+              <Button type="primary" icon={<PlusOutlined />}>
+                新建项目
+              </Button>
+            </Link>
+          </>
+        }
+      />
+
+      <FilterBar>
         <Input.Search
           placeholder="搜索项目名称"
           allowClear
@@ -109,37 +132,31 @@ export function ProjectList() {
           placeholder="项目类型"
           allowClear
           options={TYPE_OPTIONS}
-          style={{ width: 120 }}
+          style={{ width: 140 }}
           onChange={setProjectType}
         />
-        <Link to="/experiment-projects/new">
-          <Button type="primary">新建项目</Button>
-        </Link>
-        <Button
-          disabled={!courseId}
-          onClick={() => setCopyOpen(true)}
-        >
-          批量复制
-        </Button>
-      </Space>
+      </FilterBar>
 
-      <Table
-        rowKey="id"
-        loading={isLoading}
-        columns={columns}
-        dataSource={data?.items}
-        rowSelection={{
-          selectedRowKeys,
-          onChange: (keys) => setSelectedRowKeys(keys as string[]),
-        }}
-        pagination={{
-          current: page,
-          pageSize: 20,
-          total: data?.total,
-          onChange: setPage,
-          showTotal: (t) => `共 ${t} 条`,
-        }}
-      />
+      <ContentCard noPadding>
+        <Table
+          rowKey="id"
+          loading={isLoading}
+          columns={columns}
+          dataSource={data?.items}
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (keys) => setSelectedRowKeys(keys as string[]),
+          }}
+          pagination={{
+            current: page,
+            pageSize: 20,
+            total: data?.total,
+            onChange: setPage,
+            showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
+          }}
+        />
+      </ContentCard>
 
       <ProjectCopyModal
         open={copyOpen}
@@ -147,6 +164,6 @@ export function ProjectList() {
         selectedIds={selectedRowKeys}
         sourceCourseId={courseId}
       />
-    </div>
+    </>
   );
 }

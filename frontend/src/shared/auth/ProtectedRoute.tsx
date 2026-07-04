@@ -1,6 +1,7 @@
-import { Navigate, useLocation } from "react-router-dom";
 import { Spin } from "antd";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "./AuthContext";
+import "./ProtectedRoute.css";
 
 export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
@@ -8,8 +9,8 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div style={{ display: "flex", justifyContent: "center", padding: 100 }}>
-        <Spin size="large" />
+      <div className="protected-route-loading">
+        <Spin size="large" tip="加载中…" />
       </div>
     );
   }

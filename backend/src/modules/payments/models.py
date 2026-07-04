@@ -3,8 +3,8 @@ import uuid
 from datetime import datetime
 
 from sqlalchemy import DateTime, Enum, ForeignKey, Numeric, String, func
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
+from src.core.types import JSONType, UUIDType
 
 from src.core.database import Base
 from src.modules.users.models import User  # noqa: F401
@@ -25,10 +25,10 @@ class PaymentStatus(str, enum.Enum):
 class PaymentOrder(Base):
     __tablename__ = "payment_orders"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True)
+    id: Mapped[uuid.UUID] = mapped_column(UUIDType, primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(UUIDType, ForeignKey("users.id"), index=True)
     ref_type: Mapped[str] = mapped_column(String(50), nullable=False)
-    ref_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False, index=True)
+    ref_id: Mapped[uuid.UUID] = mapped_column(UUIDType, nullable=False, index=True)
     amount: Mapped[float] = mapped_column(Numeric(12, 2), nullable=False)
     fee_type: Mapped[FeeType] = mapped_column(Enum(FeeType, name="fee_type"), nullable=False)
     status: Mapped[PaymentStatus] = mapped_column(
