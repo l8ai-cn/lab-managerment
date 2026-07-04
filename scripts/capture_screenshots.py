@@ -45,8 +45,8 @@ async def first_lab_id(token: str) -> str | None:
 async def ensure_login(page: Page) -> None:
     await page.goto(f"{FRONTEND}/dashboard", wait_until="networkidle")
     if "/login" in page.url:
-        await page.locator('input[placeholder="admin"]').fill("admin")
-        await page.locator('input[placeholder="admin123"]').fill("admin123")
+        await page.locator('input[placeholder="请输入用户名"]').fill("admin")
+        await page.locator('input[placeholder="请输入密码"]').fill("admin123")
         await page.get_by_role("button", name="登 录").click()
         await page.wait_for_url("**/dashboard**", timeout=20000)
 
