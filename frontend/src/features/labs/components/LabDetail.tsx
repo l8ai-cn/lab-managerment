@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Descriptions, Modal, Space, Tag, Typography, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import { faultsApi } from "@/features/faults/api/faultsApi";
+import { usersApi } from "@/features/users/api/usersApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi } from "../api/labsApi";
@@ -23,6 +24,12 @@ export function LabDetail() {
     queryKey: ["lab-fault-qr", id],
     queryFn: () => faultsApi.getLabQr(id!),
     enabled: !!id,
+  });
+
+  const { data: managerData } = useQuery({
+    queryKey: ["lab-manager", data?.manager_id],
+    queryFn: () => usersApi.get(data!.manager_id!),
+    enabled: !!data?.manager_id,
   });
 
   const deleteMutation = useMutation({
@@ -110,6 +117,7 @@ export function LabDetail() {
           </Descriptions.Item>
           <Descriptions.Item label="面积(㎡)">{data.area_sqm ?? "-"}</Descriptions.Item>
           <Descriptions.Item label="容纳人数">{data.capacity ?? "-"}</Descriptions.Item>
+          <Descriptions.Item label="管理员">{managerData?.name ?? "-"}</Descriptions.Item>
           <Descriptions.Item label="功能分区" span={2}>
             {data.functional_zones?.join("、") || "-"}
           </Descriptions.Item>

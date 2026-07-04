@@ -10,6 +10,9 @@ import {
   HomeOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  MobileOutlined,
+  ReadOutlined,
+  SettingOutlined,
   TeamOutlined,
   ToolOutlined,
   WarningOutlined,
@@ -57,7 +60,9 @@ const MENU_ITEMS: MenuProps["items"] = [
     children: [
       { key: "/instruments", icon: <ToolOutlined />, label: "仪器台账" },
       { key: "/instrument-bookings", icon: <CalendarOutlined />, label: "仪器预约" },
+      { key: "/instruments/rules", icon: <SettingOutlined />, label: "仪器规则" },
       { key: "/lab-bookings", icon: <BookOutlined />, label: "实验室预约" },
+      { key: "/lab-bookings/rules", icon: <SettingOutlined />, label: "实验室规则" },
     ],
   },
   {
@@ -65,6 +70,7 @@ const MENU_ITEMS: MenuProps["items"] = [
     label: "教学科研",
     type: "group",
     children: [
+      { key: "/courses", icon: <ReadOutlined />, label: "课程管理" },
       { key: "/experiment-projects", icon: <ExperimentOutlined />, label: "实验项目" },
       { key: "/experiments", icon: <BarChartOutlined />, label: "科研实验" },
     ],
@@ -88,19 +94,23 @@ const MENU_ITEMS: MenuProps["items"] = [
       { key: "/integrations", icon: <ApiOutlined />, label: "系统对接" },
       { key: "/users", icon: <UserOutlined />, label: "用户管理" },
       { key: "/payments", icon: <BankOutlined />, label: "收费管理" },
+      { key: "/mobile/dashboard", icon: <MobileOutlined />, label: "移动端" },
     ],
   },
 ];
 
 const ROUTE_KEYS = [
   "/labs", "/spaces", "/lab-staff", "/lab-changes",
-  "/instruments", "/instrument-bookings", "/lab-bookings",
-  "/experiment-projects", "/experiments",
+  "/instruments", "/instruments/rules", "/instrument-bookings",
+  "/lab-bookings", "/lab-bookings/rules",
+  "/courses", "/experiment-projects", "/experiments",
   "/faults", "/data-reporting",
   "/dashboard", "/statistics", "/integrations", "/users", "/payments",
+  "/mobile",
 ];
 
 function findSelectedKey(pathname: string): string {
+  if (pathname.startsWith("/mobile")) return "/mobile/dashboard";
   return ROUTE_KEYS.find((key) => pathname === key || pathname.startsWith(`${key}/`)) ?? "/dashboard";
 }
 

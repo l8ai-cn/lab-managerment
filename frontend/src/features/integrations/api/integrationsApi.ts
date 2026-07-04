@@ -1,7 +1,7 @@
 import { api } from "@/shared/api/client";
 
 export type IntegrationType = "asset" | "card" | "access" | "face" | "payment";
-export type SyncStatus = "success" | "failed" | "partial";
+export type SyncStatus = "success" | "failed" | "partial" | "never_synced";
 
 export const INTEGRATION_TYPE_LABELS: Record<IntegrationType, string> = {
   asset: "资产系统",
@@ -15,12 +15,14 @@ export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {
   success: "成功",
   failed: "失败",
   partial: "部分成功",
+  never_synced: "未同步",
 };
 
 export const SYNC_STATUS_COLORS: Record<SyncStatus, string> = {
   success: "green",
   failed: "red",
   partial: "orange",
+  never_synced: "default",
 };
 
 export interface SyncTriggerResponse {
@@ -32,11 +34,11 @@ export interface SyncTriggerResponse {
 
 export interface IntegrationStatusItem {
   type: string;
-  label?: string;
-  last_sync_at?: string;
-  last_status?: SyncStatus;
+  status: SyncStatus;
   synced_count?: number;
-  message?: string;
+  last_synced_at?: string | null;
+  message?: string | null;
+  config?: Record<string, unknown>;
 }
 
 export interface IntegrationStatusResponse {
@@ -49,4 +51,7 @@ export const integrationsApi = {
 
   getStatus: () =>
     api.get<IntegrationStatusResponse>("/integrations/status").then((r) => r.data),
+
+  getConfig: () =>
+    api.get<{ integrations: IntegrationStatusItem[] }>("/integrations/config").then((r) => r.data),
 };

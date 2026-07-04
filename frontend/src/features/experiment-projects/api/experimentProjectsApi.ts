@@ -17,6 +17,13 @@ export interface Course {
   major?: string;
 }
 
+export interface CourseCreate {
+  code: string;
+  name: string;
+  department?: string;
+  major?: string;
+}
+
 export interface CourseListResponse {
   items: Course[];
   total: number;
@@ -67,8 +74,17 @@ export interface ProjectListParams {
 }
 
 export const coursesApi = {
-  list: (params: { page?: number; page_size?: number; keyword?: string } = {}) =>
+  list: (params: { page?: number; page_size?: number; keyword?: string; department?: string } = {}) =>
     api.get<CourseListResponse>("/courses", { params }).then((r) => r.data),
+
+  get: (id: string) => api.get<Course>(`/courses/${id}`).then((r) => r.data),
+
+  create: (data: CourseCreate) => api.post<Course>("/courses", data).then((r) => r.data),
+
+  update: (id: string, data: Partial<CourseCreate>) =>
+    api.patch<Course>(`/courses/${id}`, data).then((r) => r.data),
+
+  delete: (id: string) => api.delete(`/courses/${id}`),
 };
 
 export const experimentProjectsApi = {
@@ -88,4 +104,21 @@ export const experimentProjectsApi = {
 
   batchCopy: (data: BatchCopyRequest) =>
     api.post<{ copied_count: number }>("/experiment-projects/batch-copy", data).then((r) => r.data),
+
+  export: (params: { course_id?: string; semester?: string } = {}) =>
+    api
+      .get("/experiment-projects/export", { params, responseType: "blob" })
+      .then((r) => r.data as Blob),
+
+  import: (file: File) => {
+    const form = new FormData();
+    form.append("file", file);
+    return api
+      .post<{ success_count: number; error_count: number; errors: string[] }>(
+        "/experiment-projects/import",
+        form,
+        { headers: { "Content-Type": "multipart/form-data" } },
+      )
+      .then((r) => r.data);
+  },
 };

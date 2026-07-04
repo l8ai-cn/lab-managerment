@@ -1,6 +1,7 @@
-import { CopyOutlined, PlusOutlined } from "@ant-design/icons";
+import { CopyOutlined, DownloadOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Input, Select, Space, Table, message } from "antd";
+import { Button, Input, Select, Space, Table, Upload, message } from "antd";
+import dayjs from "dayjs";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ContentCard } from "@/shared/components/ContentCard";
@@ -19,6 +20,15 @@ const TYPE_OPTIONS = Object.entries(PROJECT_TYPE_LABELS).map(([value, label]) =>
   value,
   label,
 }));
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 export function ProjectList() {
   const [page, setPage] = useState(1);
@@ -52,6 +62,24 @@ export function ProjectList() {
       message.success("删除成功");
       queryClient.invalidateQueries({ queryKey: ["experiment-projects"] });
     },
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => experimentProjectsApi.export({ course_id: courseId }),
+    onSuccess: (blob) => {
+      downloadBlob(blob, `experiment_projects_${dayjs().format("YYYYMMDD")}.xlsx`);
+      message.success("导出成功");
+    },
+    onError: () => message.error("导出失败"),
+  });
+
+  const importMutation = useMutation({
+    mutationFn: experimentProjectsApi.import,
+    onSuccess: (result) => {
+      message.success(`导入完成：成功 ${result.success_count} 条，失败 ${result.error_count} 条`);
+      queryClient.invalidateQueries({ queryKey: ["experiment-projects"] });
+    },
+    onError: () => message.error("导入失败"),
   });
 
   const courseOptions =
@@ -98,6 +126,29 @@ export function ProjectList() {
       <PageHeader
         extra={
           <>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={() => exportMutation.mutate()}
+              loading={exportMutation.isPending}
+            >
+              导出
+            </Button>
+            <Upload
+              accept=".xlsx,.xls"
+              showUploadList={false}
+              customRequest={async ({ file, onSuccess, onError }) => {
+                try {
+                  await importMutation.mutateAsync(file as File);
+                  onSuccess?.({});
+                } catch {
+                  onError?.(new Error("import failed"));
+                }
+              }}
+            >
+              <Button icon={<UploadOutlined />} loading={importMutation.isPending}>
+                导入
+              </Button>
+            </Upload>
             <Button
               icon={<CopyOutlined />}
               disabled={!courseId}

@@ -22,11 +22,38 @@ export interface LabUsageStats {
   by_usage_type: Record<string, number>;
 }
 
+export interface FaultStats {
+  by_type: Record<string, number>;
+  by_lab: Record<string, number>;
+  by_status: Record<string, number>;
+}
+
+export interface ExperimentProjectStats {
+  total_projects: number;
+  total_courses: number;
+  by_type: Record<string, number>;
+  by_semester: Record<string, number>;
+}
+
+export interface StatisticsParams {
+  lab_id?: string;
+  category?: string;
+  from_time?: string;
+  to_time?: string;
+}
+
 export const statisticsApi = {
   overview: () => api.get<OverviewStats>("/statistics/overview").then((r) => r.data),
 
-  instrumentUsage: () =>
-    api.get<InstrumentUsageStats>("/statistics/instrument-usage").then((r) => r.data),
+  instrumentUsage: (params: StatisticsParams = {}) =>
+    api.get<InstrumentUsageStats>("/statistics/instrument-usage", { params }).then((r) => r.data),
 
-  labUsage: () => api.get<LabUsageStats>("/statistics/lab-usage").then((r) => r.data),
+  labUsage: (params: StatisticsParams = {}) =>
+    api.get<LabUsageStats>("/statistics/lab-usage", { params }).then((r) => r.data),
+
+  faults: (params: { lab_id?: string } = {}) =>
+    api.get<FaultStats>("/statistics/faults", { params }).then((r) => r.data),
+
+  experimentProjects: () =>
+    api.get<ExperimentProjectStats>("/statistics/experiment-projects").then((r) => r.data),
 };

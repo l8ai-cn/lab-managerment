@@ -1,10 +1,11 @@
 import { PlusOutlined, WarningOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, Form, Input, Modal, Row, Select, Table, Tag, message } from "antd";
+import { Button, Col, Form, Input, Modal, Row, Select, Table, Tag, Upload, message } from "antd";
 import dayjs from "dayjs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { labsApi } from "@/features/labs/api/labsApi";
+import { uploadApi } from "@/shared/api/uploadApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { FilterBar } from "@/shared/components/FilterBar";
 import { PageHeader } from "@/shared/components/PageHeader";
@@ -146,10 +147,12 @@ export function FaultList() {
 interface FaultReportFormProps {
   open: boolean;
   onClose: () => void;
+  defaultLabId?: string;
 }
 
-export function FaultReportForm({ open, onClose }: FaultReportFormProps) {
+export function FaultReportForm({ open, onClose, defaultLabId }: FaultReportFormProps) {
   const [form] = Form.useForm();
+  const [attachments, setAttachments] = useState<Array<{ url: string; filename: string }>>([]);
   const queryClient = useQueryClient();
 
   const { data: labsData } = useQuery({
@@ -158,11 +161,18 @@ export function FaultReportForm({ open, onClose }: FaultReportFormProps) {
     enabled: open,
   });
 
+  useEffect(() => {
+    if (open && defaultLabId) {
+      form.setFieldValue("lab_id", defaultLabId);
+    }
+  }, [open, defaultLabId, form]);
+
   const createMutation = useMutation({
     mutationFn: faultsApi.create,
     onSuccess: () => {
       message.success("故障已上报");
       form.resetFields();
+      setAttachments([]);
       onClose();
       queryClient.invalidateQueries({ queryKey: ["faults"] });
       queryClient.invalidateQueries({ queryKey: ["fault-stats"] });
@@ -182,7 +192,16 @@ export function FaultReportForm({ open, onClose }: FaultReportFormProps) {
       confirmLoading={createMutation.isPending}
       destroyOnClose
     >
-      <Form form={form} layout="vertical" onFinish={(v) => createMutation.mutate(v)}>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={(v) =>
+          createMutation.mutate({
+            ...v,
+            attachments: attachments.length ? attachments : undefined,
+          })
+        }
+      >
         <Form.Item name="lab_id" label="实验室" rules={[{ required: true }]}>
           <Select options={labOptions} placeholder="选择实验室" />
         </Form.Item>
@@ -191,6 +210,21 @@ export function FaultReportForm({ open, onClose }: FaultReportFormProps) {
         </Form.Item>
         <Form.Item name="description" label="故障描述" rules={[{ required: true }]}>
           <Input.TextArea rows={4} placeholder="请详细描述故障情况" />
+        </Form.Item>
+        <Form.Item label="附件">
+          <Upload
+            customRequest={async ({ file, onSuccess, onError }) => {
+              try {
+                const result = await uploadApi.upload(file as File);
+                setAttachments((prev) => [...prev, { url: result.url, filename: result.filename }]);
+                onSuccess?.(result);
+              } catch {
+                onError?.(new Error("upload failed"));
+              }
+            }}
+          >
+            <Button size="small">上传图片/文件</Button>
+          </Upload>
         </Form.Item>
       </Form>
     </Modal>

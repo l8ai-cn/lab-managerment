@@ -1,15 +1,18 @@
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Descriptions, Input, Select, Space, Tag, message } from "antd";
+import { Button, Descriptions, Input, List, Select, Space, Tag, Upload, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { usersApi } from "@/features/users/api/usersApi";
+import { uploadApi } from "@/shared/api/uploadApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import {
   FAULT_STATUS_COLORS,
   FAULT_STATUS_LABELS,
   faultsApi,
+  type FaultAttachment,
   type FaultStatus,
 } from "../api/faultsApi";
 
@@ -24,11 +27,17 @@ export function FaultDetail() {
   const queryClient = useQueryClient();
   const [handleComment, setHandleComment] = useState("");
   const [newStatus, setNewStatus] = useState<FaultStatus>();
+  const [assigneeId, setAssigneeId] = useState<string>();
 
   const { data, isLoading } = useQuery({
     queryKey: ["fault", id],
     queryFn: () => faultsApi.get(id!),
     enabled: !!id,
+  });
+
+  const { data: usersData } = useQuery({
+    queryKey: ["users-assign-options"],
+    queryFn: () => usersApi.list({ page_size: 100, role: "lab_admin" }),
   });
 
   const statusMutation = useMutation({
@@ -37,6 +46,14 @@ export function FaultDetail() {
       message.success("状态已更新");
       queryClient.invalidateQueries({ queryKey: ["fault", id] });
       queryClient.invalidateQueries({ queryKey: ["faults"] });
+    },
+  });
+
+  const assignMutation = useMutation({
+    mutationFn: (assignee_id: string) => faultsApi.assign(id!, assignee_id),
+    onSuccess: () => {
+      message.success("已指派处理人");
+      queryClient.invalidateQueries({ queryKey: ["fault", id] });
     },
   });
 
@@ -49,6 +66,20 @@ export function FaultDetail() {
       queryClient.invalidateQueries({ queryKey: ["fault", id] });
     },
   });
+
+  const attachmentMutation = useMutation({
+    mutationFn: (attachments: FaultAttachment[]) =>
+      faultsApi.update(id!, { attachments }),
+    onSuccess: () => {
+      message.success("附件已更新");
+      queryClient.invalidateQueries({ queryKey: ["fault", id] });
+    },
+  });
+
+  const userOptions =
+    usersData?.items.map((u) => ({ value: u.id, label: `${u.name} (${u.username})` })) ?? [];
+
+  const attachments = (data?.attachments as FaultAttachment[] | undefined) ?? [];
 
   if (isLoading || !data) return null;
 
@@ -87,8 +118,58 @@ export function FaultDetail() {
         </Descriptions>
       </ContentCard>
 
+      <ContentCard title="附件" style={{ marginBottom: 16 }}>
+        {attachments.length > 0 && (
+          <List
+            size="small"
+            dataSource={attachments}
+            renderItem={(item) => (
+              <List.Item>
+                <a href={item.url} target="_blank" rel="noreferrer">
+                  {item.filename}
+                </a>
+              </List.Item>
+            )}
+            style={{ marginBottom: 12 }}
+          />
+        )}
+        <Upload
+          customRequest={async ({ file, onSuccess, onError }) => {
+            try {
+              const result = await uploadApi.upload(file as File);
+              attachmentMutation.mutate([
+                ...attachments,
+                { url: result.url, filename: result.filename },
+              ]);
+              onSuccess?.(result);
+            } catch {
+              onError?.(new Error("upload failed"));
+            }
+          }}
+        >
+          <Button size="small">添加附件</Button>
+        </Upload>
+      </ContentCard>
+
       <ContentCard title="处理操作">
         <Space direction="vertical" style={{ width: "100%" }}>
+          <Space wrap>
+            <Select
+              placeholder="指派处理人"
+              options={userOptions}
+              style={{ width: 200 }}
+              value={assigneeId ?? data.assignee_id}
+              onChange={setAssigneeId}
+            />
+            <Button
+              type="primary"
+              disabled={!assigneeId}
+              onClick={() => assigneeId && assignMutation.mutate(assigneeId)}
+              loading={assignMutation.isPending}
+            >
+              指派
+            </Button>
+          </Space>
           <Space wrap>
             <Select
               placeholder="更新状态"

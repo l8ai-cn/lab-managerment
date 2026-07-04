@@ -55,6 +55,20 @@ export interface SubmissionCreate {
   data?: Record<string, unknown>;
 }
 
+export interface AggregateStats {
+  total_submissions: number;
+  by_status: Record<string, number>;
+  by_period: Record<string, number>;
+  by_template: Record<string, number>;
+}
+
+export interface TemplateUpdate {
+  code?: string;
+  name?: string;
+  schema?: Record<string, unknown>;
+  description?: string;
+}
+
 export const dataReportingApi = {
   listTemplates: (params: { page?: number; page_size?: number; keyword?: string } = {}) =>
     api
@@ -63,6 +77,9 @@ export const dataReportingApi = {
 
   getTemplate: (id: string) =>
     api.get<ReportTemplate>(`/data-reporting/templates/${id}`).then((r) => r.data),
+
+  updateTemplate: (id: string, data: TemplateUpdate) =>
+    api.patch<ReportTemplate>(`/data-reporting/templates/${id}`, data).then((r) => r.data),
 
   listSubmissions: (params: {
     page?: number;
@@ -74,6 +91,9 @@ export const dataReportingApi = {
     api
       .get<ReportSubmissionListResponse>("/data-reporting/submissions", { params })
       .then((r) => r.data),
+
+  submissionStats: () =>
+    api.get<AggregateStats>("/data-reporting/submissions/stats").then((r) => r.data),
 
   createSubmission: (data: SubmissionCreate) =>
     api.post<ReportSubmission>("/data-reporting/submissions", data).then((r) => r.data),

@@ -1,5 +1,8 @@
+import { SafetyCertificateOutlined, DollarOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Card, Col, Progress, Row, Statistic } from "antd";
+import { faultsApi } from "@/features/faults/api/faultsApi";
+import { instrumentsApi } from "@/features/instruments/api/instrumentsApi";
 import { dashboardApi } from "../api/dashboardApi";
 import "./DashboardPage.css";
 
@@ -18,12 +21,38 @@ export function DashboardPage() {
     refetchInterval: 60_000,
   });
 
+  const { data: faultStats } = useQuery({
+    queryKey: ["dashboard-fault-stats"],
+    queryFn: faultsApi.stats,
+    refetchInterval: 60_000,
+  });
+
+  const { data: instrumentsData } = useQuery({
+    queryKey: ["dashboard-instruments"],
+    queryFn: () => instrumentsApi.list({ page_size: 500 }),
+    refetchInterval: 120_000,
+  });
+
   const maxBookings = Math.max(...(trends?.weekly.map((p) => p.bookings) ?? [1]), 1);
   const maxHours = Math.max(...(trends?.weekly.map((p) => p.usage_hours) ?? [1]), 1);
 
   const openRate = overview
     ? Math.round((overview.open_labs / Math.max(overview.total_labs, 1)) * 100)
     : 0;
+
+  const assetTotal = (instrumentsData?.items ?? []).reduce(
+    (sum, i) => sum + (i.purchase_price ?? 0),
+    0,
+  );
+
+  const pendingFaults = faultStats?.by_status?.pending ?? overview?.pending_faults ?? 0;
+  const processingFaults =
+    (faultStats?.by_status?.assigned ?? 0) + (faultStats?.by_status?.processing ?? 0);
+  const resolvedFaults = faultStats?.by_status?.resolved ?? 0;
+  const safetyScore = Math.max(
+    0,
+    100 - pendingFaults * 5 - processingFaults * 2,
+  );
 
   const stats = [
     { label: "实验室总数", value: overview?.total_labs ?? 0, extra: `开放率 ${openRate}%` },
@@ -67,6 +96,61 @@ export function DashboardPage() {
               </Card>
             </Col>
           ))}
+        </Row>
+
+        <Row gutter={[20, 20]} style={{ marginBottom: 24 }}>
+          <Col xs={24} lg={12}>
+            <Card
+              className="dashboard__card"
+              title={
+                <span>
+                  <SafetyCertificateOutlined style={{ marginRight: 8, color: "#10b981" }} />
+                  安全态势
+                </span>
+              }
+              bordered={false}
+            >
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Statistic title="安全评分" value={safetyScore} suffix="/ 100" valueStyle={{ color: "#10b981" }} />
+                </Col>
+                <Col span={8}>
+                  <Statistic title="待处理" value={pendingFaults} valueStyle={{ color: "#f59e0b" }} />
+                </Col>
+                <Col span={8}>
+                  <Statistic title="已解决" value={resolvedFaults} valueStyle={{ color: "#38bdf8" }} />
+                </Col>
+              </Row>
+              <Progress
+                percent={safetyScore}
+                strokeColor={{ from: "#ef4444", to: "#10b981" }}
+                style={{ marginTop: 16 }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} lg={12}>
+            <Card
+              className="dashboard__card"
+              title={
+                <span>
+                  <DollarOutlined style={{ marginRight: 8, color: "#f59e0b" }} />
+                  资产价值
+                </span>
+              }
+              bordered={false}
+            >
+              <Statistic
+                title="仪器设备资产总值"
+                value={assetTotal}
+                precision={2}
+                prefix="¥"
+                valueStyle={{ color: "#fbbf24", fontSize: 28 }}
+              />
+              <div style={{ marginTop: 12, color: "#94a3b8", fontSize: 13 }}>
+                共 {instrumentsData?.total ?? 0} 台设备 · 数据来自仪器台账
+              </div>
+            </Card>
+          </Col>
         </Row>
 
         <Row gutter={[20, 20]}>

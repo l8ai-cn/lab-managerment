@@ -1,0 +1,44 @@
+.fault-landing {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+  padding: 24px;
+}
+
+.fault-landing__card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 48px 40px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.fault-landing__header h1 {
+  margin: 16px 0 8px;
+  font-size: 24px;
+  color: #0f172a;
+}
+
+.fault-landing__header p {
+  color: #64748b;
+  margin-bottom: 32px;
+}
+
+.fault-landing__icon {
+  font-size: 48px;
+  color: #ef4444;
+}
+
+.fault-landing__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.fault-landing__actions a {
+  display: block;
+}

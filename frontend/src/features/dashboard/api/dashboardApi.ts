@@ -21,8 +21,25 @@ export interface DashboardTrends {
   weekly: TrendPoint[];
 }
 
+export interface SafetySummary {
+  pending_faults: number;
+  processing_faults: number;
+  resolved_faults: number;
+  safety_score: number;
+}
+
+export interface AssetValueSummary {
+  total_value: number;
+  instrument_count: number;
+  by_category: Record<string, number>;
+}
+
 export const dashboardApi = {
   overview: () => api.get<DashboardOverview>("/dashboard/overview").then((r) => r.data),
 
   trends: () => api.get<DashboardTrends>("/dashboard/trends").then((r) => r.data),
+
+  safety: () => api.get<SafetySummary>("/dashboard/safety").then((r) => r.data),
+
+  assetValue: () => api.get<AssetValueSummary>("/dashboard/asset-value").then((r) => r.data),
 };

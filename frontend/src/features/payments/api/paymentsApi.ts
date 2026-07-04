@@ -1,5 +1,33 @@
 import { api } from "@/shared/api/client";
 
+export const paymentsApi = {
+  list: (params: { page?: number; page_size?: number; status?: PaymentStatus } = {}) =>
+    api.get<PaymentOrderListResponse>("/payments/orders", { params }).then((r) => r.data),
+
+  create: (data: PaymentOrderCreate) =>
+    api.post<PaymentOrder>("/payments/orders", data).then((r) => r.data),
+
+  pay: (id: string) =>
+    api.post<{ order_id: string; status: PaymentStatus; message: string }>(
+      `/payments/orders/${id}/pay`,
+    ).then((r) => r.data),
+
+  downloadReceipt: (id: string) =>
+    api
+      .get(`/payments/orders/${id}/receipt`, { responseType: "blob" })
+      .then((r) => r.data as Blob),
+
+  createBookingPayment: (bookingId: string, amount: number) =>
+    api
+      .post<PaymentOrder>("/payments/orders", {
+        ref_type: "lab_booking",
+        ref_id: bookingId,
+        amount,
+        fee_type: "lab_usage",
+      })
+      .then((r) => r.data),
+};
+
 export type FeeType = "lab_usage" | "consumable";
 export type PaymentStatus = "pending" | "paid" | "failed" | "refunded";
 
@@ -48,16 +76,3 @@ export interface PaymentOrderCreate {
   amount: number;
   fee_type: FeeType;
 }
-
-export const paymentsApi = {
-  list: (params: { page?: number; page_size?: number; status?: PaymentStatus } = {}) =>
-    api.get<PaymentOrderListResponse>("/payments/orders", { params }).then((r) => r.data),
-
-  create: (data: PaymentOrderCreate) =>
-    api.post<PaymentOrder>("/payments/orders", data).then((r) => r.data),
-
-  pay: (id: string) =>
-    api.post<{ order_id: string; status: PaymentStatus; message: string }>(
-      `/payments/orders/${id}/pay`,
-    ).then((r) => r.data),
-};

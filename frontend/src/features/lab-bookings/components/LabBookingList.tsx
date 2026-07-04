@@ -1,8 +1,23 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined, SettingOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Table, Tabs, Tag, message } from "antd";
+import {
+  Button,
+  Checkbox,
+  DatePicker,
+  Form,
+  Input,
+  InputNumber,
+  Modal,
+  Select,
+  Space,
+  Table,
+  Tabs,
+  Tag,
+  message,
+} from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { labsApi } from "@/features/labs/api/labsApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { FilterBar } from "@/shared/components/FilterBar";
@@ -12,11 +27,14 @@ import {
   LAB_BOOKING_STATUS_LABELS,
   USAGE_TYPE_LABELS,
   labBookingsApi,
+  type AccessGrant,
   type LabBooking,
   type LabBookingStatus,
   type UsageType,
 } from "../api/labBookingsApi";
+import { CheckInModal } from "./CheckInModal";
 import { LabBookingCalendar } from "./LabBookingCalendar";
+import { LabUsageRecordPanel } from "./LabUsageRecordPanel";
 
 const USAGE_OPTIONS = Object.entries(USAGE_TYPE_LABELS).map(([value, label]) => ({ value, label }));
 const STATUS_OPTIONS = Object.entries(LAB_BOOKING_STATUS_LABELS).map(([value, label]) => ({
@@ -24,11 +42,29 @@ const STATUS_OPTIONS = Object.entries(LAB_BOOKING_STATUS_LABELS).map(([value, la
   label,
 }));
 
+const RECURRENCE_OPTIONS = [
+  { value: "daily", label: "每天" },
+  { value: "weekly", label: "每周" },
+  { value: "biweekly", label: "每两周" },
+];
+
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function LabBookingList() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<LabBookingStatus>();
   const [labId, setLabId] = useState<string>();
   const [modalOpen, setModalOpen] = useState(false);
+  const [checkInOpen, setCheckInOpen] = useState(false);
+  const [accessGrants, setAccessGrants] = useState<AccessGrant[]>([]);
+  const [approvedLabName, setApprovedLabName] = useState<string>();
   const [form] = Form.useForm();
   const queryClient = useQueryClient();
 
@@ -56,7 +92,19 @@ export function LabBookingList() {
   });
 
   const approveMutation = useMutation({
-    mutationFn: (id: string) => labBookingsApi.approve(id),
+    mutationFn: async (record: LabBooking) => {
+      const result = await labBookingsApi.approve(record.id);
+      try {
+        const grants = await labBookingsApi.getAccessGrants(record.id);
+        setAccessGrants(grants);
+        setApprovedLabName(record.lab_name);
+        setCheckInOpen(true);
+      } catch {
+        setAccessGrants([]);
+        setCheckInOpen(true);
+      }
+      return result;
+    },
     onSuccess: () => {
       message.success("已通过");
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
@@ -71,6 +119,15 @@ export function LabBookingList() {
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
     },
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => labBookingsApi.exportBookings({ lab_id: labId, status: statusFilter }),
+    onSuccess: (blob) => {
+      downloadBlob(blob, `lab_bookings_${dayjs().format("YYYYMMDD")}.xlsx`);
+      message.success("导出成功");
+    },
+    onError: () => message.error("导出失败"),
   });
 
   const labOptions =
@@ -104,6 +161,12 @@ export function LabBookingList() {
       render: (v: number) => v ?? "-",
     },
     {
+      title: "周期",
+      dataIndex: "is_recurring",
+      width: 70,
+      render: (v: boolean) => (v ? <Tag color="purple">周期</Tag> : "-"),
+    },
+    {
       title: "状态",
       dataIndex: "status",
       width: 90,
@@ -117,7 +180,7 @@ export function LabBookingList() {
       render: (_: unknown, record: LabBooking) => (
         <Space size="small">
           {record.status === "pending" && (
-            <Button type="link" size="small" onClick={() => approveMutation.mutate(record.id)}>
+            <Button type="link" size="small" onClick={() => approveMutation.mutate(record)}>
               通过
             </Button>
           )}
@@ -135,9 +198,21 @@ export function LabBookingList() {
     <>
       <PageHeader
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-            新建预约
-          </Button>
+          <Space>
+            <Link to="/lab-bookings/rules">
+              <Button icon={<SettingOutlined />}>预约规则</Button>
+            </Link>
+            <Button
+              icon={<DownloadOutlined />}
+              onClick={() => exportMutation.mutate()}
+              loading={exportMutation.isPending}
+            >
+              导出
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+              新建预约
+            </Button>
+          </Space>
         }
       />
 
@@ -154,6 +229,7 @@ export function LabBookingList() {
                     allowClear
                     options={labOptions}
                     style={{ width: 180 }}
+                    value={labId}
                     onChange={setLabId}
                   />
                   <Select
@@ -171,6 +247,13 @@ export function LabBookingList() {
                     loading={isLoading}
                     columns={columns}
                     dataSource={data?.items}
+                    expandable={{
+                      expandedRowRender: (record) => (
+                        <LabUsageRecordPanel bookingId={record.id} status={record.status} />
+                      ),
+                      rowExpandable: (record) =>
+                        record.status === "approved" || record.status === "completed",
+                    }}
                     pagination={{
                       current: page,
                       pageSize: 20,
@@ -195,6 +278,7 @@ export function LabBookingList() {
         onOk={() => form.submit()}
         confirmLoading={createMutation.isPending}
         destroyOnClose
+        width={520}
       >
         <Form
           form={form}
@@ -208,6 +292,14 @@ export function LabBookingList() {
               usage_type: values.usage_type,
               purpose: values.purpose,
               expected_count: values.expected_count,
+              is_recurring: values.is_recurring ?? false,
+              recurrence_rule: values.is_recurring
+                ? {
+                    frequency: values.recurrence_frequency,
+                    count: values.recurrence_count,
+                    until: values.recurrence_until?.toISOString(),
+                  }
+                : undefined,
             });
           }}
         >
@@ -226,8 +318,35 @@ export function LabBookingList() {
           <Form.Item name="expected_count" label="预计人数">
             <InputNumber min={1} style={{ width: "100%" }} />
           </Form.Item>
+          <Form.Item name="is_recurring" valuePropName="checked">
+            <Checkbox>周期性预约</Checkbox>
+          </Form.Item>
+          <Form.Item noStyle shouldUpdate={(prev, cur) => prev.is_recurring !== cur.is_recurring}>
+            {({ getFieldValue }) =>
+              getFieldValue("is_recurring") ? (
+                <>
+                  <Form.Item name="recurrence_frequency" label="重复频率" rules={[{ required: true }]}>
+                    <Select options={RECURRENCE_OPTIONS} />
+                  </Form.Item>
+                  <Form.Item name="recurrence_count" label="重复次数">
+                    <InputNumber min={2} max={52} style={{ width: "100%" }} placeholder="如 10 次" />
+                  </Form.Item>
+                  <Form.Item name="recurrence_until" label="截止日期">
+                    <DatePicker style={{ width: "100%" }} />
+                  </Form.Item>
+                </>
+              ) : null
+            }
+          </Form.Item>
         </Form>
       </Modal>
+
+      <CheckInModal
+        open={checkInOpen}
+        onClose={() => setCheckInOpen(false)}
+        labName={approvedLabName}
+        grants={accessGrants}
+      />
     </>
   );
 }

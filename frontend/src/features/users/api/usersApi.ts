@@ -50,6 +50,8 @@ export const usersApi = {
   list: (params: { page?: number; page_size?: number; role?: UserRole; keyword?: string } = {}) =>
     api.get<UserListResponse>("/users", { params }).then((r) => r.data),
 
+  get: (id: string) => api.get<User>(`/users/${id}`).then((r) => r.data),
+
   create: (data: UserCreate) => api.post<User>("/users", data).then((r) => r.data),
 
   update: (id: string, data: Partial<UserCreate & { is_active: boolean }>) =>

@@ -1,8 +1,9 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { PlusOutlined, SettingOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, DatePicker, Form, Input, Modal, Select, Space, Table, Tabs, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { FilterBar } from "@/shared/components/FilterBar";
 import { PageHeader } from "@/shared/components/PageHeader";
@@ -14,6 +15,8 @@ import {
   type BookingStatus,
   type InstrumentBooking,
 } from "../api/instrumentsApi";
+import { InstrumentBookingCalendar } from "./InstrumentBookingCalendar";
+import { InstrumentUsageRecordPanel } from "./InstrumentUsageRecordPanel";
 
 const STATUS_OPTIONS = Object.entries(BOOKING_STATUS_LABELS).map(([value, label]) => ({
   value,
@@ -122,38 +125,63 @@ export function InstrumentBookingList() {
     <>
       <PageHeader
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
-            新建预约
-          </Button>
+          <Space>
+            <Link to="/instruments/rules">
+              <Button icon={<SettingOutlined />}>预约规则</Button>
+            </Link>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setModalOpen(true)}>
+              新建预约
+            </Button>
+          </Space>
         }
       />
 
-      <FilterBar>
-        <Select
-          placeholder="状态筛选"
-          allowClear
-          options={STATUS_OPTIONS}
-          style={{ width: 140 }}
-          onChange={setStatusFilter}
-        />
-      </FilterBar>
+      <Tabs
+        items={[
+          {
+            key: "list",
+            label: "预约列表",
+            children: (
+              <>
+                <FilterBar>
+                  <Select
+                    placeholder="状态筛选"
+                    allowClear
+                    options={STATUS_OPTIONS}
+                    style={{ width: 140 }}
+                    onChange={setStatusFilter}
+                  />
+                </FilterBar>
 
-      <ContentCard noPadding>
-        <Table
-          rowKey="id"
-          loading={isLoading}
-          columns={columns}
-          dataSource={data?.items}
-          pagination={{
-            current: page,
-            pageSize: 20,
-            total: data?.total,
-            onChange: setPage,
-            showTotal: (t) => `共 ${t} 条`,
-            showSizeChanger: false,
-          }}
-        />
-      </ContentCard>
+                <ContentCard noPadding>
+                  <Table
+                    rowKey="id"
+                    loading={isLoading}
+                    columns={columns}
+                    dataSource={data?.items}
+                    expandable={{
+                      expandedRowRender: (record) => (
+                        <InstrumentUsageRecordPanel bookingId={record.id} status={record.status} />
+                      ),
+                      rowExpandable: (record) =>
+                        ["approved", "in_use", "completed"].includes(record.status),
+                    }}
+                    pagination={{
+                      current: page,
+                      pageSize: 20,
+                      total: data?.total,
+                      onChange: setPage,
+                      showTotal: (t) => `共 ${t} 条`,
+                      showSizeChanger: false,
+                    }}
+                  />
+                </ContentCard>
+              </>
+            ),
+          },
+          { key: "calendar", label: "日历视图", children: <InstrumentBookingCalendar /> },
+        ]}
+      />
 
       <Modal
         title="新建仪器预约"

@@ -1,6 +1,6 @@
 import { SyncOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Space, Table, Tag, message } from "antd";
+import { Button, Descriptions, Space, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
@@ -15,12 +15,21 @@ import {
 
 const INTEGRATION_TYPES: IntegrationType[] = ["asset", "card", "access", "face", "payment"];
 
+const INTEGRATION_CONFIG: Record<IntegrationType, { endpoint: string; enabled: boolean }> = {
+  asset: { endpoint: import.meta.env.VITE_ASSET_SYNC_URL ?? "https://asset.campus.edu/api/sync", enabled: true },
+  card: { endpoint: import.meta.env.VITE_CARD_SYNC_URL ?? "https://card.campus.edu/api/sync", enabled: true },
+  access: { endpoint: import.meta.env.VITE_ACCESS_SYNC_URL ?? "https://access.campus.edu/api/sync", enabled: true },
+  face: { endpoint: import.meta.env.VITE_FACE_SYNC_URL ?? "https://face.campus.edu/api/sync", enabled: false },
+  payment: { endpoint: import.meta.env.VITE_PAYMENT_SYNC_URL ?? "https://pay.campus.edu/api/sync", enabled: true },
+};
+
 export function IntegrationPage() {
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
     queryKey: ["integration-status"],
     queryFn: integrationsApi.getStatus,
+    refetchInterval: 30_000,
   });
 
   const syncMutation = useMutation({
@@ -38,13 +47,15 @@ export function IntegrationPage() {
 
   const tableData = INTEGRATION_TYPES.map((type) => {
     const status = statusMap.get(type);
+    const config = INTEGRATION_CONFIG[type];
     return {
       type,
       label: INTEGRATION_TYPE_LABELS[type],
-      last_sync_at: status?.last_sync_at,
-      last_status: status?.last_status,
+      last_sync_at: status?.last_synced_at,
+      last_status: (status?.status ?? "never_synced") as SyncStatus,
       synced_count: status?.synced_count,
       message: status?.message,
+      config,
     };
   });
 
@@ -85,6 +96,21 @@ export function IntegrationPage() {
   return (
     <>
       <PageHeader />
+
+      <ContentCard title="对接配置" style={{ marginBottom: 16 }}>
+        <Descriptions column={1} size="small" bordered>
+          {INTEGRATION_TYPES.map((type) => (
+            <Descriptions.Item key={type} label={INTEGRATION_TYPE_LABELS[type]}>
+              <Space>
+                <Tag color={INTEGRATION_CONFIG[type].enabled ? "green" : "default"}>
+                  {INTEGRATION_CONFIG[type].enabled ? "已启用" : "未启用"}
+                </Tag>
+                <span style={{ fontSize: 12, color: "#64748b" }}>{INTEGRATION_CONFIG[type].endpoint}</span>
+              </Space>
+            </Descriptions.Item>
+          ))}
+        </Descriptions>
+      </ContentCard>
 
       <ContentCard title="快速同步" style={{ marginBottom: 16 }}>
         <Space wrap>

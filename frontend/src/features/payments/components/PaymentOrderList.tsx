@@ -1,6 +1,6 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, LinkOutlined, PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, InputNumber, Modal, Select, Table, Tag, message } from "antd";
+import { Button, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { ContentCard } from "@/shared/components/ContentCard";
@@ -23,11 +23,22 @@ const STATUS_OPTIONS = Object.entries(PAYMENT_STATUS_LABELS).map(([value, label]
 
 const FEE_OPTIONS = Object.entries(FEE_TYPE_LABELS).map(([value, label]) => ({ value, label }));
 
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function PaymentOrderList() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<PaymentStatus>();
   const [createOpen, setCreateOpen] = useState(false);
+  const [bookingPayOpen, setBookingPayOpen] = useState(false);
   const [form] = Form.useForm();
+  const [bookingForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -46,6 +57,18 @@ export function PaymentOrderList() {
     onError: () => message.error("创建失败"),
   });
 
+  const bookingPayMutation = useMutation({
+    mutationFn: ({ bookingId, amount }: { bookingId: string; amount: number }) =>
+      paymentsApi.createBookingPayment(bookingId, amount),
+    onSuccess: (order) => {
+      message.success(`预约支付订单已创建：${order.id.slice(0, 8)}…`);
+      setBookingPayOpen(false);
+      bookingForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["payment-orders"] });
+    },
+    onError: () => message.error("创建支付订单失败"),
+  });
+
   const payMutation = useMutation({
     mutationFn: paymentsApi.pay,
     onSuccess: (result) => {
@@ -55,6 +78,15 @@ export function PaymentOrderList() {
     onError: () => message.error("支付失败"),
   });
 
+  const receiptMutation = useMutation({
+    mutationFn: paymentsApi.downloadReceipt,
+    onSuccess: (blob, orderId) => {
+      downloadBlob(blob, `receipt_${orderId}.pdf`);
+      message.success("收据已下载");
+    },
+    onError: () => message.error("收据下载失败"),
+  });
+
   const columns = [
     { title: "订单号", dataIndex: "id", width: 280, ellipsis: true },
     {
@@ -62,6 +94,14 @@ export function PaymentOrderList() {
       dataIndex: "fee_type",
       width: 120,
       render: (v: FeeType) => FEE_TYPE_LABELS[v],
+    },
+    {
+      title: "关联",
+      key: "ref",
+      width: 160,
+      ellipsis: true,
+      render: (_: unknown, record: PaymentOrder) =>
+        record.ref_type ? `${record.ref_type} / ${record.ref_id.slice(0, 8)}…` : "-",
     },
     {
       title: "金额(元)",
@@ -85,18 +125,32 @@ export function PaymentOrderList() {
     },
     {
       title: "操作",
-      width: 80,
-      render: (_: unknown, record: PaymentOrder) =>
-        record.status === "pending" ? (
-          <Button
-            type="link"
-            size="small"
-            onClick={() => payMutation.mutate(record.id)}
-            loading={payMutation.isPending}
-          >
-            支付
-          </Button>
-        ) : null,
+      width: 160,
+      render: (_: unknown, record: PaymentOrder) => (
+        <Space size="small">
+          {record.status === "pending" && (
+            <Button
+              type="link"
+              size="small"
+              onClick={() => payMutation.mutate(record.id)}
+              loading={payMutation.isPending}
+            >
+              支付
+            </Button>
+          )}
+          {record.status === "paid" && (
+            <Button
+              type="link"
+              size="small"
+              icon={<DownloadOutlined />}
+              onClick={() => receiptMutation.mutate(record.id)}
+              loading={receiptMutation.isPending}
+            >
+              收据
+            </Button>
+          )}
+        </Space>
+      ),
     },
   ];
 
@@ -104,9 +158,14 @@ export function PaymentOrderList() {
     <>
       <PageHeader
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-            创建订单
-          </Button>
+          <Space>
+            <Button icon={<LinkOutlined />} onClick={() => setBookingPayOpen(true)}>
+              预约支付
+            </Button>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
+              创建订单
+            </Button>
+          </Space>
         }
       />
 
@@ -157,6 +216,28 @@ export function PaymentOrderList() {
           </Form.Item>
           <Form.Item name="ref_id" label="关联ID" rules={[{ required: true }]}>
             <Input placeholder="关联业务记录ID" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="实验室预约支付"
+        open={bookingPayOpen}
+        onCancel={() => setBookingPayOpen(false)}
+        onOk={() => bookingForm.submit()}
+        confirmLoading={bookingPayMutation.isPending}
+        destroyOnClose
+      >
+        <Form
+          form={bookingForm}
+          layout="vertical"
+          onFinish={(v) => bookingPayMutation.mutate(v)}
+        >
+          <Form.Item name="bookingId" label="预约ID" rules={[{ required: true }]}>
+            <Input placeholder="实验室预约记录 ID" />
+          </Form.Item>
+          <Form.Item name="amount" label="支付金额(元)" rules={[{ required: true }]}>
+            <InputNumber min={0.01} precision={2} style={{ width: "100%" }} />
           </Form.Item>
         </Form>
       </Modal>

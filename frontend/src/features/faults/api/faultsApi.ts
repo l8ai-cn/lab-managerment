@@ -37,10 +37,16 @@ export interface FaultReport {
   updated_at: string;
 }
 
+export interface FaultAttachment {
+  url: string;
+  filename: string;
+}
+
 export interface FaultReportCreate {
   lab_id: string;
   fault_type: string;
   description: string;
+  attachments?: FaultAttachment[];
 }
 
 export interface FaultReportListResponse {
@@ -73,6 +79,9 @@ export const faultsApi = {
 
   create: (data: FaultReportCreate) =>
     api.post<FaultReport>("/faults", data).then((r) => r.data),
+
+  update: (id: string, data: { attachments?: FaultAttachment[] }) =>
+    api.patch<FaultReport>(`/faults/${id}`, data).then((r) => r.data),
 
   stats: () => api.get<FaultStats>("/faults/stats").then((r) => r.data),
 

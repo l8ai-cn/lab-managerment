@@ -6,6 +6,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi, spacesApi } from "../api/labsApi";
+import { usersApi } from "@/features/users/api/usersApi";
 import { LAB_TYPE_LABELS, OPEN_STATUS_LABELS, type BuildingTree, type LabType, type OpenStatus } from "../types/lab";
 
 const LAB_TYPE_OPTIONS = Object.entries(LAB_TYPE_LABELS).map(([value, label]) => ({ value, label }));
@@ -23,6 +24,11 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
   const { data: tree } = useQuery({
     queryKey: ["building-tree"],
     queryFn: spacesApi.getTree,
+  });
+
+  const { data: usersData } = useQuery({
+    queryKey: ["users-manager-options"],
+    queryFn: () => usersApi.list({ page_size: 100, role: "lab_admin" }),
   });
 
   const { data: lab, isLoading } = useQuery({
@@ -74,6 +80,7 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
       capacity: lab.capacity,
       lab_type: lab.lab_type,
       open_status: lab.open_status,
+      manager_id: lab.manager_id,
       description: lab.description,
     });
   }, [lab, tree, form]);
@@ -86,6 +93,9 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
       ?.find((b) => b.id === buildingId)
       ?.floors.find((f) => f.id === floorId)
       ?.rooms.map((r) => ({ value: r.id, label: r.code ? `${r.name}(${r.code})` : r.name })) ?? [];
+
+  const managerOptions =
+    usersData?.items.map((u) => ({ value: u.id, label: `${u.name} (${u.username})` })) ?? [];
 
   if (isEdit && isLoading) {
     return <Spin style={{ display: "block", margin: "48px auto" }} />;
@@ -120,6 +130,7 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
               capacity: values.capacity,
               lab_type: values.lab_type as LabType,
               open_status: values.open_status as OpenStatus,
+              manager_id: values.manager_id,
               description: values.description,
             };
             if (isEdit) {
@@ -158,6 +169,9 @@ export function LabFormFields({ labId }: LabFormFieldsProps) {
           </Form.Item>
           <Form.Item name="open_status" label="开放状态" initialValue="open">
             <Select options={OPEN_STATUS_OPTIONS} />
+          </Form.Item>
+          <Form.Item name="manager_id" label="实验室管理员">
+            <Select allowClear options={managerOptions} placeholder="选择管理员" />
           </Form.Item>
           <Form.Item name="area_sqm" label="面积(㎡)">
             <InputNumber min={0} style={{ width: "100%" }} />

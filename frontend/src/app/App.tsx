@@ -12,13 +12,17 @@ import {
   ProjectEditPage,
   ProjectFormPage,
 } from "@/features/experiment-projects/components/ProjectForm";
+import { CourseListPage } from "@/features/experiment-projects/components/CourseListPage";
 import { ProjectList } from "@/features/experiment-projects/components/ProjectList";
 import { FaultDetail } from "@/features/faults/components/FaultDetail";
 import { FaultList } from "@/features/faults/components/FaultList";
+import { FaultReportLandingPage } from "@/features/faults/components/FaultReportLandingPage";
 import { InstrumentBookingList } from "@/features/instruments/components/InstrumentBookingList";
+import { InstrumentBookingRulesPage } from "@/features/instruments/components/InstrumentBookingRulesPage";
 import { InstrumentList } from "@/features/instruments/components/InstrumentList";
 import { IntegrationPage } from "@/features/integrations/components/IntegrationPage";
 import { LabBookingList } from "@/features/lab-bookings/components/LabBookingList";
+import { LabBookingRulesPage } from "@/features/lab-bookings/components/LabBookingRulesPage";
 import { LabChangeDetail } from "@/features/lab-changes/components/LabChangeDetail";
 import { LabChangeList } from "@/features/lab-changes/components/LabChangeList";
 import { LabStaffList } from "@/features/lab-staff/components/LabStaffList";
@@ -29,6 +33,7 @@ import { PaymentOrderList } from "@/features/payments/components/PaymentOrderLis
 import { StatisticsPage } from "@/features/statistics/components/StatisticsPage";
 import { SpaceManagementPage } from "@/features/spaces/components/SpaceManagementPage";
 import { UserListPage } from "@/features/users/components/UserListPage";
+import { MobileApp } from "@/mobile/MobileApp";
 import { AuthProvider } from "@/shared/auth/AuthContext";
 import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 import { CopilotKitProvider } from "@/app/CopilotKitProvider";
@@ -55,6 +60,15 @@ export function App() {
               <BrowserRouter>
               <Routes>
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/fault-report" element={<FaultReportLandingPage />} />
+                <Route
+                  path="/mobile/*"
+                  element={
+                    <ProtectedRoute>
+                      <MobileApp />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   element={
                     <ProtectedRoute>
@@ -73,8 +87,11 @@ export function App() {
                   <Route path="/lab-changes" element={<LabChangeList />} />
                   <Route path="/lab-changes/:id" element={<LabChangeDetail />} />
                   <Route path="/instruments" element={<InstrumentList />} />
+                  <Route path="/instruments/rules" element={<InstrumentBookingRulesPage />} />
                   <Route path="/instrument-bookings" element={<InstrumentBookingList />} />
                   <Route path="/lab-bookings" element={<LabBookingList />} />
+                  <Route path="/lab-bookings/rules" element={<LabBookingRulesPage />} />
+                  <Route path="/courses" element={<CourseListPage />} />
                   <Route path="/experiment-projects" element={<ProjectList />} />
                   <Route path="/experiment-projects/new" element={<ProjectFormPage />} />
                   <Route path="/experiment-projects/:id/edit" element={<ProjectEditPage />} />

@@ -1,14 +1,23 @@
 import {
   BookOutlined,
   CalendarOutlined,
+  DownloadOutlined,
   ExperimentOutlined,
   HomeOutlined,
   ToolOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { Col, Row, Table } from "antd";
+import { Button, Col, DatePicker, Row, Space, Table } from "antd";
+import dayjs from "dayjs";
+import { useMemo, useState } from "react";
 import { USAGE_TYPE_LABELS } from "@/features/lab-bookings/api/labBookingsApi";
+import {
+  coursesApi,
+  experimentProjectsApi,
+  PROJECT_TYPE_LABELS,
+} from "@/features/experiment-projects/api/experimentProjectsApi";
+import { instrumentsApi } from "@/features/instruments/api/instrumentsApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { StatCard } from "@/shared/components/StatCard";
@@ -18,20 +27,56 @@ function dictToTableData(dict: Record<string, number>, keyLabel: string) {
   return Object.entries(dict).map(([key, count]) => ({ key, count, [keyLabel]: key }));
 }
 
+function exportCsv(filename: string, rows: string[][]) {
+  const content = rows.map((r) => r.join(",")).join("\n");
+  const blob = new Blob(["\ufeff" + content], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function StatisticsPage() {
+  const [dateRange, setDateRange] = useState<[dayjs.Dayjs, dayjs.Dayjs] | null>(null);
+
+  const params = useMemo(() => {
+    if (!dateRange) return {};
+    return {
+      from_time: dateRange[0].startOf("day").toISOString(),
+      to_time: dateRange[1].endOf("day").toISOString(),
+    };
+  }, [dateRange]);
+
   const { data: overview } = useQuery({
     queryKey: ["statistics-overview"],
     queryFn: statisticsApi.overview,
   });
 
   const { data: instrumentUsage } = useQuery({
-    queryKey: ["statistics-instrument-usage"],
-    queryFn: statisticsApi.instrumentUsage,
+    queryKey: ["statistics-instrument-usage", params],
+    queryFn: () => statisticsApi.instrumentUsage(params),
   });
 
   const { data: labUsage } = useQuery({
-    queryKey: ["statistics-lab-usage"],
-    queryFn: statisticsApi.labUsage,
+    queryKey: ["statistics-lab-usage", params],
+    queryFn: () => statisticsApi.labUsage(params),
+  });
+
+  const { data: instrumentsData } = useQuery({
+    queryKey: ["statistics-instruments-value"],
+    queryFn: () => instrumentsApi.list({ page_size: 500 }),
+  });
+
+  const { data: projectsData } = useQuery({
+    queryKey: ["statistics-projects"],
+    queryFn: () => experimentProjectsApi.list({ page_size: 500 }),
+  });
+
+  const { data: coursesData } = useQuery({
+    queryKey: ["statistics-courses"],
+    queryFn: () => coursesApi.list({ page_size: 500 }),
   });
 
   const usageTypeData = labUsage
@@ -46,9 +91,66 @@ export function StatisticsPage() {
     ? Object.values(labUsage.by_usage_type).reduce((sum, count) => sum + count, 0)
     : 0;
 
+  const equipmentValue = useMemo(() => {
+    const items = instrumentsData?.items ?? [];
+    const total = items.reduce((sum, i) => sum + (i.purchase_price ?? 0), 0);
+    const byCategory: Record<string, number> = {};
+    for (const inst of items) {
+      const cat = inst.category || "未分类";
+      byCategory[cat] = (byCategory[cat] ?? 0) + (inst.purchase_price ?? 0);
+    }
+    return { total, byCategory, count: items.length };
+  }, [instrumentsData]);
+
+  const projectStats = useMemo(() => {
+    const items = projectsData?.items ?? [];
+    const byType: Record<string, number> = {};
+    const bySemester: Record<string, number> = {};
+    for (const p of items) {
+      byType[p.type] = (byType[p.type] ?? 0) + 1;
+      if (p.semester) bySemester[p.semester] = (bySemester[p.semester] ?? 0) + 1;
+    }
+    return {
+      total: items.length,
+      courses: coursesData?.total ?? 0,
+      byType,
+      bySemester,
+    };
+  }, [projectsData, coursesData]);
+
+  const handleExportLabUsage = () => {
+    exportCsv("lab_usage.csv", [
+      ["使用类型", "预约数"],
+      ...usageTypeData.map((r) => [r.label, String(r.count)]),
+    ]);
+  };
+
+  const handleExportInstrumentUsage = () => {
+    const rows = dictToTableData(instrumentUsage?.by_lab ?? {}, "lab");
+    exportCsv("instrument_usage.csv", [
+      ["实验室", "使用次数"],
+      ...rows.map((r) => [r.lab as string, String(r.count)]),
+    ]);
+  };
+
   return (
     <>
-      <PageHeader />
+      <PageHeader
+        extra={
+          <Space>
+            <DatePicker.RangePicker
+              value={dateRange}
+              onChange={(v) => setDateRange(v as [dayjs.Dayjs, dayjs.Dayjs] | null)}
+            />
+            <Button icon={<DownloadOutlined />} onClick={handleExportLabUsage}>
+              导出实验室统计
+            </Button>
+            <Button icon={<DownloadOutlined />} onClick={handleExportInstrumentUsage}>
+              导出仪器统计
+            </Button>
+          </Space>
+        }
+      />
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={8} xl={4}>
@@ -118,6 +220,64 @@ export function StatisticsPage() {
                 <StatCard title="总人时数" value={labUsage?.person_times ?? 0} color="#8b5cf6" />
               </Col>
             </Row>
+          </ContentCard>
+        </Col>
+        <Col xs={24} lg={12}>
+          <ContentCard title="设备资产价值">
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <StatCard
+                  title="资产总值(元)"
+                  value={equipmentValue.total.toLocaleString()}
+                  color="#f59e0b"
+                />
+              </Col>
+              <Col span={12}>
+                <StatCard title="设备数量" value={equipmentValue.count} color="#6366f1" />
+              </Col>
+            </Row>
+            <Table
+              size="small"
+              rowKey="key"
+              pagination={false}
+              dataSource={dictToTableData(equipmentValue.byCategory, "category")}
+              columns={[
+                { title: "分类", dataIndex: "category" },
+                {
+                  title: "价值(元)",
+                  dataIndex: "count",
+                  width: 120,
+                  render: (v: number) => v.toLocaleString(),
+                },
+              ]}
+            />
+          </ContentCard>
+        </Col>
+        <Col xs={24} lg={12}>
+          <ContentCard title="实验项目统计">
+            <Row gutter={16} style={{ marginBottom: 16 }}>
+              <Col span={12}>
+                <StatCard title="实验项目数" value={projectStats.total} color="#0ea5e9" />
+              </Col>
+              <Col span={12}>
+                <StatCard title="关联课程数" value={projectStats.courses} color="#10b981" />
+              </Col>
+            </Row>
+            <Table
+              size="small"
+              rowKey="key"
+              pagination={false}
+              dataSource={Object.entries(projectStats.byType).map(([type, count]) => ({
+                key: type,
+                type,
+                label: PROJECT_TYPE_LABELS[type as keyof typeof PROJECT_TYPE_LABELS] ?? type,
+                count,
+              }))}
+              columns={[
+                { title: "项目类型", dataIndex: "label" },
+                { title: "数量", dataIndex: "count", width: 80 },
+              ]}
+            />
           </ContentCard>
         </Col>
       </Row>

@@ -1,5 +1,5 @@
 import { ExperimentOutlined, LockOutlined, UserOutlined } from "@ant-design/icons";
-import { Button, Form, Input, message } from "antd";
+import { Button, Divider, Form, Input, message } from "antd";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
@@ -145,6 +145,18 @@ export function LoginPage() {
                 </Button>
               </Form.Item>
             </Form>
+
+            <Divider plain style={{ margin: "20px 0 16px", color: "#94a3b8", fontSize: 13 }}>
+              或使用统一身份认证
+            </Divider>
+            <Button
+              block
+              size="large"
+              href="/api/v1/auth/sso/login"
+              className="login-page__sso"
+            >
+              SSO 单点登录
+            </Button>
 
             <div className="login-page__hint">
               <strong>演示账号</strong>

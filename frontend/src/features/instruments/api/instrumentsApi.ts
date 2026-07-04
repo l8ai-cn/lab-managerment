@@ -8,6 +8,7 @@ export type BookingStatus =
   | "cancelled"
   | "completed"
   | "in_use";
+export type ReviewStatus = "pending" | "approved" | "rejected";
 
 export const INSTRUMENT_STATUS_LABELS: Record<InstrumentStatus, string> = {
   normal: "正常",
@@ -53,6 +54,9 @@ export interface Instrument {
   lab_id?: string;
   lab_name?: string;
   location?: string;
+  manager_id?: string;
+  purchase_date?: string;
+  purchase_price?: number;
   status: InstrumentStatus;
   created_at: string;
   updated_at: string;
@@ -67,6 +71,9 @@ export interface InstrumentCreate {
   category?: string;
   lab_id?: string;
   location?: string;
+  manager_id?: string;
+  purchase_date?: string;
+  purchase_price?: number;
 }
 
 export interface InstrumentListResponse {
@@ -104,6 +111,52 @@ export interface BookingListResponse {
   page_size: number;
 }
 
+export interface InstrumentBookingRule {
+  id: string;
+  instrument_id: string;
+  open_hours: Record<string, unknown>;
+  min_duration_minutes?: number;
+  max_duration_minutes?: number;
+  daily_limit?: number;
+  weekly_limit?: number;
+  advance_hours?: number;
+  approval_mode?: string;
+  is_active?: boolean;
+}
+
+export interface InstrumentBookingRuleCreate {
+  instrument_id: string;
+  open_hours?: Record<string, unknown>;
+  min_duration_minutes?: number;
+  max_duration_minutes?: number;
+  daily_limit?: number;
+  weekly_limit?: number;
+  advance_hours?: number;
+  approval_mode?: string;
+  is_active?: boolean;
+}
+
+export interface InstrumentUsageRecord {
+  id: string;
+  booking_id: string;
+  content?: string;
+  parameters?: Record<string, unknown>;
+  consumables?: Record<string, unknown>;
+  status_feedback?: string;
+  attachments?: unknown[];
+  review_status: ReviewStatus;
+  reviewer_comment?: string;
+  created_at: string;
+}
+
+export interface InstrumentUsageRecordCreate {
+  content?: string;
+  parameters?: Record<string, unknown>;
+  consumables?: Record<string, unknown>;
+  status_feedback?: string;
+  attachments?: unknown[];
+}
+
 export interface InstrumentListParams {
   page?: number;
   page_size?: number;
@@ -133,6 +186,14 @@ export const instrumentsApi = {
     api.patch<Instrument>(`/instruments/${id}`, data).then((r) => r.data),
 };
 
+export const instrumentBookingRulesApi = {
+  get: (instrumentId: string) =>
+    api.get<InstrumentBookingRule>(`/instruments/${instrumentId}/booking-rules`).then((r) => r.data),
+
+  set: (data: InstrumentBookingRuleCreate) =>
+    api.post<InstrumentBookingRule>("/instruments/booking-rules", data).then((r) => r.data),
+};
+
 export const instrumentBookingsApi = {
   list: (params: BookingListParams = {}) =>
     api.get<BookingListResponse>("/instrument-bookings", { params }).then((r) => r.data),
@@ -148,5 +209,26 @@ export const instrumentBookingsApi = {
   reject: (id: string, comment: string) =>
     api
       .post<InstrumentBooking>(`/instrument-bookings/${id}/reject`, { comment })
+      .then((r) => r.data),
+
+  submitUsage: (id: string, data: InstrumentUsageRecordCreate) =>
+    api.post<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage`, data).then((r) => r.data),
+
+  approveUsage: (id: string, comment?: string) =>
+    api
+      .post<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage/approve`, { comment })
+      .then((r) => r.data),
+
+  rejectUsage: (id: string, comment: string) =>
+    api
+      .post<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage/reject`, { comment })
+      .then((r) => r.data),
+
+  calendar: (instrumentId: string, fromTime: string, toTime: string) =>
+    api
+      .get<Array<{ start_time: string; end_time: string; status: string }>>(
+        `/instruments/${instrumentId}/calendar`,
+        { params: { from_time: fromTime, to_time: toTime } },
+      )
       .then((r) => r.data),
 };
