@@ -13,6 +13,7 @@ from src.modules.spaces.schemas import (
     FloorCreate,
     FloorResponse,
     FloorTreeResponse,
+    FloorUpdate,
     RoomCreate,
     RoomResponse,
     RoomUpdate,
@@ -98,3 +99,34 @@ class SpaceService:
         await self.db.commit()
         await self.db.refresh(room)
         return RoomResponse.model_validate(room)
+
+    async def update_floor(self, floor_id: uuid.UUID, data: FloorUpdate) -> FloorResponse:
+        floor = await self.repo.get_floor(floor_id)
+        if not floor:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="楼层不存在")
+        for field, value in data.model_dump(exclude_unset=True).items():
+            setattr(floor, field, value)
+        await self.db.commit()
+        await self.db.refresh(floor)
+        return FloorResponse.model_validate(floor)
+
+    async def delete_building(self, building_id: uuid.UUID) -> None:
+        building = await self.repo.get_building(building_id)
+        if not building:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="楼栋不存在")
+        await self.repo.soft_delete(building)
+        await self.db.commit()
+
+    async def delete_floor(self, floor_id: uuid.UUID) -> None:
+        floor = await self.repo.get_floor(floor_id)
+        if not floor:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="楼层不存在")
+        await self.repo.soft_delete(floor)
+        await self.db.commit()
+
+    async def delete_room(self, room_id: uuid.UUID) -> None:
+        room = await self.repo.get_room(room_id)
+        if not room:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="房间不存在")
+        await self.repo.soft_delete(room)
+        await self.db.commit()

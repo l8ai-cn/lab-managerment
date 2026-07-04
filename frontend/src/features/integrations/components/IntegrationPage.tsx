@@ -13,7 +13,7 @@ import {
   type SyncStatus,
 } from "../api/integrationsApi";
 
-const INTEGRATION_TYPES: IntegrationType[] = ["asset", "card", "access", "face", "payment"];
+const INTEGRATION_TYPES: IntegrationType[] = ["asset", "card", "access", "face", "payment", "safety_exam"];
 
 const INTEGRATION_CONFIG: Record<IntegrationType, { endpoint: string; enabled: boolean }> = {
   asset: { endpoint: import.meta.env.VITE_ASSET_SYNC_URL ?? "https://asset.campus.edu/api/sync", enabled: true },
@@ -21,6 +21,7 @@ const INTEGRATION_CONFIG: Record<IntegrationType, { endpoint: string; enabled: b
   access: { endpoint: import.meta.env.VITE_ACCESS_SYNC_URL ?? "https://access.campus.edu/api/sync", enabled: true },
   face: { endpoint: import.meta.env.VITE_FACE_SYNC_URL ?? "https://face.campus.edu/api/sync", enabled: false },
   payment: { endpoint: import.meta.env.VITE_PAYMENT_SYNC_URL ?? "https://pay.campus.edu/api/sync", enabled: true },
+  safety_exam: { endpoint: import.meta.env.VITE_SAFETY_EXAM_SYNC_URL ?? "https://safety.campus.edu/api/sync", enabled: true },
 };
 
 export function IntegrationPage() {

@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input, InputNumber, Space, Tag, message } from "antd";
 import { useState } from "react";
 import { useAuth } from "@/shared/auth/AuthContext";
@@ -7,7 +7,6 @@ import {
   labBookingsApi,
   type CheckInMethod,
   type LabBookingStatus,
-  type UsageRecord,
 } from "../api/labBookingsApi";
 
 interface LabUsageRecordPanelProps {
@@ -18,11 +17,19 @@ interface LabUsageRecordPanelProps {
 
 export function LabUsageRecordPanel({ bookingId, status, onUpdated }: LabUsageRecordPanelProps) {
   const [form] = Form.useForm();
-  const [usageRecord, setUsageRecord] = useState<UsageRecord | null>(null);
   const [rejectComment, setRejectComment] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const isAdmin = user?.role === "lab_admin" || user?.role === "system_admin";
+
+  const shouldLoadUsage = status === "completed" || status === "approved";
+
+  const { data: usageRecord } = useQuery({
+    queryKey: ["lab-booking-usage", bookingId],
+    queryFn: () => labBookingsApi.getUsage(bookingId),
+    enabled: shouldLoadUsage,
+    retry: false,
+  });
 
   const checkInMutation = useMutation({
     mutationFn: (data: { method: CheckInMethod; actual_count?: number }) =>
@@ -40,9 +47,9 @@ export function LabUsageRecordPanel({ bookingId, status, onUpdated }: LabUsageRe
         content: values.content,
         parameters: values.actual_count ? { actual_count: values.actual_count } : undefined,
       }),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("使用记录已提交");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["lab-booking-usage", bookingId] });
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
       onUpdated?.();
     },
@@ -51,23 +58,23 @@ export function LabUsageRecordPanel({ bookingId, status, onUpdated }: LabUsageRe
 
   const approveMutation = useMutation({
     mutationFn: () => labBookingsApi.approveUsage(bookingId),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("已通过审核");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["lab-booking-usage", bookingId] });
       onUpdated?.();
     },
   });
 
   const rejectMutation = useMutation({
     mutationFn: () => labBookingsApi.rejectUsage(bookingId, rejectComment || "不符合要求"),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("已驳回");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["lab-booking-usage", bookingId] });
       onUpdated?.();
     },
   });
 
-  if (status === "approved") {
+  if (status === "approved" && !usageRecord) {
     return (
       <Space direction="vertical" style={{ width: "100%" }}>
         <Space wrap>
@@ -99,7 +106,7 @@ export function LabUsageRecordPanel({ bookingId, status, onUpdated }: LabUsageRe
     );
   }
 
-  if (status === "completed" || usageRecord) {
+  if (usageRecord || status === "completed") {
     const reviewStatus = usageRecord?.review_status ?? "pending";
     return (
       <Space direction="vertical" style={{ width: "100%" }}>
@@ -110,7 +117,7 @@ export function LabUsageRecordPanel({ bookingId, status, onUpdated }: LabUsageRe
           </Tag>
         </div>
         {usageRecord?.content && <div>使用内容：{usageRecord.content}</div>}
-        {isAdmin && reviewStatus === "pending" && (
+        {isAdmin && reviewStatus === "pending" && usageRecord && (
           <Space>
             <Button type="primary" size="small" onClick={() => approveMutation.mutate()} loading={approveMutation.isPending}>
               通过

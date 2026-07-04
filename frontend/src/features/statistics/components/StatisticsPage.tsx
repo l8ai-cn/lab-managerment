@@ -65,6 +65,11 @@ export function StatisticsPage() {
     queryFn: statisticsApi.overview,
   });
 
+  const { data: equipmentValueApi } = useQuery({
+    queryKey: ["statistics-equipment-value"],
+    queryFn: statisticsApi.equipmentValue,
+  });
+
   const { data: instrumentUsage } = useQuery({
     queryKey: ["statistics-instrument-usage", params],
     queryFn: () => statisticsApi.instrumentUsage(params),
@@ -103,6 +108,13 @@ export function StatisticsPage() {
     : 0;
 
   const equipmentValue = useMemo(() => {
+    if (equipmentValueApi) {
+      return {
+        total: equipmentValueApi.total_value,
+        byCategory: equipmentValueApi.by_category,
+        count: equipmentValueApi.instrument_count,
+      };
+    }
     const items = instrumentsData?.items ?? [];
     const total = items.reduce((sum, i) => sum + (i.purchase_price ?? 0), 0);
     const byCategory: Record<string, number> = {};
@@ -111,7 +123,7 @@ export function StatisticsPage() {
       byCategory[cat] = (byCategory[cat] ?? 0) + (inst.purchase_price ?? 0);
     }
     return { total, byCategory, count: items.length };
-  }, [instrumentsData]);
+  }, [equipmentValueApi, instrumentsData]);
 
   const projectStats = useMemo(() => {
     const items = projectsData?.items ?? [];
@@ -144,6 +156,16 @@ export function StatisticsPage() {
     ]);
   };
 
+  const handleServerExport = async (type: "overview" | "equipment-value" | "faults") => {
+    const blob = await statisticsApi.exportReport(type);
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `statistics_${type}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <PageHeader
@@ -166,6 +188,12 @@ export function StatisticsPage() {
             </Button>
             <Button icon={<DownloadOutlined />} onClick={handleExportInstrumentUsage}>
               导出仪器统计
+            </Button>
+            <Button icon={<DownloadOutlined />} onClick={() => handleServerExport("overview")}>
+              导出总览报表
+            </Button>
+            <Button icon={<DownloadOutlined />} onClick={() => handleServerExport("equipment-value")}>
+              导出设备价值
             </Button>
           </Space>
         }

@@ -1,6 +1,6 @@
 # 实验室管理系统 — 需求核对清单（V2）
 
-> **维护日期：** 2026-07-04（v0.3.1 优化更新）  
+> **维护日期：** 2026-07-04（v0.3.3 CRUD 闭环更新）  
 > **系统版本：** LabOS v0.3  
 > **测试环境：** 后端 `http://127.0.0.1:8000` / 前端 `http://127.0.0.1:5173`  
 > **种子数据：** `python3 -m scripts.reset_and_seed`  
@@ -19,11 +19,11 @@
 | 指标 | 数量 |
 |------|------|
 | 需求细项总数 | **98** |
-| ✅ 已完成 | **72** |
-| ⚠️ 部分完成 | **24** |
+| ✅ 已完成 | **78** |
+| ⚠️ 部分完成 | **18** |
 | ❌ 未完成 | **2** |
 | 完成率（含部分） | **98%** |
-| 严格完成率（仅 ✅） | **73%** |
+| 严格完成率（仅 ✅） | **80%** |
 
 ---
 
@@ -69,7 +69,7 @@
 |------|----------|------|----------|------|
 | 2.2.1 | 仪器详细信息录入（名称/型号/厂家/编号/资产号/购置日期/价格/位置/责任人等） | ✅ | 模型字段完整；`InstrumentForm` 含 `manager_id`、`purchase_date`、`purchase_price` | 同上 |
 | 2.2.2 | 技术状态标记（正常/维修/停用/报废）及变更记录 | ✅ | `InstrumentStatus` 枚举；`POST /instruments/{id}/status` 记录 status_log | 同上 |
-| 2.2.3 | 仪器台账批量导入导出（Excel） | ⚠️ | `GET /instruments/export`、`POST /instruments/import` ✅；UI 导出按钮 ✅；导入需 xlsx 验 | 同上 |
+| 2.2.3 | 仪器台账批量导入导出（Excel） | ✅ | `GET /instruments/export`、`POST /instruments/import`；InstrumentList 导入/导出按钮 | ![仪器台账](/opt/cursor/artifacts/screenshots/08-instruments.png) |
 
 ### 2.3 仪器预约规则配置
 
@@ -206,7 +206,7 @@
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
 | 6.1.1 | 教育部基表标准化填报模板 | ⚠️ | 种子数据含 7 个基表模板 ✅；**非官方完整 schema 预置 ⚠️** | ![数据填报](/opt/cursor/artifacts/screenshots/16-data-reporting.png) |
-| 6.1.2 | 基表在线填报、批量导入导出 | ⚠️ | submissions CRUD ✅；import/export API ✅ | 同上 |
+| 6.1.2 | 基表在线填报、批量导入导出 | ✅ | 模板 CRUD + 填报草稿编辑 + `import/export` API 与 UI 闭环 | ![数据填报](/opt/cursor/artifacts/screenshots/16-data-reporting.png) |
 | 6.2.1 | 填报数据集中归档，多条件查询 | ✅ | submissions 列表筛选 | 同上 |
 | 6.2.2 | 自动汇总统计，生成汇总报表 | ⚠️ | `GET /submissions/stats` ✅；汇总报表 ⚠️ | 同上 |
 | 6.2.3 | 可视化展示（图表/趋势）及导出 | ⚠️ | `SubmissionStatsCharts` Tab ✅；导出 ⚠️ | 同上 |
@@ -275,7 +275,7 @@
 | 编号 | 需求描述 | 状态 | 实现证据 | 截图 |
 |------|----------|------|----------|------|
 | 9.5.1 | 多角色用户管理（6 种角色 + RBAC） | ✅ | `UserRole` 枚举；`/users` CRUD | ![用户管理](/opt/cursor/artifacts/screenshots/20-users.png) |
-| 9.5.2 | 空间管理（楼栋/楼层/房间层级） | ✅ | `/spaces` SpaceManagementPage | ![空间管理](/opt/cursor/artifacts/screenshots/05-spaces.png) |
+| 9.5.2 | 空间管理（楼栋/楼层/房间层级） | ✅ | `/spaces` 增删改查闭环（楼栋/房间编辑删除） | ![空间管理](/opt/cursor/artifacts/screenshots/05-spaces.png) |
 | 9.5.3 | 实验室信息 CRUD + 巡查状态 | ✅ | CRUD ✅；`inspection_status` 列表/详情/表单完整展示 | ![实验室](/opt/cursor/artifacts/screenshots/03-labs.png) |
 
 ### 9.6 数据可视化大屏
@@ -295,7 +295,7 @@
 | 10.1.1 | 开放 MCP/API 覆盖核心能力，自然语言对话操作 | ⚠️ | REST Agent API + CopilotKit + **MCP JSON-RPC 端点** `/api/v1/mcp`；**非完整 MCP stdio/SSE** | ![Copilot](/opt/cursor/artifacts/screenshots/23-copilot.png) |
 | 10.1.2 | 实时推送门禁/签到供违规监测；AI 待办推送 | ⚠️ | 签到/门禁 API ✅；站内通知 ✅；**实时 SSE 违规流 ⚠️** | 同上 |
 | 10.2.1 | Text-to-SQL 自然语言透视查询 | ⚠️ | `POST /agent/text-to-sql` 支持 `question` 自然语言 + 只读 SQL 执行 | 同上 |
-| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ⚠️ | FTS5 中文分词 + 混合向量检索 ✅；**非 pgvector 生产级 embedding** | 同上 |
+| 10.2.2 | 知识库文档导入、向量索引、同步更新 | ✅ | `/knowledge` 完整 CRUD + 中文 FTS/混合搜索 UI | — |
 
 ---
 

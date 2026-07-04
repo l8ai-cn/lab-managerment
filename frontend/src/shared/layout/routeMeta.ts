@@ -23,6 +23,7 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   "/faults": { title: "故障上报", subtitle: "设备与环境问题上报处理", group: "运维管理" },
   "/fault-report": { title: "扫码故障上报", subtitle: "快速上报实验室故障", group: "运维管理" },
   "/data-reporting": { title: "数据填报", subtitle: "教育部基表标准化填报", group: "运维管理" },
+  "/knowledge": { title: "知识库", subtitle: "文档管理与全文检索", group: "运维管理" },
   "/statistics": { title: "统计分析", subtitle: "使用率与人时数多维分析", group: "系统" },
   "/integrations": { title: "系统对接", subtitle: "外部系统数据同步", group: "系统" },
   "/payments": { title: "收费管理", subtitle: "实验室使用费用与支付", group: "系统" },
@@ -49,6 +50,9 @@ export function getRouteMeta(pathname: string): RouteMeta {
   }
   if (pathname.match(/^\/experiment-projects\/[^/]+\/edit$/)) {
     return { title: "编辑实验项目", group: "教学科研" };
+  }
+  if (pathname.match(/^\/experiments\/[^/]+\/edit$/)) {
+    return { title: "编辑实验", group: "教学科研" };
   }
   if (pathname.match(/^\/experiments\/[^/]+$/)) {
     return { title: "实验详情", group: "教学科研" };

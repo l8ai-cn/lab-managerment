@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
@@ -12,6 +12,7 @@ from src.modules.spaces.schemas import (
     BuildingUpdate,
     FloorCreate,
     FloorResponse,
+    FloorUpdate,
     RoomCreate,
     RoomResponse,
     RoomUpdate,
@@ -61,6 +62,15 @@ async def update_building(
     return await service.update_building(building_id, data)
 
 
+@router.delete("/buildings/{building_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_building(
+    building_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.DEPT_ADMIN)),
+    service: SpaceService = Depends(get_service),
+):
+    await service.delete_building(building_id)
+
+
 @router.get("/buildings/{building_id}/floors", response_model=list[FloorResponse])
 async def list_floors(
     building_id: uuid.UUID,
@@ -77,6 +87,25 @@ async def create_floor(
     service: SpaceService = Depends(get_service),
 ):
     return await service.create_floor(data)
+
+
+@router.patch("/floors/{floor_id}", response_model=FloorResponse)
+async def update_floor(
+    floor_id: uuid.UUID,
+    data: FloorUpdate,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.DEPT_ADMIN)),
+    service: SpaceService = Depends(get_service),
+):
+    return await service.update_floor(floor_id, data)
+
+
+@router.delete("/floors/{floor_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_floor(
+    floor_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.DEPT_ADMIN)),
+    service: SpaceService = Depends(get_service),
+):
+    await service.delete_floor(floor_id)
 
 
 @router.get("/floors/{floor_id}/rooms", response_model=list[RoomResponse])
@@ -105,3 +134,12 @@ async def update_room(
     service: SpaceService = Depends(get_service),
 ):
     return await service.update_room(room_id, data)
+
+
+@router.delete("/rooms/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_room(
+    room_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.DEPT_ADMIN, UserRole.LAB_ADMIN)),
+    service: SpaceService = Depends(get_service),
+):
+    await service.delete_room(room_id)

@@ -1,6 +1,6 @@
-import { PlusOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Table, Tag } from "antd";
+import { DownloadOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Input, Modal, Popconfirm, Select, Table, Tag, Upload, message } from "antd";
 import { useState } from "react";
 import { labsApi } from "@/features/labs/api/labsApi";
 import { ContentCard } from "@/shared/components/ContentCard";
@@ -24,6 +24,49 @@ export function InstrumentList() {
   const [status, setStatus] = useState<InstrumentStatus>();
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Instrument | null>(null);
+  const [statusModal, setStatusModal] = useState<Instrument | null>(null);
+  const [newStatus, setNewStatus] = useState<InstrumentStatus>("normal");
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: instrumentsApi.delete,
+    onSuccess: () => {
+      message.success("已删除");
+      queryClient.invalidateQueries({ queryKey: ["instruments"] });
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: InstrumentStatus }) =>
+      instrumentsApi.changeStatus(id, status),
+    onSuccess: () => {
+      message.success("状态已更新");
+      setStatusModal(null);
+      queryClient.invalidateQueries({ queryKey: ["instruments"] });
+    },
+  });
+
+  const importMutation = useMutation({
+    mutationFn: (file: File) => instrumentsApi.import(file),
+    onSuccess: (result) => {
+      message.success(`已导入 ${result.imported} 条`);
+      queryClient.invalidateQueries({ queryKey: ["instruments"] });
+    },
+    onError: () => message.error("导入失败"),
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => instrumentsApi.export({ lab_id: labId }),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "instruments.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+      message.success("导出成功");
+    },
+  });
 
   const { data: labsData } = useQuery({
     queryKey: ["labs-options"],
@@ -75,11 +118,21 @@ export function InstrumentList() {
     },
     {
       title: "操作",
-      width: 80,
+      width: 200,
       render: (_: unknown, record: Instrument) => (
-        <Button type="link" size="small" onClick={() => openEdit(record)}>
-          编辑
-        </Button>
+        <>
+          <Button type="link" size="small" onClick={() => openEdit(record)}>
+            编辑
+          </Button>
+          <Button type="link" size="small" onClick={() => { setStatusModal(record); setNewStatus(record.status); }}>
+            状态
+          </Button>
+          <Popconfirm title="确认删除该仪器？" onConfirm={() => deleteMutation.mutate(record.id)}>
+            <Button type="link" danger size="small">
+              删除
+            </Button>
+          </Popconfirm>
+        </>
       ),
     },
   ];
@@ -88,9 +141,26 @@ export function InstrumentList() {
     <>
       <PageHeader
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
-            新增仪器
-          </Button>
+          <>
+            <Button icon={<DownloadOutlined />} onClick={() => exportMutation.mutate()} loading={exportMutation.isPending}>
+              导出
+            </Button>
+            <Upload
+              accept=".xlsx,.xls"
+              showUploadList={false}
+              beforeUpload={(file) => {
+                importMutation.mutate(file);
+                return false;
+              }}
+            >
+              <Button icon={<UploadOutlined />} loading={importMutation.isPending}>
+                导入
+              </Button>
+            </Upload>
+            <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
+              新增仪器
+            </Button>
+          </>
         }
       />
 
@@ -125,6 +195,21 @@ export function InstrumentList() {
           setEditing(null);
         }}
       />
+
+      <Modal
+        title={`变更状态 — ${statusModal?.name ?? ""}`}
+        open={!!statusModal}
+        onCancel={() => setStatusModal(null)}
+        onOk={() => statusModal && statusMutation.mutate({ id: statusModal.id, status: newStatus })}
+        confirmLoading={statusMutation.isPending}
+      >
+        <Select
+          style={{ width: "100%" }}
+          value={newStatus}
+          onChange={setNewStatus}
+          options={STATUS_OPTIONS}
+        />
+      </Modal>
     </>
   );
 }

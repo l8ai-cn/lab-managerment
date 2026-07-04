@@ -1,6 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { Button, Input, Select, Table, Tag } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Button, Input, Popconfirm, Select, Space, Table, Tag, message } from "antd";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ContentCard } from "@/shared/components/ContentCard";
@@ -23,6 +23,15 @@ export function ExperimentList() {
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState("");
   const [statusFilter, setStatusFilter] = useState<ExperimentStatus[]>([]);
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: experimentsApi.delete,
+    onSuccess: () => {
+      message.success("已删除");
+      queryClient.invalidateQueries({ queryKey: ["experiments"] });
+    },
+  });
 
   const { data, isLoading } = useQuery({
     queryKey: ["experiments", page, keyword, statusFilter],
@@ -64,6 +73,26 @@ export function ExperimentList() {
       dataIndex: "created_at",
       width: 180,
       render: (v: string) => new Date(v).toLocaleString("zh-CN"),
+    },
+    {
+      title: "操作",
+      width: 140,
+      render: (_: unknown, record: Experiment) => (
+        <Space size="small">
+          <Link to={`/experiments/${record.id}/edit`}>
+            <Button type="link" size="small">
+              编辑
+            </Button>
+          </Link>
+          {record.status === "draft" && (
+            <Popconfirm title="确认删除？" onConfirm={() => deleteMutation.mutate(record.id)}>
+              <Button type="link" danger size="small">
+                删除
+              </Button>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
     },
   ];
 

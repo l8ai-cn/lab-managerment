@@ -81,4 +81,13 @@ export const labChangesApi = {
 
   reject: (id: string, comment: string) =>
     api.post<ChangeRequest>(`/lab-changes/${id}/reject`, { comment }).then((r) => r.data),
+
+  update: (
+    id: string,
+    data: {
+      title?: string;
+      description?: string;
+      change_content?: Record<string, unknown>;
+    },
+  ) => api.patch<ChangeRequest>(`/lab-changes/${id}`, data).then((r) => r.data),
 };

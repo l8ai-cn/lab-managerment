@@ -1,6 +1,6 @@
-import { PlusOutlined } from "@ant-design/icons";
+import { DownloadOutlined, PlusOutlined, UploadOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, Form, Input, Modal, Select, Space, Table, Tag, Upload, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { FilterBar } from "@/shared/components/FilterBar";
@@ -21,7 +21,9 @@ export function SubmissionList() {
   const [page, setPage] = useState(1);
   const [statusFilter, setStatusFilter] = useState<ReportSubmissionStatus>();
   const [submitOpen, setSubmitOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState<ReportSubmission | null>(null);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data: templatesData } = useQuery({
@@ -62,6 +64,37 @@ export function SubmissionList() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: { unit_name?: string; period?: string; data?: Record<string, unknown> } }) =>
+      dataReportingApi.updateSubmission(id, data),
+    onSuccess: () => {
+      message.success("已保存");
+      setEditOpen(null);
+      queryClient.invalidateQueries({ queryKey: ["report-submissions"] });
+    },
+  });
+
+  const exportMutation = useMutation({
+    mutationFn: () => dataReportingApi.exportSubmissions(),
+    onSuccess: (blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "submissions.xlsx";
+      a.click();
+      URL.revokeObjectURL(url);
+      message.success("导出成功");
+    },
+  });
+
+  const importMutation = useMutation({
+    mutationFn: (file: File) => dataReportingApi.importSubmissions(file),
+    onSuccess: (result) => {
+      message.success(`已导入 ${result.imported} 条`);
+      queryClient.invalidateQueries({ queryKey: ["report-submissions"] });
+    },
+  });
+
   const templateOptions =
     templatesData?.items.map((t) => ({ value: t.id, label: `${t.code} ${t.name}` })) ?? [];
 
@@ -85,13 +118,29 @@ export function SubmissionList() {
     },
     {
       title: "操作",
-      width: 140,
+      width: 180,
       render: (_: unknown, record: ReportSubmission) => (
         <Space size="small">
           {record.status === "draft" && (
-            <Button type="link" size="small" onClick={() => submitMutation.mutate(record.id)}>
-              提交
-            </Button>
+            <>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => {
+                  setEditOpen(record);
+                  editForm.setFieldsValue({
+                    unit_name: record.unit_name,
+                    period: record.period,
+                    data: JSON.stringify(record.data ?? {}, null, 2),
+                  });
+                }}
+              >
+                编辑
+              </Button>
+              <Button type="link" size="small" onClick={() => submitMutation.mutate(record.id)}>
+                提交
+              </Button>
+            </>
           )}
           {record.status === "submitted" && (
             <Button type="link" size="small" onClick={() => approveMutation.mutate(record.id)}>
@@ -116,6 +165,21 @@ export function SubmissionList() {
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setSubmitOpen(true)}>
           新建填报
         </Button>
+        <Button icon={<DownloadOutlined />} onClick={() => exportMutation.mutate()} loading={exportMutation.isPending}>
+          导出
+        </Button>
+        <Upload
+          accept=".xlsx,.xls"
+          showUploadList={false}
+          beforeUpload={(file) => {
+            importMutation.mutate(file);
+            return false;
+          }}
+        >
+          <Button icon={<UploadOutlined />} loading={importMutation.isPending}>
+            导入
+          </Button>
+        </Upload>
       </FilterBar>
 
       <Table
@@ -164,6 +228,41 @@ export function SubmissionList() {
           </Form.Item>
           <Form.Item name="data" label="填报数据 (JSON)">
             <Input.TextArea rows={4} placeholder='{"key": "value"}' />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="编辑填报草稿"
+        open={!!editOpen}
+        onCancel={() => setEditOpen(null)}
+        onOk={() => editForm.submit()}
+        confirmLoading={updateMutation.isPending}
+        width={520}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(values) => {
+            if (!editOpen) return;
+            updateMutation.mutate({
+              id: editOpen.id,
+              data: {
+                unit_name: values.unit_name,
+                period: values.period,
+                data: values.data ? JSON.parse(values.data) : {},
+              },
+            });
+          }}
+        >
+          <Form.Item name="unit_name" label="填报单位" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="period" label="填报周期" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="data" label="填报数据 (JSON)">
+            <Input.TextArea rows={6} />
           </Form.Item>
         </Form>
       </Modal>

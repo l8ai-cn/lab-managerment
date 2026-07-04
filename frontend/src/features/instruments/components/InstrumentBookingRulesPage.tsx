@@ -74,6 +74,7 @@ export function InstrumentBookingRulesPage() {
   useEffect(() => {
     if (rule) {
       const ext = (rule.external_rules ?? {}) as Record<string, unknown>;
+      const internal = (rule.internal_rules ?? {}) as Record<string, unknown>;
       form.setFieldsValue({
         min_duration_minutes: rule.min_duration_minutes ?? 30,
         max_duration_minutes: rule.max_duration_minutes ?? 480,
@@ -86,6 +87,9 @@ export function InstrumentBookingRulesPage() {
         ext_fee_per_hour: ext.fee_per_hour,
         ext_require_approval: ext.require_approval ?? true,
         ext_daily_limit: ext.daily_limit,
+        int_require_approval: internal.require_approval ?? true,
+        int_daily_limit: internal.daily_limit,
+        int_fee_per_hour: internal.fee_per_hour,
         ...openHoursToForm(rule.open_hours ?? {}),
       });
     } else if (instrumentId) {
@@ -112,6 +116,11 @@ export function InstrumentBookingRulesPage() {
           fee_per_hour: values.ext_fee_per_hour as number | undefined,
           require_approval: values.ext_require_approval as boolean | undefined,
           daily_limit: values.ext_daily_limit as number | undefined,
+        },
+        internal_rules: {
+          require_approval: values.int_require_approval as boolean | undefined,
+          daily_limit: values.int_daily_limit as number | undefined,
+          fee_per_hour: values.int_fee_per_hour as number | undefined,
         },
       };
       return instrumentBookingRulesApi.set(payload);
@@ -198,6 +207,16 @@ export function InstrumentBookingRulesPage() {
             </Form.Item>
             <Form.Item name="ext_require_approval" label="校外需审批" valuePropName="checked">
               <Switch defaultChecked />
+            </Form.Item>
+            <div style={{ marginBottom: 16, fontWeight: 600, color: "#334155" }}>校内用户规则</div>
+            <Form.Item name="int_require_approval" label="校内需审批" valuePropName="checked">
+              <Switch defaultChecked />
+            </Form.Item>
+            <Form.Item name="int_daily_limit" label="校内每日预约上限">
+              <InputNumber min={1} style={{ width: 200 }} />
+            </Form.Item>
+            <Form.Item name="int_fee_per_hour" label="校内收费(元/小时)">
+              <InputNumber min={0} style={{ width: 200 }} />
             </Form.Item>
             <Form.Item>
               <Button type="primary" htmlType="submit" icon={<SaveOutlined />} loading={saveMutation.isPending}>

@@ -7,6 +7,7 @@ import { LoginPage } from "@/app/LoginPage";
 import { DashboardPage } from "@/features/dashboard/components/DashboardPage";
 import { DataReportingPage } from "@/features/data-reporting/components/DataReportingPage";
 import { ExperimentDetail } from "@/features/experiments/components/ExperimentDetail";
+import { ExperimentEditPage } from "@/features/experiments/components/ExperimentEditPage";
 import { ExperimentForm } from "@/features/experiments/components/ExperimentForm";
 import { ExperimentList } from "@/features/experiments/components/ExperimentList";
 import {
@@ -22,6 +23,7 @@ import { InstrumentBookingList } from "@/features/instruments/components/Instrum
 import { InstrumentBookingRulesPage } from "@/features/instruments/components/InstrumentBookingRulesPage";
 import { InstrumentList } from "@/features/instruments/components/InstrumentList";
 import { IntegrationPage } from "@/features/integrations/components/IntegrationPage";
+import { KnowledgePage } from "@/features/knowledge/components/KnowledgePage";
 import { UsageApprovalPage } from "@/features/lab-bookings/components/UsageApprovalPage";
 import { LabBookingList } from "@/features/lab-bookings/components/LabBookingList";
 import { LabBookingRulesPage } from "@/features/lab-bookings/components/LabBookingRulesPage";
@@ -101,11 +103,13 @@ export function App() {
                   <Route path="/experiment-projects/:id/edit" element={<ProjectEditPage />} />
                   <Route path="/experiments" element={<ExperimentList />} />
                   <Route path="/experiments/new" element={<ExperimentForm />} />
+                  <Route path="/experiments/:id/edit" element={<ExperimentEditPage />} />
                   <Route path="/experiments/:id" element={<ExperimentDetail />} />
                   <Route path="/faults" element={<FaultList />} />
                   <Route path="/faults/:id" element={<FaultDetail />} />
                   <Route path="/data-reporting" element={<DataReportingPage />} />
                   <Route path="/statistics" element={<StatisticsPage />} />
+                  <Route path="/knowledge" element={<KnowledgePage />} />
                   <Route path="/integrations" element={<IntegrationPage />} />
                   <Route path="/payments" element={<PaymentOrderList />} />
                   <Route path="/" element={<Navigate to="/dashboard" replace />} />

@@ -1,6 +1,6 @@
 import { PlusOutlined, WarningOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Col, Form, Input, Modal, Row, Select, Table, Tag, Upload, message } from "antd";
+import { Button, Col, Form, Input, Modal, Popconfirm, Row, Select, Table, Tag, Upload, message } from "antd";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -48,6 +48,17 @@ export function FaultList() {
   const labOptions =
     labsData?.items.map((l) => ({ value: l.id, label: `${l.code} ${l.name}` })) ?? [];
 
+  const queryClient = useQueryClient();
+
+  const deleteMutation = useMutation({
+    mutationFn: faultsApi.delete,
+    onSuccess: () => {
+      message.success("已删除");
+      queryClient.invalidateQueries({ queryKey: ["faults"] });
+      queryClient.invalidateQueries({ queryKey: ["fault-stats"] });
+    },
+  });
+
   const columns = [
     {
       title: "故障类型",
@@ -72,6 +83,17 @@ export function FaultList() {
       dataIndex: "created_at",
       width: 170,
       render: (v: string) => dayjs(v).format("YYYY-MM-DD HH:mm"),
+    },
+    {
+      title: "操作",
+      width: 80,
+      render: (_: unknown, record: FaultReport) => (
+        <Popconfirm title="确认删除？" onConfirm={() => deleteMutation.mutate(record.id)}>
+          <Button type="link" danger size="small">
+            删除
+          </Button>
+        </Popconfirm>
+      ),
     },
   ];
 

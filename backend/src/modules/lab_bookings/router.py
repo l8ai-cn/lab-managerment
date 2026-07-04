@@ -192,6 +192,15 @@ async def check_in(
     return await service.check_in(booking_id, data, user)
 
 
+@router.get("/{booking_id}/usage", response_model=UsageRecordResponse)
+async def get_usage(
+    booking_id: uuid.UUID,
+    user: User = Depends(get_current_user),
+    service: LabBookingService = Depends(get_service),
+):
+    return await service.get_usage(booking_id)
+
+
 @router.post("/{booking_id}/usage", response_model=UsageRecordResponse)
 async def submit_usage(
     booking_id: uuid.UUID,

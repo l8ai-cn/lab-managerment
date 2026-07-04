@@ -215,6 +215,37 @@ class InstrumentService:
         bookings, _ = await self.repo.list_bookings(instrument_id=instrument_id, from_time=from_time, to_time=to_time, page_size=200)
         return [CalendarSlot(start_time=b.start_time, end_time=b.end_time, status=b.status.value) for b in bookings]
 
+    async def get_booking(self, bid: uuid.UUID) -> InstrumentBookingResponse:
+        booking = await self.repo.get_booking(bid)
+        if not booking:
+            raise HTTPException(404, "预约不存在")
+        return _booking_response(booking)
+
+    async def cancel_booking(self, bid: uuid.UUID, user: User) -> InstrumentBookingResponse:
+        booking = await self.repo.get_booking(bid)
+        if not booking:
+            raise HTTPException(404, "预约不存在")
+        if booking.user_id != user.id:
+            raise HTTPException(403, "无权取消")
+        if booking.status in (BookingStatus.CANCELLED, BookingStatus.COMPLETED):
+            raise HTTPException(409, "当前状态不可取消")
+        booking.status = BookingStatus.CANCELLED
+        await self.db.commit()
+        return _booking_response(await self.repo.get_booking(bid))  # type: ignore
+
+    async def get_usage(self, bid: uuid.UUID) -> UsageRecordResponse:
+        record = await self.repo.get_usage(bid)
+        if not record:
+            raise HTTPException(404, "使用记录不存在")
+        return UsageRecordResponse.model_validate(record)
+
+    async def delete(self, iid: uuid.UUID) -> None:
+        inst = await self.repo.get_instrument(iid)
+        if not inst:
+            raise HTTPException(404, "仪器不存在")
+        await self.repo.soft_delete(inst)
+        await self.db.commit()
+
     async def submit_usage(self, bid: uuid.UUID, data: UsageRecordCreate, user: User) -> UsageRecordResponse:
         booking = await self.repo.get_booking(bid)
         if not booking or booking.user_id != user.id:

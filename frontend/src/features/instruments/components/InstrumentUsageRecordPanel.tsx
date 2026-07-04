@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, Form, Input, Space, Tag, Upload, message } from "antd";
 import { useState } from "react";
 import { useAuth } from "@/shared/auth/AuthContext";
@@ -6,7 +6,6 @@ import { uploadApi } from "@/shared/api/uploadApi";
 import {
   instrumentBookingsApi,
   type BookingStatus,
-  type InstrumentUsageRecord,
 } from "../api/instrumentsApi";
 
 interface InstrumentUsageRecordPanelProps {
@@ -21,12 +20,20 @@ export function InstrumentUsageRecordPanel({
   onUpdated,
 }: InstrumentUsageRecordPanelProps) {
   const [form] = Form.useForm();
-  const [usageRecord, setUsageRecord] = useState<InstrumentUsageRecord | null>(null);
   const [attachments, setAttachments] = useState<Array<{ url: string; filename: string }>>([]);
   const [rejectComment, setRejectComment] = useState("");
   const queryClient = useQueryClient();
   const { user } = useAuth();
   const isAdmin = user?.role === "lab_admin" || user?.role === "system_admin";
+
+  const shouldLoadUsage = ["approved", "in_use", "completed"].includes(status);
+
+  const { data: usageRecord } = useQuery({
+    queryKey: ["instrument-booking-usage", bookingId],
+    queryFn: () => instrumentBookingsApi.getUsage(bookingId),
+    enabled: shouldLoadUsage,
+    retry: false,
+  });
 
   const submitMutation = useMutation({
     mutationFn: (values: { content?: string; status_feedback?: string }) =>
@@ -35,9 +42,9 @@ export function InstrumentUsageRecordPanel({
         status_feedback: values.status_feedback,
         attachments,
       }),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("使用记录已提交");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["instrument-booking-usage", bookingId] });
       queryClient.invalidateQueries({ queryKey: ["instrument-bookings"] });
       onUpdated?.();
     },
@@ -46,9 +53,9 @@ export function InstrumentUsageRecordPanel({
 
   const approveMutation = useMutation({
     mutationFn: () => instrumentBookingsApi.approveUsage(bookingId),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("已通过审核");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["instrument-booking-usage", bookingId] });
       onUpdated?.();
     },
   });
@@ -56,14 +63,14 @@ export function InstrumentUsageRecordPanel({
   const rejectMutation = useMutation({
     mutationFn: () =>
       instrumentBookingsApi.rejectUsage(bookingId, rejectComment || "不符合要求"),
-    onSuccess: (record) => {
+    onSuccess: () => {
       message.success("已驳回");
-      setUsageRecord(record);
+      queryClient.invalidateQueries({ queryKey: ["instrument-booking-usage", bookingId] });
       onUpdated?.();
     },
   });
 
-  if (status === "approved" || status === "in_use") {
+  if ((status === "approved" || status === "in_use") && !usageRecord) {
     return (
       <Form form={form} layout="vertical" onFinish={(v) => submitMutation.mutate(v)}>
         <Form.Item name="content" label="使用内容" rules={[{ required: true }]}>
@@ -95,7 +102,7 @@ export function InstrumentUsageRecordPanel({
     );
   }
 
-  if (status === "completed" || usageRecord) {
+  if (usageRecord || status === "completed") {
     const reviewStatus = usageRecord?.review_status ?? "pending";
     return (
       <Space direction="vertical" style={{ width: "100%" }}>
@@ -106,7 +113,7 @@ export function InstrumentUsageRecordPanel({
           </Tag>
         </div>
         {usageRecord?.content && <div>使用内容：{usageRecord.content}</div>}
-        {isAdmin && reviewStatus === "pending" && (
+        {isAdmin && reviewStatus === "pending" && usageRecord && (
           <Space>
             <Button type="primary" size="small" onClick={() => approveMutation.mutate()} loading={approveMutation.isPending}>
               通过

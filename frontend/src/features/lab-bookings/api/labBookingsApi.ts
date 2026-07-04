@@ -145,6 +145,16 @@ export interface PendingUsageItem {
   created_at: string;
 }
 
+export interface LabBookingUpdate {
+  start_time?: string;
+  end_time?: string;
+  usage_type?: UsageType;
+  purpose?: string;
+  expected_count?: number;
+  is_recurring?: boolean;
+  recurrence_rule?: Record<string, unknown> | null;
+}
+
 export interface LabBookingListParams {
   page?: number;
   page_size?: number;
@@ -161,6 +171,9 @@ export const labBookingsApi = {
   create: (data: LabBookingCreate) =>
     api.post<LabBooking>("/lab-bookings", data).then((r) => r.data),
 
+  update: (id: string, data: LabBookingUpdate) =>
+    api.patch<LabBooking>(`/lab-bookings/${id}`, data).then((r) => r.data),
+
   approve: (id: string, comment?: string) =>
     api.post<LabBooking>(`/lab-bookings/${id}/approve`, { comment }).then((r) => r.data),
 
@@ -175,6 +188,9 @@ export const labBookingsApi = {
 
   submitUsage: (id: string, data: UsageRecordCreate) =>
     api.post<UsageRecord>(`/lab-bookings/${id}/usage`, data).then((r) => r.data),
+
+  getUsage: (id: string) =>
+    api.get<UsageRecord>(`/lab-bookings/${id}/usage`).then((r) => r.data),
 
   approveUsage: (id: string, comment?: string) =>
     api.post<UsageRecord>(`/lab-bookings/${id}/usage/approve`, { comment }).then((r) => r.data),

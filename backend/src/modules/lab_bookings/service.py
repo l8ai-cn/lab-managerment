@@ -307,6 +307,12 @@ class LabBookingService:
             for b in bookings
         ]
 
+    async def get_usage(self, booking_id: uuid.UUID) -> UsageRecordResponse:
+        record = await self.repo.get_usage(booking_id)
+        if not record:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="使用记录不存在")
+        return UsageRecordResponse.model_validate(record)
+
     async def submit_usage(
         self, booking_id: uuid.UUID, data: UsageRecordCreate, user: User
     ) -> UsageRecordResponse:

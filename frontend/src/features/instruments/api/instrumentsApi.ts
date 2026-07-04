@@ -144,6 +144,7 @@ export interface InstrumentBookingRuleCreate {
   approval_mode?: string;
   is_active?: boolean;
   external_rules?: ExternalRules;
+  internal_rules?: Record<string, unknown>;
 }
 
 export interface InstrumentUsageRecord {
@@ -203,6 +204,26 @@ export const instrumentsApi = {
 
   update: (id: string, data: Partial<InstrumentCreate & { status?: InstrumentStatus }>) =>
     api.patch<Instrument>(`/instruments/${id}`, data).then((r) => r.data),
+
+  delete: (id: string) => api.delete(`/instruments/${id}`),
+
+  changeStatus: (id: string, status: InstrumentStatus, reason?: string) =>
+    api.post<Instrument>(`/instruments/${id}/status`, { status, reason }).then((r) => r.data),
+
+  export: (params: { lab_id?: string; fmt?: "xlsx" | "csv" } = {}) =>
+    api
+      .get("/instruments/export", { params, responseType: "blob" })
+      .then((r) => r.data as Blob),
+
+  import: (file: File) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    return api
+      .post<{ imported: number }>("/instruments/import", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      })
+      .then((r) => r.data);
+  },
 };
 
 export const instrumentBookingRulesApi = {
@@ -217,8 +238,14 @@ export const instrumentBookingsApi = {
   list: (params: BookingListParams = {}) =>
     api.get<BookingListResponse>("/instrument-bookings", { params }).then((r) => r.data),
 
+  get: (id: string) =>
+    api.get<InstrumentBooking>(`/instrument-bookings/${id}`).then((r) => r.data),
+
   create: (data: InstrumentBookingCreate) =>
     api.post<InstrumentBooking>("/instrument-bookings", data).then((r) => r.data),
+
+  cancel: (id: string) =>
+    api.post<InstrumentBooking>(`/instrument-bookings/${id}/cancel`).then((r) => r.data),
 
   approve: (id: string, comment?: string) =>
     api
@@ -232,6 +259,9 @@ export const instrumentBookingsApi = {
 
   submitUsage: (id: string, data: InstrumentUsageRecordCreate) =>
     api.post<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage`, data).then((r) => r.data),
+
+  getUsage: (id: string) =>
+    api.get<InstrumentUsageRecord>(`/instrument-bookings/${id}/usage`).then((r) => r.data),
 
   approveUsage: (id: string, comment?: string) =>
     api

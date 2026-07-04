@@ -6,6 +6,7 @@ import {
   CalendarOutlined,
   DashboardOutlined,
   ExperimentOutlined,
+  FileSearchOutlined,
   FormOutlined,
   HomeOutlined,
   MenuFoldOutlined,
@@ -83,6 +84,7 @@ const MENU_ITEMS: MenuProps["items"] = [
     children: [
       { key: "/faults", icon: <WarningOutlined />, label: "故障上报" },
       { key: "/data-reporting", icon: <FormOutlined />, label: "数据填报" },
+      { key: "/knowledge", icon: <FileSearchOutlined />, label: "知识库" },
     ],
   },
   {
@@ -107,7 +109,7 @@ const ROUTE_KEYS = [
   "/lab-bookings", "/lab-bookings/rules", "/lab-bookings/usage-approval",
   "/class-boards",
   "/courses", "/experiment-projects", "/experiments",
-  "/faults", "/data-reporting",
+  "/faults", "/data-reporting", "/knowledge",
   "/dashboard", "/statistics", "/integrations", "/users", "/payments",
   "/mobile",
 ];

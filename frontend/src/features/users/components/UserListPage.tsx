@@ -20,7 +20,9 @@ export function UserListPage() {
   const [roleFilter, setRoleFilter] = useState<UserRole>();
   const [keyword, setKeyword] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState<User | null>(null);
   const [form] = Form.useForm<UserCreate>();
+  const [editForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -45,6 +47,16 @@ export function UserListPage() {
       usersApi.update(id, { is_active }),
     onSuccess: () => {
       message.success("状态已更新");
+      queryClient.invalidateQueries({ queryKey: ["users"] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Partial<UserCreate & { is_active: boolean }> }) =>
+      usersApi.update(id, data),
+    onSuccess: () => {
+      message.success("用户已更新");
+      setEditOpen(null);
       queryClient.invalidateQueries({ queryKey: ["users"] });
     },
   });
@@ -78,6 +90,28 @@ export function UserListPage() {
       dataIndex: "created_at",
       width: 170,
       render: (v: string) => new Date(v).toLocaleString("zh-CN"),
+    },
+    {
+      title: "操作",
+      width: 80,
+      render: (_: unknown, record: User) => (
+        <Button
+          type="link"
+          size="small"
+          onClick={() => {
+            setEditOpen(record);
+            editForm.setFieldsValue({
+              name: record.name,
+              role: record.role,
+              employee_no: record.employee_no,
+              phone: record.phone,
+              department: record.department,
+            });
+          }}
+        >
+          编辑
+        </Button>
+      ),
     },
   ];
 
@@ -143,6 +177,41 @@ export function UserListPage() {
           </Form.Item>
           <Form.Item name="department" label="院系/部门">
             <Input />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title={`编辑用户 — ${editOpen?.username ?? ""}`}
+        open={!!editOpen}
+        onCancel={() => setEditOpen(null)}
+        onOk={() => editForm.submit()}
+        confirmLoading={updateMutation.isPending}
+        destroyOnClose
+        width={480}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(values) => editOpen && updateMutation.mutate({ id: editOpen.id, data: values })}
+        >
+          <Form.Item name="name" label="姓名" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="role" label="角色" rules={[{ required: true }]}>
+            <Select options={ROLE_OPTIONS} />
+          </Form.Item>
+          <Form.Item name="employee_no" label="工号">
+            <Input />
+          </Form.Item>
+          <Form.Item name="phone" label="电话">
+            <Input />
+          </Form.Item>
+          <Form.Item name="department" label="院系/部门">
+            <Input />
+          </Form.Item>
+          <Form.Item name="password" label="新密码（留空不修改）">
+            <Input.Password />
           </Form.Item>
         </Form>
       </Modal>

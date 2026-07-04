@@ -62,10 +62,14 @@ export function LabBookingList() {
   const [statusFilter, setStatusFilter] = useState<LabBookingStatus>();
   const [labId, setLabId] = useState<string>();
   const [modalOpen, setModalOpen] = useState(false);
+  const [editModal, setEditModal] = useState<LabBooking | null>(null);
+  const [rejectModal, setRejectModal] = useState<LabBooking | null>(null);
+  const [rejectComment, setRejectComment] = useState("");
   const [checkInOpen, setCheckInOpen] = useState(false);
   const [accessGrants, setAccessGrants] = useState<AccessGrant[]>([]);
   const [approvedLabName, setApprovedLabName] = useState<string>();
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data: labsData } = useQuery({
@@ -119,6 +123,31 @@ export function LabBookingList() {
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
       queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
     },
+  });
+
+  const rejectMutation = useMutation({
+    mutationFn: ({ id, comment }: { id: string; comment: string }) =>
+      labBookingsApi.reject(id, comment),
+    onSuccess: () => {
+      message.success("已拒绝");
+      setRejectModal(null);
+      setRejectComment("");
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
+    },
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof labBookingsApi.update>[1] }) =>
+      labBookingsApi.update(id, data),
+    onSuccess: () => {
+      message.success("预约已更新");
+      setEditModal(null);
+      editForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
+    },
+    onError: () => message.error("更新失败"),
   });
 
   const exportMutation = useMutation({
@@ -176,18 +205,40 @@ export function LabBookingList() {
     },
     {
       title: "操作",
-      width: 140,
+      width: 200,
       render: (_: unknown, record: LabBooking) => (
-        <Space size="small">
+        <Space size="small" wrap>
           {record.status === "pending" && (
-            <Button type="link" size="small" onClick={() => approveMutation.mutate(record)}>
-              通过
-            </Button>
+            <>
+              <Button type="link" size="small" onClick={() => approveMutation.mutate(record)}>
+                通过
+              </Button>
+              <Button type="link" danger size="small" onClick={() => setRejectModal(record)}>
+                拒绝
+              </Button>
+            </>
           )}
           {(record.status === "pending" || record.status === "approved") && (
-            <Button type="link" danger size="small" onClick={() => cancelMutation.mutate(record.id)}>
-              取消
-            </Button>
+            <>
+              <Button
+                type="link"
+                size="small"
+                onClick={() => {
+                  setEditModal(record);
+                  editForm.setFieldsValue({
+                    usage_type: record.usage_type,
+                    purpose: record.purpose,
+                    expected_count: record.expected_count,
+                    timeRange: [dayjs(record.start_time), dayjs(record.end_time)],
+                  });
+                }}
+              >
+                编辑
+              </Button>
+              <Button type="link" danger size="small" onClick={() => cancelMutation.mutate(record.id)}>
+                取消
+              </Button>
+            </>
           )}
         </Space>
       ),
@@ -347,6 +398,69 @@ export function LabBookingList() {
         labName={approvedLabName}
         grants={accessGrants}
       />
+
+      <Modal
+        title="拒绝预约"
+        open={!!rejectModal}
+        onCancel={() => {
+          setRejectModal(null);
+          setRejectComment("");
+        }}
+        onOk={() => {
+          if (!rejectModal) return;
+          rejectMutation.mutate({ id: rejectModal.id, comment: rejectComment || "不符合要求" });
+        }}
+        confirmLoading={rejectMutation.isPending}
+      >
+        <Input.TextArea
+          rows={3}
+          placeholder="拒绝原因"
+          value={rejectComment}
+          onChange={(e) => setRejectComment(e.target.value)}
+        />
+      </Modal>
+
+      <Modal
+        title="编辑预约"
+        open={!!editModal}
+        onCancel={() => setEditModal(null)}
+        onOk={() => editForm.submit()}
+        confirmLoading={updateMutation.isPending}
+        destroyOnClose
+        width={520}
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(values) => {
+            if (!editModal) return;
+            const [start, end] = values.timeRange;
+            updateMutation.mutate({
+              id: editModal.id,
+              data: {
+                start_time: start.toISOString(),
+                end_time: end.toISOString(),
+                usage_type: values.usage_type,
+                purpose: values.purpose,
+                expected_count: values.expected_count,
+              },
+            });
+          }}
+        >
+          <Form.Item name="usage_type" label="用途类型" rules={[{ required: true }]}>
+            <Select options={USAGE_OPTIONS} />
+          </Form.Item>
+          <Form.Item name="timeRange" label="预约时间" rules={[{ required: true }]}>
+            <DatePicker.RangePicker showTime style={{ width: "100%" }} />
+          </Form.Item>
+          <Form.Item name="purpose" label="使用目的" rules={[{ required: true }]}>
+            <Input.TextArea rows={2} />
+          </Form.Item>
+          <Form.Item name="expected_count" label="预计人数">
+            <InputNumber min={1} style={{ width: "100%" }} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

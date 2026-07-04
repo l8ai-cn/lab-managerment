@@ -101,6 +101,8 @@ export const faultsApi = {
       .post(`/faults/${id}/handle`, { action, comment })
       .then((r) => r.data),
 
+  delete: (id: string) => api.delete(`/faults/${id}`),
+
   getLabQr: (labId: string) =>
     api.get<{ lab_id: string; qr_token: string; url: string }>(`/labs/${labId}/fault-qr`).then((r) => r.data),
 };

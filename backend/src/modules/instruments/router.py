@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from fastapi import APIRouter, Depends, File, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -90,6 +90,15 @@ async def update_instrument(instrument_id: uuid.UUID, data: InstrumentUpdate, us
     return await service.update(instrument_id, data, user)
 
 
+@router.delete("/{instrument_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_instrument(
+    instrument_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN)),
+    service: InstrumentService = Depends(svc),
+):
+    await service.delete(instrument_id)
+
+
 @router.post("/{instrument_id}/status", response_model=InstrumentResponse)
 async def change_status(instrument_id: uuid.UUID, data: StatusChangeRequest, user: User = Depends(get_current_user), service: InstrumentService = Depends(svc)):
     return await service.change_status(instrument_id, data, user)
@@ -127,6 +136,16 @@ async def create_booking(data: InstrumentBookingCreate, user: User = Depends(get
     return await service.create_booking(data, user)
 
 
+@bookings_router.get("/{booking_id}", response_model=InstrumentBookingResponse)
+async def get_booking(booking_id: uuid.UUID, user: User = Depends(get_current_user), service: InstrumentService = Depends(svc)):
+    return await service.get_booking(booking_id)
+
+
+@bookings_router.post("/{booking_id}/cancel", response_model=InstrumentBookingResponse)
+async def cancel_booking(booking_id: uuid.UUID, user: User = Depends(get_current_user), service: InstrumentService = Depends(svc)):
+    return await service.cancel_booking(booking_id, user)
+
+
 @bookings_router.post("/{booking_id}/approve", response_model=InstrumentBookingResponse)
 async def approve_booking(booking_id: uuid.UUID, body: ApprovalRequest = ApprovalRequest(), user: User = Depends(require_roles(UserRole.LAB_ADMIN, UserRole.SYSTEM_ADMIN)), service: InstrumentService = Depends(svc)):
     return await service.approve_booking(booking_id, user, body)
@@ -154,6 +173,11 @@ async def batch_review_instrument_usage(
     service: InstrumentService = Depends(svc),
 ):
     return await service.batch_review_usage(body.booking_ids, body.approve, user, body.comment)
+
+
+@bookings_router.get("/{booking_id}/usage", response_model=UsageRecordResponse)
+async def get_usage(booking_id: uuid.UUID, user: User = Depends(get_current_user), service: InstrumentService = Depends(svc)):
+    return await service.get_usage(booking_id)
 
 
 @bookings_router.post("/{booking_id}/usage", response_model=UsageRecordResponse)

@@ -1,6 +1,6 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, EditOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Descriptions, Input, Space, Steps, Tag, message } from "antd";
+import { Button, Descriptions, Form, Input, Modal, Space, Steps, Tag, message } from "antd";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/shared/auth/AuthContext";
@@ -28,6 +28,8 @@ export function LabChangeDetail() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm] = Form.useForm();
 
   const { data, isLoading } = useQuery({
     queryKey: ["lab-change", id],
@@ -55,6 +57,17 @@ export function LabChangeDetail() {
     onError: () => message.error("操作失败"),
   });
 
+  const updateMutation = useMutation({
+    mutationFn: (values: { title?: string; description?: string }) =>
+      labChangesApi.update(id!, values),
+    onSuccess: () => {
+      message.success("已保存");
+      setEditOpen(false);
+      queryClient.invalidateQueries({ queryKey: ["lab-change", id] });
+      queryClient.invalidateQueries({ queryKey: ["lab-changes"] });
+    },
+  });
+
   if (isLoading || !data) return null;
 
   const canApprove =
@@ -74,9 +87,22 @@ export function LabChangeDetail() {
           { title: data.title },
         ]}
         extra={
-          <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/lab-changes")}>
-            返回列表
-          </Button>
+          <Space>
+            {data.status === "draft" && (
+              <Button
+                icon={<EditOutlined />}
+                onClick={() => {
+                  editForm.setFieldsValue({ title: data.title, description: data.description });
+                  setEditOpen(true);
+                }}
+              >
+                编辑草稿
+              </Button>
+            )}
+            <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/lab-changes")}>
+              返回列表
+            </Button>
+          </Space>
         }
       />
 
@@ -152,6 +178,23 @@ export function LabChangeDetail() {
           </Space>
         )}
       </ContentCard>
+
+      <Modal
+        title="编辑变更草稿"
+        open={editOpen}
+        onCancel={() => setEditOpen(false)}
+        onOk={() => editForm.submit()}
+        confirmLoading={updateMutation.isPending}
+      >
+        <Form form={editForm} layout="vertical" onFinish={(v) => updateMutation.mutate(v)}>
+          <Form.Item name="title" label="标题" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="description" label="变更说明">
+            <Input.TextArea rows={3} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   );
 }

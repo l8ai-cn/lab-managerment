@@ -1,6 +1,6 @@
 import { api } from "@/shared/api/client";
 
-export type IntegrationType = "asset" | "card" | "access" | "face" | "payment";
+export type IntegrationType = "asset" | "card" | "access" | "face" | "payment" | "safety_exam";
 export type SyncStatus = "success" | "failed" | "partial" | "never_synced";
 
 export const INTEGRATION_TYPE_LABELS: Record<IntegrationType, string> = {
@@ -9,6 +9,7 @@ export const INTEGRATION_TYPE_LABELS: Record<IntegrationType, string> = {
   access: "门禁系统",
   face: "人脸识别",
   payment: "支付系统",
+  safety_exam: "安全考试",
 };
 
 export const SYNC_STATUS_LABELS: Record<SyncStatus, string> = {

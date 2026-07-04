@@ -73,6 +73,14 @@ export function InstrumentBookingList() {
     },
   });
 
+  const cancelMutation = useMutation({
+    mutationFn: instrumentBookingsApi.cancel,
+    onSuccess: () => {
+      message.success("已取消");
+      queryClient.invalidateQueries({ queryKey: ["instrument-bookings"] });
+    },
+  });
+
   const instrumentOptions =
     instrumentsData?.items.map((i) => ({ value: i.id, label: `${i.code} ${i.name}` })) ?? [];
 
@@ -101,23 +109,31 @@ export function InstrumentBookingList() {
     },
     {
       title: "操作",
-      width: 140,
-      render: (_: unknown, record: InstrumentBooking) =>
-        record.status === "pending" ? (
-          <Space size="small">
-            <Button type="link" size="small" onClick={() => approveMutation.mutate(record.id)}>
-              通过
+      width: 180,
+      render: (_: unknown, record: InstrumentBooking) => (
+        <Space size="small">
+          {record.status === "pending" && (
+            <>
+              <Button type="link" size="small" onClick={() => approveMutation.mutate(record.id)}>
+                通过
+              </Button>
+              <Button
+                type="link"
+                danger
+                size="small"
+                onClick={() => setRejectModal({ id: record.id })}
+              >
+                拒绝
+              </Button>
+            </>
+          )}
+          {(record.status === "pending" || record.status === "approved") && (
+            <Button type="link" danger size="small" onClick={() => cancelMutation.mutate(record.id)}>
+              取消
             </Button>
-            <Button
-              type="link"
-              danger
-              size="small"
-              onClick={() => setRejectModal({ id: record.id })}
-            >
-              拒绝
-            </Button>
-          </Space>
-        ) : null,
+          )}
+        </Space>
+      ),
     },
   ];
 

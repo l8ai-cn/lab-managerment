@@ -12,7 +12,9 @@ export function LabStaffList() {
   const [page, setPage] = useState(1);
   const [keyword, setKeyword] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState<{ id: string; employee_no: string; name: string; phone?: string; office_location?: string; lab_ids?: string[] } | null>(null);
   const [form] = Form.useForm();
+  const [editForm] = Form.useForm();
   const queryClient = useQueryClient();
 
   const { data, isLoading } = useQuery({
@@ -44,6 +46,16 @@ export function LabStaffList() {
     },
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: Parameters<typeof labStaffApi.update>[1] }) =>
+      labStaffApi.update(id, data),
+    onSuccess: () => {
+      message.success("更新成功");
+      setEditOpen(null);
+      queryClient.invalidateQueries({ queryKey: ["lab-staff"] });
+    },
+  });
+
   const labOptions =
     labsData?.items.map((l) => ({ value: l.id, label: `${l.code} ${l.name}` })) ?? [];
 
@@ -60,16 +72,40 @@ export function LabStaffList() {
     },
     {
       title: "操作",
-      width: 80,
-      render: (_: unknown, record: { id: string }) => (
-        <Button
-          type="link"
-          danger
-          size="small"
-          onClick={() => deleteMutation.mutate(record.id)}
-        >
-          删除
-        </Button>
+      width: 120,
+      render: (_: unknown, record: { id: string; employee_no: string; name: string; phone?: string; office_location?: string; labs: Array<{ id: string }> }) => (
+        <>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              setEditOpen({
+                id: record.id,
+                employee_no: record.employee_no,
+                name: record.name,
+                phone: record.phone,
+                office_location: record.office_location,
+                lab_ids: record.labs.map((l) => l.id),
+              });
+              editForm.setFieldsValue({
+                name: record.name,
+                phone: record.phone,
+                office_location: record.office_location,
+                lab_ids: record.labs.map((l) => l.id),
+              });
+            }}
+          >
+            编辑
+          </Button>
+          <Button
+            type="link"
+            danger
+            size="small"
+            onClick={() => deleteMutation.mutate(record.id)}
+          >
+            删除
+          </Button>
+        </>
       ),
     },
   ];
@@ -126,6 +162,34 @@ export function LabStaffList() {
           <Form.Item name="employee_no" label="工号" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
+          <Form.Item name="name" label="姓名" rules={[{ required: true }]}>
+            <Input />
+          </Form.Item>
+          <Form.Item name="phone" label="联系电话">
+            <Input />
+          </Form.Item>
+          <Form.Item name="office_location" label="办公室地点">
+            <Input />
+          </Form.Item>
+          <Form.Item name="lab_ids" label="责任实验室">
+            <Select mode="multiple" options={labOptions} placeholder="支持一人多室" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      <Modal
+        title="编辑实验员"
+        open={!!editOpen}
+        onCancel={() => setEditOpen(null)}
+        onOk={() => editForm.submit()}
+        confirmLoading={updateMutation.isPending}
+        destroyOnClose
+      >
+        <Form
+          form={editForm}
+          layout="vertical"
+          onFinish={(values) => editOpen && updateMutation.mutate({ id: editOpen.id, data: values })}
+        >
           <Form.Item name="name" label="姓名" rules={[{ required: true }]}>
             <Input />
           </Form.Item>
