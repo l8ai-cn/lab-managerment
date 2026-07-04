@@ -6,7 +6,7 @@ import { instrumentsApi } from "@/features/instruments/api/instrumentsApi";
 import { dashboardApi } from "../api/dashboardApi";
 import "./DashboardPage.css";
 
-const STAT_COLORS = ["#38bdf8", "#a78bfa", "#fbbf24", "#2dd4bf", "#f87171", "#86efac"];
+const STAT_COLORS = ["#0252D9", "#7C3AED", "#D97706", "#00A870", "#E1251B", "#0F766E"];
 
 export function DashboardPage() {
   const { data: overview } = useQuery({
@@ -123,7 +123,7 @@ export function DashboardPage() {
               </Row>
               <Progress
                 percent={safetyScore}
-                strokeColor={{ from: "#ef4444", to: "#10b981" }}
+                strokeColor="#00A870"
                 style={{ marginTop: 16 }}
               />
             </Card>
@@ -144,7 +144,7 @@ export function DashboardPage() {
                 value={assetTotal}
                 precision={2}
                 prefix="¥"
-                valueStyle={{ color: "#fbbf24", fontSize: 28 }}
+                valueStyle={{ color: "#D97706", fontSize: 28 }}
               />
               <div style={{ marginTop: 12, color: "#94a3b8", fontSize: 13 }}>
                 共 {instrumentsData?.total ?? 0} 台设备 · 数据来自仪器台账
@@ -165,7 +165,7 @@ export function DashboardPage() {
                   <Progress
                     percent={Math.round((point.bookings / maxBookings) * 100)}
                     showInfo={false}
-                    strokeColor="#0ea5e9"
+                    strokeColor="#0252D9"
                     trailColor="rgba(148, 163, 184, 0.1)"
                     size="small"
                   />
@@ -187,7 +187,7 @@ export function DashboardPage() {
                   <Progress
                     percent={Math.round((point.usage_hours / maxHours) * 100)}
                     showInfo={false}
-                    strokeColor="#14b8a6"
+                    strokeColor="#00A870"
                     trailColor="rgba(148, 163, 184, 0.1)"
                     size="small"
                   />

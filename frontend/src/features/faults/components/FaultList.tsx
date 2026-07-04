@@ -122,7 +122,7 @@ export function FaultList() {
           <StatCard
             title="处理中"
             value={(stats?.by_status?.assigned ?? 0) + (stats?.by_status?.processing ?? 0)}
-            color="#0ea5e9"
+            color="#0252D9"
           />
         </Col>
         <Col xs={24} sm={8} lg={4}>

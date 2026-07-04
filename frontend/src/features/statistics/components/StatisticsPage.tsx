@@ -201,7 +201,7 @@ export function StatisticsPage() {
 
       <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
         <Col xs={24} sm={12} lg={8} xl={4}>
-          <StatCard title="实验室总数" value={overview?.lab_count ?? 0} icon={<HomeOutlined />} color="#0ea5e9" />
+          <StatCard title="实验室总数" value={overview?.lab_count ?? 0} icon={<HomeOutlined />} color="#0252D9" />
         </Col>
         <Col xs={24} sm={12} lg={8} xl={4}>
           <StatCard title="仪器总数" value={overview?.instrument_count ?? 0} icon={<ToolOutlined />} color="#8b5cf6" />
@@ -258,7 +258,7 @@ export function StatisticsPage() {
           <ContentCard title="实验室使用统计">
             <Row gutter={16}>
               <Col span={8}>
-                <StatCard title="总预约数" value={totalLabBookings} color="#0ea5e9" />
+                <StatCard title="总预约数" value={totalLabBookings} color="#0252D9" />
               </Col>
               <Col span={8}>
                 <StatCard title="总使用时长(h)" value={labUsage?.total_hours ?? 0} color="#10b981" />
@@ -304,7 +304,7 @@ export function StatisticsPage() {
           <ContentCard title="实验项目统计">
             <Row gutter={16} style={{ marginBottom: 16 }}>
               <Col span={12}>
-                <StatCard title="实验项目数" value={projectStats.total} color="#0ea5e9" />
+                <StatCard title="实验项目数" value={projectStats.total} color="#0252D9" />
               </Col>
               <Col span={12}>
                 <StatCard title="关联课程数" value={projectStats.courses} color="#10b981" />

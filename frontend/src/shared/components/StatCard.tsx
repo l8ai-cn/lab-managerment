@@ -11,7 +11,7 @@ interface StatCardProps {
   trend?: string;
 }
 
-export function StatCard({ title, value, suffix, icon, color = "#0ea5e9", trend }: StatCardProps) {
+export function StatCard({ title, value, suffix, icon, color = "#0252D9", trend }: StatCardProps) {
   return (
     <Card bordered={false} className="stat-card">
       <div className="stat-card__inner">

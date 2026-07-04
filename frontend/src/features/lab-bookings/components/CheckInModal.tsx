@@ -27,7 +27,7 @@ export function CheckInModal({ open, onClose, labName, grants }: CheckInModalPro
         {grant ? (
           <>
             <div style={{ margin: "16px 0" }}>
-              <QrcodeOutlined style={{ fontSize: 48, color: "#0ea5e9" }} />
+              <QrcodeOutlined style={{ fontSize: 48, color: "#0252D9" }} />
               <img
                 alt="门禁二维码"
                 src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(grant.access_token)}`}

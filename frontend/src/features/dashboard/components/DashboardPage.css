@@ -1,20 +1,9 @@
 .dashboard {
   min-height: calc(100vh - 64px);
   padding: 28px 32px;
-  background: linear-gradient(160deg, #0b1220 0%, #111827 45%, #0f172a 100%);
-  color: #f8fafc;
+  background: #f5f7fa;
+  color: #0f172a;
   position: relative;
-  overflow: hidden;
-}
-
-.dashboard::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(ellipse 60% 40% at 10% 20%, rgba(14, 165, 233, 0.12) 0%, transparent 50%),
-    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(99, 102, 241, 0.12) 0%, transparent 50%);
-  pointer-events: none;
 }
 
 .dashboard__inner {
@@ -30,13 +19,10 @@
 }
 
 .dashboard__title {
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #0f172a;
 }
 
 .dashboard__time {
@@ -45,32 +31,32 @@
 }
 
 .dashboard__card {
-  background: rgba(255, 255, 255, 0.04) !important;
-  border: 1px solid rgba(148, 163, 184, 0.12) !important;
-  border-radius: 14px !important;
-  backdrop-filter: blur(8px);
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
   height: 100%;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
 }
 
 .dashboard__card .ant-card-head {
-  border-bottom-color: rgba(148, 163, 184, 0.1) !important;
+  border-bottom-color: #e2e8f0 !important;
   min-height: 48px;
 }
 
 .dashboard__card .ant-card-head-title {
-  color: #e2e8f0 !important;
+  color: #0f172a !important;
   font-size: 15px;
   font-weight: 600;
 }
 
 .dashboard__stat-value {
-  font-size: 36px !important;
+  font-size: 32px !important;
   font-weight: 700 !important;
   line-height: 1.2 !important;
 }
 
 .dashboard__stat-label {
-  color: #94a3b8 !important;
+  color: #64748b !important;
   font-size: 13px;
 }
 
@@ -90,11 +76,11 @@
 }
 
 .dashboard__trend-date {
-  color: #64748b;
+  color: #475569;
 }
 
 .dashboard__trend-value {
-  color: #38bdf8;
+  color: #0252D9;
   font-weight: 500;
 }
 
@@ -103,12 +89,12 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #10b981;
+  background: #00a870;
   margin-right: 8px;
   animation: dashboardPulse 2s ease-in-out infinite;
 }
 
 @keyframes dashboardPulse {
-  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
-  50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 168, 112, 0.4); }
+  50% { opacity: 0.7; box-shadow: 0 0 0 6px rgba(0, 168, 112, 0); }
 }

@@ -58,7 +58,7 @@ export function SubmissionStatsCharts() {
                 <Progress
                   percent={Math.round((count / maxPeriod) * 100)}
                   showInfo={false}
-                  strokeColor="#0ea5e9"
+                  strokeColor="#0252D9"
                 />
               </div>
             ))

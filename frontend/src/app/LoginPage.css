@@ -3,26 +3,22 @@
   display: flex;
   position: relative;
   overflow: hidden;
-  background: #0b1220;
+  background: #0f172a;
 }
 
 .login-page__bg {
   position: absolute;
   inset: 0;
-  background:
-    radial-gradient(ellipse 80% 60% at 20% 20%, rgba(56, 189, 248, 0.18) 0%, transparent 55%),
-    radial-gradient(ellipse 70% 50% at 80% 80%, rgba(99, 102, 241, 0.2) 0%, transparent 50%),
-    linear-gradient(160deg, #0b1220 0%, #111827 40%, #0f172a 100%);
+  background: #0f172a;
 }
 
 .login-page__grid {
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    linear-gradient(rgba(148, 163, 184, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.03) 1px, transparent 1px);
   background-size: 48px 48px;
-  mask-image: radial-gradient(ellipse at center, black 30%, transparent 75%);
 }
 
 .login-page__content {
@@ -58,13 +54,12 @@
 .login-page__logo-icon {
   width: 52px;
   height: 52px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #38bdf8 0%, #6366f1 100%);
+  border-radius: 6px;
+  background: #0252D9;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 26px;
-  box-shadow: 0 8px 32px rgba(56, 189, 248, 0.35);
 }
 
 .login-page__logo-text {
@@ -78,10 +73,7 @@
   font-weight: 700;
   line-height: 1.25;
   margin: 0 0 20px;
-  background: linear-gradient(135deg, #f8fafc 0%, #94a3b8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: #ffffff;
 }
 
 .login-page__subtitle {
@@ -113,7 +105,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #38bdf8, #6366f1);
+  background: #0252D9;
   flex-shrink: 0;
 }
 
@@ -136,7 +128,7 @@
   width: 100%;
   max-width: 400px;
   padding: 40px 36px;
-  border-radius: 20px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.97);
   box-shadow:
     0 0 0 1px rgba(255, 255, 255, 0.1),
@@ -162,7 +154,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  border-radius: 10px;
+  border-radius: 6px;
   font-size: 13px;
   margin-bottom: 24px;
 }
@@ -213,7 +205,7 @@
 .login-page__hint {
   margin-top: 24px;
   padding: 14px 16px;
-  border-radius: 10px;
+  border-radius: 6px;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
   font-size: 13px;
@@ -255,19 +247,19 @@
   height: 46px !important;
   font-size: 15px !important;
   font-weight: 600 !important;
-  border-radius: 10px !important;
-  background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%) !important;
+  border-radius: 6px !important;
+  background: #0252D9 !important;
   border: none !important;
-  box-shadow: 0 4px 16px rgba(14, 165, 233, 0.35) !important;
+  box-shadow: none !important;
 }
 
 .login-page__submit:hover {
-  background: linear-gradient(135deg, #0284c7 0%, #4f46e5 100%) !important;
+  background: #003fb8 !important;
 }
 
 .login-page :global(.ant-input-affix-wrapper),
 .login-page :global(.ant-input) {
-  border-radius: 10px !important;
+  border-radius: 6px !important;
   padding: 10px 14px !important;
 }
 

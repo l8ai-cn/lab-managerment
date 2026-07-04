@@ -180,7 +180,7 @@ export function AppShell() {
             </div>
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight">
               <div className="app-shell__user">
-                <Avatar size={36} style={{ background: "linear-gradient(135deg, #0ea5e9, #6366f1)" }}>
+                <Avatar size={36} style={{ background: "#0252D9" }}>
                   {user?.name?.charAt(0) ?? "U"}
                 </Avatar>
                 <span className="app-shell__user-name">{user?.name}</span>

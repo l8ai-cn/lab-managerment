@@ -34,13 +34,13 @@ body {
 
 /* 链接 */
 a {
-  color: #0ea5e9;
+  color: #0252D9;
   text-decoration: none;
   transition: color 0.2s;
 }
 
 a:hover {
-  color: #0284c7;
+  color: #003fb8;
 }
 
 /* 表格行链接 */
