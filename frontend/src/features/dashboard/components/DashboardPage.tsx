@@ -123,26 +123,28 @@ export function DashboardPage() {
           </span>
         </div>
 
-        {/* 6 Grid Metrics (Material Design 3 High-density cards) */}
+        {/* KPI strip: 3 per row on desktop, horizontal icon + text (guaranteed clean layout) */}
         <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
           {stats.map((stat, i) => {
             const config = STAT_CONFIG[i % STAT_CONFIG.length];
             return (
-              <Col xs={24} sm={12} lg={8} xl={4} key={stat.label}>
+              <Col xs={24} sm={12} xl={8} key={stat.label}>
                 <Card className="dashboard__metric-card" bordered={false}>
                   <div className="dashboard__metric-accent" style={{ backgroundColor: config.borderAccent }} />
-                  <div className="dashboard__metric-header">
-                    <span className="dashboard__metric-label">{stat.label}</span>
+                  <div className="dashboard__metric-row">
                     <div className="dashboard__metric-icon" style={{ backgroundColor: config.iconBg }}>
                       {config.icon}
                     </div>
-                  </div>
-                  <div className="dashboard__metric-body">
-                    <span className="dashboard__metric-value">{stat.value}</span>
-                    <span className="dashboard__metric-trend">{stat.extra}</span>
+                    <div className="dashboard__metric-info">
+                      <span className="dashboard__metric-label">{stat.label}</span>
+                      <div className="dashboard__metric-value-row">
+                        <span className="dashboard__metric-value">{stat.value}</span>
+                        <span className="dashboard__metric-trend">{stat.extra}</span>
+                      </div>
+                    </div>
                   </div>
                   {stat.label === "实验室总数" && (
-                    <div style={{ marginTop: 12 }}>
+                    <div style={{ marginTop: 14 }}>
                       <Progress
                         percent={openRate}
                         size="small"

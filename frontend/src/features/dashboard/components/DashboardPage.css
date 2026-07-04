@@ -77,10 +77,14 @@
   background: #ffffff !important;
   border: 1px solid var(--slate-200) !important;
   border-radius: 8px !important;
-  padding: 16px 20px !important;
+  padding: 16px 16px 16px 20px !important;
   position: relative;
   overflow: hidden;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03) !important;
+}
+
+.dashboard__metric-card .ant-card-body {
+  padding: 18px 20px !important;
 }
 
 .dashboard__metric-accent {
@@ -91,37 +95,44 @@
   width: 3px;
 }
 
-.dashboard__metric-header {
+.dashboard__metric-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
+  gap: 14px;
+}
+
+.dashboard__metric-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.dashboard__metric-info {
+  flex: 1;
+  min-width: 0;
 }
 
 .dashboard__metric-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--slate-500);
+  white-space: nowrap;
+  display: block;
+  margin-bottom: 4px;
 }
 
-.dashboard__metric-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.dashboard__metric-body {
+.dashboard__metric-value-row {
   display: flex;
   align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  gap: 10px;
 }
 
 .dashboard__metric-value {
-  font-size: 28px;
+  font-size: 26px;
   font-weight: 700;
   color: var(--slate-900);
   line-height: 1;
@@ -129,9 +140,10 @@
 }
 
 .dashboard__metric-trend {
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--slate-400);
+  white-space: nowrap;
 }
 
 /* SECTION CARDS */
