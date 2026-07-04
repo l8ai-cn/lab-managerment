@@ -1,0 +1,10 @@
+[
+  {"employee_no": "A001", "exam_name": "实验室安全准入考试", "score": 95, "passed": true, "exam_date": "2026-06-01T09:00:00+08:00"},
+  {"employee_no": "T001", "exam_name": "实验室安全准入考试", "score": 88, "passed": true, "exam_date": "2026-06-02T10:00:00+08:00"},
+  {"employee_no": "T002", "exam_name": "实验室安全准入考试", "score": 92, "passed": true, "exam_date": "2026-06-03T11:00:00+08:00"},
+  {"employee_no": "S001", "exam_name": "实验室安全准入考试", "score": 78, "passed": true, "exam_date": "2026-06-10T14:00:00+08:00"},
+  {"employee_no": "S002", "exam_name": "实验室安全准入考试", "score": 55, "passed": false, "exam_date": "2026-06-11T15:00:00+08:00"},
+  {"employee_no": "S003", "exam_name": "实验室安全准入考试", "score": 82, "passed": true, "exam_date": "2026-06-12T16:00:00+08:00"},
+  {"employee_no": "LA001", "exam_name": "危化品管理专项考试", "score": 90, "passed": true, "exam_date": "2026-06-15T09:30:00+08:00"},
+  {"employee_no": "S001", "exam_name": "危化品管理专项考试", "score": 72, "passed": true, "exam_date": "2026-06-16T10:30:00+08:00"}
+]

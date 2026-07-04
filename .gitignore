@@ -10,5 +10,7 @@ __pycache__/
 .pytest_cache/
 .ruff_cache/
 backend/.pytest_cache/
-backend/data/
+backend/data/*
+!backend/data/integrations/
+!backend/data/integrations/**
 frontend/tsconfig.tsbuildinfo
