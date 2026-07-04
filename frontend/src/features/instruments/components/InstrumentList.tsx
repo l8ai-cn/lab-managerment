@@ -6,7 +6,13 @@ import { labsApi } from "@/features/labs/api/labsApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { FilterBar } from "@/shared/components/FilterBar";
 import { PageHeader } from "@/shared/components/PageHeader";
-import { instrumentsApi, INSTRUMENT_STATUS_COLORS, INSTRUMENT_STATUS_LABELS, type InstrumentStatus } from "../api/instrumentsApi";
+import {
+  instrumentsApi,
+  INSTRUMENT_STATUS_COLORS,
+  INSTRUMENT_STATUS_LABELS,
+  type Instrument,
+  type InstrumentStatus,
+} from "../api/instrumentsApi";
 import { InstrumentForm } from "./InstrumentForm";
 
 const STATUS_OPTIONS = Object.entries(INSTRUMENT_STATUS_LABELS).map(([value, label]) => ({ value, label }));
@@ -17,6 +23,7 @@ export function InstrumentList() {
   const [labId, setLabId] = useState<string>();
   const [status, setStatus] = useState<InstrumentStatus>();
   const [formOpen, setFormOpen] = useState(false);
+  const [editing, setEditing] = useState<Instrument | null>(null);
 
   const { data: labsData } = useQuery({
     queryKey: ["labs-options"],
@@ -35,6 +42,16 @@ export function InstrumentList() {
   });
 
   const labOptions = labsData?.items.map((l) => ({ value: l.id, label: `${l.code} ${l.name}` })) ?? [];
+
+  const openCreate = () => {
+    setEditing(null);
+    setFormOpen(true);
+  };
+
+  const openEdit = (record: Instrument) => {
+    setEditing(record);
+    setFormOpen(true);
+  };
 
   const columns = [
     { title: "编号", dataIndex: "code", width: 130 },
@@ -56,13 +73,22 @@ export function InstrumentList() {
       width: 110,
       render: (v: number) => (v ? `¥${v.toLocaleString()}` : "-"),
     },
+    {
+      title: "操作",
+      width: 80,
+      render: (_: unknown, record: Instrument) => (
+        <Button type="link" size="small" onClick={() => openEdit(record)}>
+          编辑
+        </Button>
+      ),
+    },
   ];
 
   return (
     <>
       <PageHeader
         extra={
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setFormOpen(true)}>
+          <Button type="primary" icon={<PlusOutlined />} onClick={openCreate}>
             新增仪器
           </Button>
         }
@@ -86,11 +112,19 @@ export function InstrumentList() {
             total: data?.total,
             onChange: setPage,
             showTotal: (t) => `共 ${t} 条`,
+            showSizeChanger: false,
           }}
         />
       </ContentCard>
 
-      <InstrumentForm open={formOpen} onClose={() => setFormOpen(false)} />
+      <InstrumentForm
+        open={formOpen}
+        editing={editing}
+        onClose={() => {
+          setFormOpen(false);
+          setEditing(null);
+        }}
+      />
     </>
   );
 }

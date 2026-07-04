@@ -13,6 +13,8 @@ import {
   TeamOutlined,
   ToolOutlined,
   WarningOutlined,
+  ApartmentOutlined,
+  UserOutlined,
 } from "@ant-design/icons";
 import { Avatar, Dropdown, Layout, Menu } from "antd";
 import type { MenuProps } from "antd";
@@ -41,6 +43,7 @@ const MENU_ITEMS: MenuProps["items"] = [
     type: "group",
     children: [
       { key: "/labs", icon: <HomeOutlined />, label: "实验室" },
+      { key: "/spaces", icon: <ApartmentOutlined />, label: "空间管理" },
       { key: "/lab-staff", icon: <TeamOutlined />, label: "实验员" },
       { key: "/lab-changes", icon: <FormOutlined />, label: "变更管理" },
     ],
@@ -81,17 +84,18 @@ const MENU_ITEMS: MenuProps["items"] = [
       { key: "/dashboard", icon: <DashboardOutlined />, label: "可视化大屏" },
       { key: "/statistics", icon: <BarChartOutlined />, label: "统计分析" },
       { key: "/integrations", icon: <ApiOutlined />, label: "系统对接" },
+      { key: "/users", icon: <UserOutlined />, label: "用户管理" },
       { key: "/payments", icon: <BankOutlined />, label: "收费管理" },
     ],
   },
 ];
 
 const ROUTE_KEYS = [
-  "/labs", "/lab-staff", "/lab-changes",
+  "/labs", "/spaces", "/lab-staff", "/lab-changes",
   "/instruments", "/instrument-bookings", "/lab-bookings",
   "/experiment-projects", "/experiments",
   "/faults", "/data-reporting",
-  "/dashboard", "/statistics", "/integrations", "/payments",
+  "/dashboard", "/statistics", "/integrations", "/users", "/payments",
 ];
 
 function findSelectedKey(pathname: string): string {

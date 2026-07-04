@@ -1,6 +1,6 @@
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Table, Tag, message } from "antd";
+import { Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space, Table, Tabs, Tag, message } from "antd";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { labsApi } from "@/features/labs/api/labsApi";
@@ -16,6 +16,7 @@ import {
   type LabBookingStatus,
   type UsageType,
 } from "../api/labBookingsApi";
+import { LabBookingCalendar } from "./LabBookingCalendar";
 
 const USAGE_OPTIONS = Object.entries(USAGE_TYPE_LABELS).map(([value, label]) => ({ value, label }));
 const STATUS_OPTIONS = Object.entries(LAB_BOOKING_STATUS_LABELS).map(([value, label]) => ({
@@ -49,6 +50,7 @@ export function LabBookingList() {
       setModalOpen(false);
       form.resetFields();
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
     },
     onError: () => message.error("预约失败"),
   });
@@ -58,6 +60,7 @@ export function LabBookingList() {
     onSuccess: () => {
       message.success("已通过");
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
     },
   });
 
@@ -66,6 +69,7 @@ export function LabBookingList() {
     onSuccess: () => {
       message.success("已取消");
       queryClient.invalidateQueries({ queryKey: ["lab-bookings"] });
+      queryClient.invalidateQueries({ queryKey: ["lab-bookings-calendar"] });
     },
   });
 
@@ -137,39 +141,52 @@ export function LabBookingList() {
         }
       />
 
-      <FilterBar>
-        <Select
-          placeholder="实验室"
-          allowClear
-          options={labOptions}
-          style={{ width: 180 }}
-          onChange={setLabId}
-        />
-        <Select
-          placeholder="状态"
-          allowClear
-          options={STATUS_OPTIONS}
-          style={{ width: 140 }}
-          onChange={setStatusFilter}
-        />
-      </FilterBar>
+      <Tabs
+        items={[
+          {
+            key: "list",
+            label: "预约列表",
+            children: (
+              <>
+                <FilterBar>
+                  <Select
+                    placeholder="实验室"
+                    allowClear
+                    options={labOptions}
+                    style={{ width: 180 }}
+                    onChange={setLabId}
+                  />
+                  <Select
+                    placeholder="状态"
+                    allowClear
+                    options={STATUS_OPTIONS}
+                    style={{ width: 140 }}
+                    onChange={setStatusFilter}
+                  />
+                </FilterBar>
 
-      <ContentCard noPadding>
-        <Table
-          rowKey="id"
-          loading={isLoading}
-          columns={columns}
-          dataSource={data?.items}
-          pagination={{
-            current: page,
-            pageSize: 20,
-            total: data?.total,
-            onChange: setPage,
-            showTotal: (t) => `共 ${t} 条`,
-            showSizeChanger: false,
-          }}
-        />
-      </ContentCard>
+                <ContentCard noPadding>
+                  <Table
+                    rowKey="id"
+                    loading={isLoading}
+                    columns={columns}
+                    dataSource={data?.items}
+                    pagination={{
+                      current: page,
+                      pageSize: 20,
+                      total: data?.total,
+                      onChange: setPage,
+                      showTotal: (t) => `共 ${t} 条`,
+                      showSizeChanger: false,
+                    }}
+                  />
+                </ContentCard>
+              </>
+            ),
+          },
+          { key: "calendar", label: "日历视图", children: <LabBookingCalendar /> },
+        ]}
+      />
 
       <Modal
         title="新建实验室预约"

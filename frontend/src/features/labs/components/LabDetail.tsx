@@ -1,7 +1,8 @@
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, EditOutlined, QrcodeOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, Descriptions, message, Space, Tag } from "antd";
+import { Button, Descriptions, Modal, Space, Tag, Typography, message } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
+import { faultsApi } from "@/features/faults/api/faultsApi";
 import { ContentCard } from "@/shared/components/ContentCard";
 import { PageHeader } from "@/shared/components/PageHeader";
 import { labsApi } from "../api/labsApi";
@@ -18,6 +19,12 @@ export function LabDetail() {
     enabled: !!id,
   });
 
+  const { data: qrData } = useQuery({
+    queryKey: ["lab-fault-qr", id],
+    queryFn: () => faultsApi.getLabQr(id!),
+    enabled: !!id,
+  });
+
   const deleteMutation = useMutation({
     mutationFn: () => labsApi.delete(id!),
     onSuccess: () => {
@@ -26,6 +33,29 @@ export function LabDetail() {
       navigate("/labs");
     },
   });
+
+  const showQr = () => {
+    if (!qrData) return;
+    const fullUrl = `${window.location.origin}${qrData.url}`;
+    Modal.info({
+      title: "故障上报二维码",
+      width: 360,
+      content: (
+        <div style={{ textAlign: "center" }}>
+          <img
+            alt="故障上报二维码"
+            src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullUrl)}`}
+            width={200}
+            height={200}
+          />
+          <Typography.Paragraph copyable style={{ marginTop: 12, fontSize: 12 }}>
+            {fullUrl}
+          </Typography.Paragraph>
+          <Typography.Text type="secondary">扫码后将自动关联本实验室</Typography.Text>
+        </div>
+      ),
+    });
+  };
 
   if (isLoading || !data) {
     return null;
@@ -43,6 +73,12 @@ export function LabDetail() {
         ]}
         extra={
           <Space>
+            <Button icon={<QrcodeOutlined />} onClick={showQr}>
+              故障二维码
+            </Button>
+            <Button icon={<EditOutlined />} onClick={() => navigate(`/labs/${id}/edit`)}>
+              编辑
+            </Button>
             <Button icon={<ArrowLeftOutlined />} onClick={() => navigate("/labs")}>
               返回列表
             </Button>

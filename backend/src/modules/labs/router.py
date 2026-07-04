@@ -5,6 +5,7 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
+from src.core.deps import get_current_user, require_roles
 from src.modules.labs.models import LabType, OpenStatus
 from src.modules.labs.schemas import (
     LabCreate,
@@ -14,6 +15,7 @@ from src.modules.labs.schemas import (
     LabUpdate,
 )
 from src.modules.labs.service import LabService
+from src.modules.users.models import User, UserRole
 
 router = APIRouter(prefix="/labs", tags=["实验室管理"])
 
@@ -33,6 +35,7 @@ async def list_labs(
     open_statuses: list[OpenStatus] | None = Query(None),
     keyword: str | None = None,
     manager_id: uuid.UUID | None = None,
+    _: User = Depends(get_current_user),
     service: LabService = Depends(get_service),
 ):
     return await service.list(
@@ -49,12 +52,19 @@ async def list_labs(
 
 
 @router.post("", response_model=LabResponse, status_code=status.HTTP_201_CREATED)
-async def create_lab(data: LabCreate, service: LabService = Depends(get_service)):
+async def create_lab(
+    data: LabCreate,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN, UserRole.DEPT_ADMIN)),
+    service: LabService = Depends(get_service),
+):
     return await service.create(data)
 
 
 @router.get("/export")
-async def export_labs(service: LabService = Depends(get_service)):
+async def export_labs(
+    _: User = Depends(get_current_user),
+    service: LabService = Depends(get_service),
+):
     content = await service.export_to_excel()
     return StreamingResponse(
         iter([content]),
@@ -66,23 +76,35 @@ async def export_labs(service: LabService = Depends(get_service)):
 @router.post("/import", response_model=LabImportResult)
 async def import_labs(
     file: UploadFile = File(...),
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN)),
     service: LabService = Depends(get_service),
 ):
     return await service.import_from_excel(file)
 
 
 @router.get("/{lab_id}", response_model=LabResponse)
-async def get_lab(lab_id: uuid.UUID, service: LabService = Depends(get_service)):
+async def get_lab(
+    lab_id: uuid.UUID,
+    _: User = Depends(get_current_user),
+    service: LabService = Depends(get_service),
+):
     return await service.get(lab_id)
 
 
 @router.patch("/{lab_id}", response_model=LabResponse)
 async def update_lab(
-    lab_id: uuid.UUID, data: LabUpdate, service: LabService = Depends(get_service)
+    lab_id: uuid.UUID,
+    data: LabUpdate,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN, UserRole.DEPT_ADMIN)),
+    service: LabService = Depends(get_service),
 ):
     return await service.update(lab_id, data)
 
 
 @router.delete("/{lab_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_lab(lab_id: uuid.UUID, service: LabService = Depends(get_service)):
+async def delete_lab(
+    lab_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN)),
+    service: LabService = Depends(get_service),
+):
     await service.delete(lab_id)

@@ -143,7 +143,7 @@ def test_spaces(c: Client) -> None:
     r = c.post("/buildings", json={"name": f"测试楼-{suffix}", "code": f"B{suffix}"})
     building_id = r.json().get("id") if ok(r) else None
 
-    r2 = c.post("/floors", json={"building_id": building_id, "name": "1F", "code": "1F"})
+    r2 = c.post("/floors", json={"building_id": building_id, "name": "1F", "floor_number": 1})
     floor_id = r2.json().get("id") if ok(r2) else None
 
     r3 = c.post("/rooms", json={"floor_id": floor_id, "name": "101", "code": "101"})
@@ -160,8 +160,8 @@ def test_spaces(c: Client) -> None:
         "空间管理：楼栋→楼层→房间层级",
         Status.PASS if ok(r) and ok(r2) and ok(r3) and ok(r_tree) else Status.PARTIAL,
         api_evidence=f"POST buildings/floors/rooms + GET tree → {r.status_code}/{r2.status_code}/{r3.status_code}/{r_tree.status_code}",
-        ui_evidence="无独立空间管理页面，仅在 LabForm 中间接使用",
-        gap="缺少空间管理独立 UI 页面",
+        ui_evidence="页面 /spaces 空间管理",
+        gap="" if ok(r2) and ok(r3) else "楼层创建需 floor_number 参数",
     )
 
 
@@ -211,9 +211,8 @@ def test_labs(c: Client) -> None:
         "Excel 批量导入导出",
         Status.PARTIAL if ok(r_export) else Status.FAIL,
         api_evidence=f"GET /labs/export → {r_export.status_code}",
-        ui_evidence="LabList 导入/导出按钮",
-        gap="导入需真实 xlsx 文件人工验证；LabDetail 无编辑页",
-        notes="PATCH /labs/{id} API 存在但前端无编辑表单",
+        ui_evidence="LabList 导入/导出按钮；/labs/:id/edit 编辑页",
+        gap="导入需真实 xlsx 文件人工验证",
     )
 
     record(
@@ -327,7 +326,11 @@ def test_instruments(c: Client) -> None:
         },
     ) if inst_id else None
 
-    r_cal = c.get(f"/instruments/{inst_id}/calendar") if inst_id else None
+    cal_start = datetime.now(timezone.utc) + timedelta(days=1)
+    r_cal = c.get(
+        f"/instruments/{inst_id}/calendar",
+        params={"from_time": cal_start.isoformat(), "to_time": (cal_start + timedelta(days=7)).isoformat()},
+    ) if inst_id else None
 
     record(
         "M02",
@@ -344,8 +347,8 @@ def test_instruments(c: Client) -> None:
         "仪器台账 CRUD（名称/型号/厂家/编号/资产号/状态）",
         Status.PASS if ok(r) and ok(r_list) else Status.FAIL,
         api_evidence=f"POST/GET /instruments → {r.status_code}/{r_list.status_code}",
-        ui_evidence="页面 /instruments",
-        gap="无 InstrumentForm 新建/编辑页（仅列表）",
+        ui_evidence="页面 /instruments，InstrumentForm 新建/编辑",
+        gap="",
     )
 
     record(
@@ -462,7 +465,14 @@ def test_lab_bookings(c: Client) -> None:
     booking_id = r_book.json().get("id") if r_book and ok(r_book) else None
     c.created["lab_booking_id"] = booking_id
 
-    r_cal = c.get("/lab-bookings/calendar", params={"lab_id": lab_id}) if lab_id else None
+    r_cal = c.get(
+        "/lab-bookings/calendar",
+        params={
+            "lab_id": lab_id,
+            "from_time": start.isoformat(),
+            "to_time": (start + timedelta(days=7)).isoformat(),
+        },
+    ) if lab_id else None
 
     record(
         "M03",
@@ -557,7 +567,8 @@ def test_lab_bookings(c: Client) -> None:
         "日历视图",
         Status.PARTIAL if r_cal and ok(r_cal) else Status.NOT_IMPL,
         api_evidence=f"GET /lab-bookings/calendar → {r_cal.status_code if r_cal else 'N/A'}",
-        gap="前端无日历 UI",
+        ui_evidence="LabBookingList 日历 Tab",
+        gap="",
     )
 
     record(
@@ -594,7 +605,11 @@ def test_experiment_projects(c: Client) -> None:
     r_export = c.get("/experiment-projects/export")
     r_copy = c.post(
         "/experiment-projects/batch-copy",
-        json={"project_ids": [project_id], "target_course_id": course_id},
+        json={
+            "source_course_id": course_id,
+            "target_course_id": course_id,
+            "project_ids": [project_id],
+        },
     ) if project_id and course_id else None
 
     record(
@@ -680,9 +695,10 @@ def test_faults(c: Client) -> None:
         "M05",
         "M05-003",
         "实验室专属二维码扫码上报",
-        Status.PARTIAL if r_qr and ok(r_qr) else Status.FAIL,
+        Status.PASS if r_qr and ok(r_qr) else Status.FAIL,
         api_evidence=f"GET /labs/{{id}}/fault-qr → {r_qr.status_code if r_qr else 'N/A'}",
-        gap="无二维码展示/扫码入口 UI",
+        ui_evidence="LabDetail 故障二维码按钮",
+        gap="无独立扫码落地页",
     )
 
     if fault_id:
@@ -919,11 +935,27 @@ def test_payments(c: Client) -> None:
     )
 
 
+def test_api_auth(c: Client) -> None:
+    # BUG-004: unauthenticated access should fail
+    anon = httpx.Client(timeout=10.0)
+    r_anon = anon.get(f"{API}/labs")
+    record(
+        "M09",
+        "M09-011",
+        "API 鉴权保护（未登录拒绝访问）",
+        Status.PASS if r_anon.status_code == 401 else Status.FAIL,
+        api_evidence=f"GET /labs without token → {r_anon.status_code}",
+    )
+    anon.close()
+
+
 def test_frontend_routes(c: Client) -> None:
     routes = [
         "/login",
         "/dashboard",
         "/labs",
+        "/spaces",
+        "/users",
         "/lab-staff",
         "/lab-changes",
         "/instruments",
@@ -953,14 +985,10 @@ def test_frontend_routes(c: Client) -> None:
     )
 
     missing_ui = [
-        "空间管理独立页",
-        "仪器新建/编辑页",
-        "实验室编辑页",
-        "预约日历视图",
-        "仪器/实验室规则配置页",
+        "仪器预约日历视图",
+        "预约/仪器规则配置页",
         "使用记录填报页",
-        "用户管理页",
-        "故障二维码展示页",
+        "故障扫码落地页",
     ]
     record(
         "UI",
@@ -977,9 +1005,10 @@ def test_users_mgmt(c: Client) -> None:
         "M09",
         "M09-010",
         "用户管理（CRUD/RBAC）",
-        Status.PARTIAL if ok(r) else Status.FAIL,
+        Status.PASS if ok(r) else Status.FAIL,
         api_evidence=f"GET /users → {r.status_code}",
-        gap="后端 API 存在，前端无用户管理页面",
+        ui_evidence="页面 /users",
+        gap="",
     )
 
 
@@ -1007,6 +1036,7 @@ def main() -> int:
     test_agent_api(c)
     test_payments(c)
     test_users_mgmt(c)
+    test_api_auth(c)
     test_frontend_routes(c)
     c.close()
 

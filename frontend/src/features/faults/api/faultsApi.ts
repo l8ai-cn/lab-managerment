@@ -86,4 +86,7 @@ export const faultsApi = {
     api
       .post(`/faults/${id}/handle`, { action, comment })
       .then((r) => r.data),
+
+  getLabQr: (labId: string) =>
+    api.get<{ lab_id: string; qr_token: string; url: string }>(`/labs/${labId}/fault-qr`).then((r) => r.data),
 };

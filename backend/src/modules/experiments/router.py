@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.database import get_db
+from src.core.deps import get_current_user, require_roles
 from src.modules.experiments.models import ExperimentStatus
 from src.modules.experiments.schemas import (
     ExperimentCreate,
@@ -15,6 +16,7 @@ from src.modules.experiments.schemas import (
     StatusTransitionResponse,
 )
 from src.modules.experiments.service import ExperimentService
+from src.modules.users.models import User, UserRole
 
 router = APIRouter(prefix="/experiments", tags=["实验管理"])
 
@@ -33,6 +35,7 @@ async def list_experiments(
     keyword: str | None = None,
     planned_start_from: datetime | None = None,
     planned_start_to: datetime | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await service.list(
@@ -50,6 +53,7 @@ async def list_experiments(
 @router.post("", response_model=ExperimentResponse, status_code=status.HTTP_201_CREATED)
 async def create_experiment(
     data: ExperimentCreate,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await service.create(data)
@@ -58,6 +62,7 @@ async def create_experiment(
 @router.get("/{experiment_id}", response_model=ExperimentResponse)
 async def get_experiment(
     experiment_id: uuid.UUID,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await service.get(experiment_id)
@@ -67,6 +72,7 @@ async def get_experiment(
 async def update_experiment(
     experiment_id: uuid.UUID,
     data: ExperimentUpdate,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await service.update(experiment_id, data)
@@ -75,6 +81,7 @@ async def update_experiment(
 @router.delete("/{experiment_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_experiment(
     experiment_id: uuid.UUID,
+    _: User = Depends(require_roles(UserRole.SYSTEM_ADMIN, UserRole.LAB_ADMIN, UserRole.TEACHER)),
     service: ExperimentService = Depends(get_service),
 ):
     await service.delete(experiment_id)
@@ -97,6 +104,7 @@ async def _transition(
 async def submit_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.PLANNED, body, service)
@@ -106,6 +114,7 @@ async def submit_experiment(
 async def start_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.IN_PROGRESS, body, service)
@@ -115,6 +124,7 @@ async def start_experiment(
 async def pause_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.PAUSED, body, service)
@@ -124,6 +134,7 @@ async def pause_experiment(
 async def resume_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.IN_PROGRESS, body, service)
@@ -133,6 +144,7 @@ async def resume_experiment(
 async def complete_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.COMPLETED, body, service)
@@ -142,6 +154,7 @@ async def complete_experiment(
 async def fail_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.FAILED, body, service)
@@ -151,6 +164,7 @@ async def fail_experiment(
 async def cancel_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.CANCELLED, body, service)
@@ -160,6 +174,7 @@ async def cancel_experiment(
 async def archive_experiment(
     experiment_id: uuid.UUID,
     body: StatusTransitionRequest | None = None,
+    _: User = Depends(get_current_user),
     service: ExperimentService = Depends(get_service),
 ):
     return await _transition(experiment_id, ExperimentStatus.ARCHIVED, body, service)

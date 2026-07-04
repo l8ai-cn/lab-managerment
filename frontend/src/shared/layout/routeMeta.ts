@@ -8,6 +8,8 @@ export const ROUTE_META: Record<string, RouteMeta> = {
   "/dashboard": { title: "可视化大屏", subtitle: "实验室运行态势实时监测", group: "系统" },
   "/labs": { title: "实验室管理", subtitle: "实验室基本信息与状态维护", group: "实验室管理" },
   "/labs/new": { title: "新建实验室", group: "实验室管理" },
+  "/spaces": { title: "空间管理", subtitle: "楼栋、楼层、房间层级维护", group: "实验室管理" },
+  "/users": { title: "用户管理", subtitle: "系统用户与角色权限", group: "系统" },
   "/lab-staff": { title: "实验员管理", subtitle: "实验员信息与实验室绑定", group: "实验室管理" },
   "/lab-changes": { title: "变更管理", subtitle: "实验室信息变更申请与审批", group: "实验室管理" },
   "/instruments": { title: "仪器台账", subtitle: "仪器设备资产与状态管理", group: "设备与预约" },
@@ -26,6 +28,9 @@ export function getRouteMeta(pathname: string): RouteMeta {
   if (ROUTE_META[pathname]) return ROUTE_META[pathname];
 
   // 动态路由匹配
+  if (pathname.match(/^\/labs\/[^/]+\/edit$/)) {
+    return { title: "编辑实验室", group: "实验室管理" };
+  }
   if (pathname.match(/^\/labs\/[^/]+$/)) {
     return { title: "实验室详情", group: "实验室管理" };
   }

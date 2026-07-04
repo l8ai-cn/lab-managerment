@@ -1,11 +1,11 @@
 {
-  "test_time": "2026-07-04T10:23:12.811542+00:00",
+  "test_time": "2026-07-04T10:28:33.918358+00:00",
   "summary": {
-    "PASS": 19,
-    "PARTIAL": 24,
+    "PASS": 24,
+    "PARTIAL": 22,
     "FAIL": 0,
     "SKIP": 0,
-    "NOT_IMPL": 23
+    "NOT_IMPL": 21
   },
   "results": [
     {
@@ -52,10 +52,10 @@
       "module": "M09",
       "req_id": "M09-005",
       "requirement": "空间管理：楼栋→楼层→房间层级",
-      "status": "PARTIAL",
-      "api_evidence": "POST buildings/floors/rooms + GET tree → 200/422/422/200",
-      "ui_evidence": "无独立空间管理页面，仅在 LabForm 中间接使用",
-      "gap": "缺少空间管理独立 UI 页面",
+      "status": "PASS",
+      "api_evidence": "POST buildings/floors/rooms + GET tree → 200/200/200/200",
+      "ui_evidence": "页面 /spaces 空间管理",
+      "gap": "",
       "notes": ""
     },
     {
@@ -84,9 +84,9 @@
       "requirement": "Excel 批量导入导出",
       "status": "PARTIAL",
       "api_evidence": "GET /labs/export → 200",
-      "ui_evidence": "LabList 导入/导出按钮",
-      "gap": "导入需真实 xlsx 文件人工验证；LabDetail 无编辑页",
-      "notes": "PATCH /labs/{id} API 存在但前端无编辑表单"
+      "ui_evidence": "LabList 导入/导出按钮；/labs/:id/edit 编辑页",
+      "gap": "导入需真实 xlsx 文件人工验证",
+      "notes": ""
     },
     {
       "module": "M01",
@@ -154,8 +154,8 @@
       "requirement": "仪器台账 CRUD（名称/型号/厂家/编号/资产号/状态）",
       "status": "PASS",
       "api_evidence": "POST/GET /instruments → 200/200",
-      "ui_evidence": "页面 /instruments",
-      "gap": "无 InstrumentForm 新建/编辑页（仅列表）",
+      "ui_evidence": "页面 /instruments，InstrumentForm 新建/编辑",
+      "gap": "",
       "notes": ""
     },
     {
@@ -192,8 +192,8 @@
       "module": "M02",
       "req_id": "M02-006",
       "requirement": "日历/时间轴展示空闲占用",
-      "status": "NOT_IMPL",
-      "api_evidence": "GET /instruments/{id}/calendar → 422",
+      "status": "PARTIAL",
+      "api_evidence": "GET /instruments/{id}/calendar → 200",
       "ui_evidence": "",
       "gap": "前端无日历 UI，仅 API",
       "notes": ""
@@ -322,10 +322,10 @@
       "module": "M03",
       "req_id": "M03-010",
       "requirement": "日历视图",
-      "status": "NOT_IMPL",
-      "api_evidence": "GET /lab-bookings/calendar → 422",
-      "ui_evidence": "",
-      "gap": "前端无日历 UI",
+      "status": "PARTIAL",
+      "api_evidence": "GET /lab-bookings/calendar → 200",
+      "ui_evidence": "LabBookingList 日历 Tab",
+      "gap": "",
       "notes": ""
     },
     {
@@ -352,8 +352,8 @@
       "module": "M04",
       "req_id": "M04-002",
       "requirement": "批量复制至其他课程",
-      "status": "PARTIAL",
-      "api_evidence": "POST batch-copy → 422",
+      "status": "PASS",
+      "api_evidence": "POST batch-copy → 200",
       "ui_evidence": "ProjectList 批量复制按钮",
       "gap": "",
       "notes": ""
@@ -402,10 +402,10 @@
       "module": "M05",
       "req_id": "M05-003",
       "requirement": "实验室专属二维码扫码上报",
-      "status": "PARTIAL",
+      "status": "PASS",
       "api_evidence": "GET /labs/{id}/fault-qr → 200",
-      "ui_evidence": "",
-      "gap": "无二维码展示/扫码入口 UI",
+      "ui_evidence": "LabDetail 故障二维码按钮",
+      "gap": "无独立扫码落地页",
       "notes": ""
     },
     {
@@ -642,10 +642,20 @@
       "module": "M09",
       "req_id": "M09-010",
       "requirement": "用户管理（CRUD/RBAC）",
-      "status": "PARTIAL",
+      "status": "PASS",
       "api_evidence": "GET /users → 200",
+      "ui_evidence": "页面 /users",
+      "gap": "",
+      "notes": ""
+    },
+    {
+      "module": "M09",
+      "req_id": "M09-011",
+      "requirement": "API 鉴权保护（未登录拒绝访问）",
+      "status": "PASS",
+      "api_evidence": "GET /labs without token → 401",
       "ui_evidence": "",
-      "gap": "后端 API 存在，前端无用户管理页面",
+      "gap": "",
       "notes": ""
     },
     {
@@ -654,7 +664,7 @@
       "requirement": "前端全部路由可访问（SPA）",
       "status": "PASS",
       "api_evidence": "",
-      "ui_evidence": "测试 15 条路由",
+      "ui_evidence": "测试 17 条路由",
       "gap": "",
       "notes": ""
     },
@@ -665,7 +675,7 @@
       "status": "NOT_IMPL",
       "api_evidence": "",
       "ui_evidence": "",
-      "gap": "空间管理独立页; 仪器新建/编辑页; 实验室编辑页; 预约日历视图; 仪器/实验室规则配置页; 使用记录填报页; 用户管理页; 故障二维码展示页",
+      "gap": "仪器预约日历视图; 预约/仪器规则配置页; 使用记录填报页; 故障扫码落地页",
       "notes": ""
     }
   ]

@@ -1,5 +1,8 @@
 import { api } from "@/shared/api/client";
-import type { BuildingTree, Lab, LabCreate, LabListResponse, LabType, OpenStatus } from "../types/lab";
+import type { Lab, LabCreate, LabListResponse, LabType, OpenStatus } from "../types/lab";
+
+export type { BuildingTree } from "../types/lab";
+export { spacesApi } from "@/features/spaces/api/spacesApi";
 
 export interface LabListParams {
   page?: number;
@@ -38,8 +41,4 @@ export const labsApi = {
       )
       .then((r) => r.data);
   },
-};
-
-export const spacesApi = {
-  getTree: () => api.get<BuildingTree[]>("/buildings/tree").then((r) => r.data),
 };

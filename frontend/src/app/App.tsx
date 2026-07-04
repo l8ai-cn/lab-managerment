@@ -23,10 +23,12 @@ import { LabChangeDetail } from "@/features/lab-changes/components/LabChangeDeta
 import { LabChangeList } from "@/features/lab-changes/components/LabChangeList";
 import { LabStaffList } from "@/features/lab-staff/components/LabStaffList";
 import { LabDetail } from "@/features/labs/components/LabDetail";
-import { LabForm } from "@/features/labs/components/LabForm";
+import { LabForm, LabEditPage } from "@/features/labs/components/LabForm";
 import { LabList } from "@/features/labs/components/LabList";
 import { PaymentOrderList } from "@/features/payments/components/PaymentOrderList";
 import { StatisticsPage } from "@/features/statistics/components/StatisticsPage";
+import { SpaceManagementPage } from "@/features/spaces/components/SpaceManagementPage";
+import { UserListPage } from "@/features/users/components/UserListPage";
 import { AuthProvider } from "@/shared/auth/AuthContext";
 import { ProtectedRoute } from "@/shared/auth/ProtectedRoute";
 import { AppShell } from "@/shared/layout/AppShell";
@@ -61,7 +63,10 @@ export function App() {
                   <Route path="/dashboard" element={<DashboardPage />} />
                   <Route path="/labs" element={<LabList />} />
                   <Route path="/labs/new" element={<LabForm />} />
+                  <Route path="/labs/:id/edit" element={<LabEditPage />} />
                   <Route path="/labs/:id" element={<LabDetail />} />
+                  <Route path="/spaces" element={<SpaceManagementPage />} />
+                  <Route path="/users" element={<UserListPage />} />
                   <Route path="/lab-staff" element={<LabStaffList />} />
                   <Route path="/lab-changes" element={<LabChangeList />} />
                   <Route path="/lab-changes/:id" element={<LabChangeDetail />} />

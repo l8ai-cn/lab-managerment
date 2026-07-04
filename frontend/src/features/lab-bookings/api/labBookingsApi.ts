@@ -93,6 +93,14 @@ export const labBookingsApi = {
 
   cancel: (id: string) =>
     api.post<LabBooking>(`/lab-bookings/${id}/cancel`).then((r) => r.data),
+
+  calendar: (labId: string, fromTime: string, toTime: string) =>
+    api
+      .get<Array<{ start_time: string; end_time: string; status: string; usage_type?: string }>>(
+        "/lab-bookings/calendar",
+        { params: { lab_id: labId, from_time: fromTime, to_time: toTime } },
+      )
+      .then((r) => r.data),
 };
 
 export const labBookingRulesApi = {

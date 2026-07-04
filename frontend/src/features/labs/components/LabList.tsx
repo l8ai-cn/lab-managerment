@@ -11,6 +11,7 @@ import {
   LAB_TYPE_LABELS,
   OPEN_STATUS_COLORS,
   OPEN_STATUS_LABELS,
+  type BuildingTree,
   type Lab,
   type LabType,
   type OpenStatus,
@@ -94,9 +95,9 @@ export function LabList() {
     },
   ];
 
-  const buildingOptions = tree?.map((b) => ({ value: b.id, label: b.name })) ?? [];
+  const buildingOptions = (tree as BuildingTree[] | undefined)?.map((b) => ({ value: b.id, label: b.name })) ?? [];
   const floorOptions =
-    tree?.find((b) => b.id === buildingId)?.floors.map((f) => ({ value: f.id, label: f.name })) ?? [];
+    (tree as BuildingTree[] | undefined)?.find((b) => b.id === buildingId)?.floors.map((f) => ({ value: f.id, label: f.name })) ?? [];
 
   return (
     <>
