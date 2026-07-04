@@ -22,6 +22,12 @@ import { DataReportingPage } from "@/features/data-reporting/components/DataRepo
 import { InstrumentListPage } from "@/features/instruments/components/InstrumentListPage";
 import { InstrumentBookingListPage } from "@/features/instruments/components/InstrumentBookingListPage";
 import { LabBookingListPage } from "@/features/lab-bookings/components/LabBookingListPage";
+import { UserListPage } from "@/features/users/components/UserListPage";
+import { PaymentOrderList } from "@/features/payments/components/PaymentOrderList";
+import { StatisticsPage } from "@/features/statistics/components/StatisticsPage";
+import { IntegrationPage } from "@/features/integrations/components/IntegrationPage";
+import { ClassBoardPage } from "@/features/access-control/components/ClassBoardPage";
+import { MobileApp } from "@/mobile/MobileApp";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,10 +78,28 @@ export function App() {
 
               <Route path="/knowledge" element={<KnowledgePage />} />
               <Route path="/data-reporting" element={<DataReportingPage />} />
+
+              {/* System Configuration (Batch 5) */}
+              <Route path="/statistics" element={<StatisticsPage />} />
+              <Route path="/integrations" element={<IntegrationPage />} />
+              <Route path="/class-boards" element={<ClassBoardPage />} />
+              <Route path="/users" element={<UserListPage />} />
+              <Route path="/payments" element={<PaymentOrderList />} />
               
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="*" element={<div className="p-8 text-center text-xs text-[var(--ink-secondary)]">页面正在 clean-sheet 重新书写中...</div>} />
             </Route>
+
+            {/* Mobile H5 Viewport */}
+            <Route
+              path="/mobile/*"
+              element={
+                <ProtectedRoute>
+                  <MobileApp />
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="/login" element={<LoginPage />} />
           </Routes>
         </BrowserRouter>
