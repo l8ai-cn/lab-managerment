@@ -1,6 +1,6 @@
 # 实验室管理系统 — 功能交付报告（逐条截图说明）
 
-> **报告日期：** 2026-07-04 12:39 UTC  
+> **报告日期：** 2026-07-04 14:31 UTC  
 > **系统版本：** LabOS v0.3.3  
 > **测试账号：** admin/admin123 · teacher1/teacher123 · student1/student123  
 > **说明：** 按甲方要求，**外部系统集成对接**（模块 7、门禁/班牌/资产/人脸/数据中心等 production API）不在本次交付范围，标记为「排除」。
@@ -25,32 +25,43 @@
 
 | 截图 | 说明 |
 |------|------|
-| `03-labs.png` | ![](/opt/cursor/artifacts/screenshots/03-labs.png) |
-| `06-lab-changes.png` | ![](/opt/cursor/artifacts/screenshots/06-lab-changes.png) |
-| `07-lab-staff.png` | ![](/opt/cursor/artifacts/screenshots/07-lab-staff.png) |
-| `08-instruments.png` | ![](/opt/cursor/artifacts/screenshots/08-instruments.png) |
+| `03-labs-create-form.png` | ![](/opt/cursor/artifacts/screenshots/03-labs-create-form.png) |
+| `03-labs-list.png` | ![](/opt/cursor/artifacts/screenshots/03-labs-list.png) |
+| `06-lab-changes-list.png` | ![](/opt/cursor/artifacts/screenshots/06-lab-changes-list.png) |
+| `06-lab-change-detail.png` | ![](/opt/cursor/artifacts/screenshots/06-lab-change-detail.png) |
+| `07-lab-staff-create-modal.png` | ![](/opt/cursor/artifacts/screenshots/07-lab-staff-create-modal.png) |
+| `08-instruments-create-form.png` | ![](/opt/cursor/artifacts/screenshots/08-instruments-create-form.png) |
+| `08-instruments-list.png` | ![](/opt/cursor/artifacts/screenshots/08-instruments-list.png) |
 | `12-instrument-rules.png` | ![](/opt/cursor/artifacts/screenshots/12-instrument-rules.png) |
 | `09-instrument-bookings-calendar.png` | ![](/opt/cursor/artifacts/screenshots/09-instrument-bookings-calendar.png) |
-| `09-instrument-bookings.png` | ![](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png) |
+| `09-instrument-bookings-create-modal.png` | ![](/opt/cursor/artifacts/screenshots/09-instrument-bookings-create-modal.png) |
+| `09-instrument-bookings-list.png` | ![](/opt/cursor/artifacts/screenshots/09-instrument-bookings-list.png) |
 | `25-usage-approval.png` | ![](/opt/cursor/artifacts/screenshots/25-usage-approval.png) |
 | `17-statistics.png` | ![](/opt/cursor/artifacts/screenshots/17-statistics.png) |
 | `11-lab-booking-rules.png` | ![](/opt/cursor/artifacts/screenshots/11-lab-booking-rules.png) |
-| `10-lab-bookings.png` | ![](/opt/cursor/artifacts/screenshots/10-lab-bookings.png) |
+| `10-lab-bookings-create-modal.png` | ![](/opt/cursor/artifacts/screenshots/10-lab-bookings-create-modal.png) |
+| `10-lab-bookings-list.png` | ![](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png) |
+| `10-lab-bookings-usage-panel.png` | ![](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png) |
 | `26-class-boards.png` | ![](/opt/cursor/artifacts/screenshots/26-class-boards.png) |
-| `13-experiment-projects.png` | ![](/opt/cursor/artifacts/screenshots/13-experiment-projects.png) |
-| `27-experiments.png` | ![](/opt/cursor/artifacts/screenshots/27-experiments.png) |
-| `14-faults.png` | ![](/opt/cursor/artifacts/screenshots/14-faults.png) |
-| `15-fault-report.png` | ![](/opt/cursor/artifacts/screenshots/15-fault-report.png) |
-| `04-lab-detail.png` | ![](/opt/cursor/artifacts/screenshots/04-lab-detail.png) |
-| `16-data-reporting.png` | ![](/opt/cursor/artifacts/screenshots/16-data-reporting.png) |
+| `13-experiment-projects-create.png` | ![](/opt/cursor/artifacts/screenshots/13-experiment-projects-create.png) |
+| `13-experiment-projects-list.png` | ![](/opt/cursor/artifacts/screenshots/13-experiment-projects-list.png) |
+| `27-experiment-detail.png` | ![](/opt/cursor/artifacts/screenshots/27-experiment-detail.png) |
+| `14-faults-report-modal.png` | ![](/opt/cursor/artifacts/screenshots/14-faults-report-modal.png) |
+| `04-lab-fault-qr-modal.png` | ![](/opt/cursor/artifacts/screenshots/04-lab-fault-qr-modal.png) |
+| `14-fault-detail.png` | ![](/opt/cursor/artifacts/screenshots/14-fault-detail.png) |
+| `14-faults-list.png` | ![](/opt/cursor/artifacts/screenshots/14-faults-list.png) |
+| `16-data-reporting-template-create.png` | ![](/opt/cursor/artifacts/screenshots/16-data-reporting-template-create.png) |
+| `16-data-reporting-submissions.png` | ![](/opt/cursor/artifacts/screenshots/16-data-reporting-submissions.png) |
 | `16-data-reporting-stats.png` | ![](/opt/cursor/artifacts/screenshots/16-data-reporting-stats.png) |
 | `02-dashboard.png` | ![](/opt/cursor/artifacts/screenshots/02-dashboard.png) |
-| `01-login-ui.png` | ![](/opt/cursor/artifacts/screenshots/01-login-ui.png) |
-| `22-mobile.png` | ![](/opt/cursor/artifacts/screenshots/22-mobile.png) |
-| `20-users.png` | ![](/opt/cursor/artifacts/screenshots/20-users.png) |
+| `01-login.png` | ![](/opt/cursor/artifacts/screenshots/01-login.png) |
+| `30-openapi-docs.png` | ![](/opt/cursor/artifacts/screenshots/30-openapi-docs.png) |
+| `22-mobile-dashboard.png` | ![](/opt/cursor/artifacts/screenshots/22-mobile-dashboard.png) |
+| `20-users-create-modal.png` | ![](/opt/cursor/artifacts/screenshots/20-users-create-modal.png) |
 | `05-spaces.png` | ![](/opt/cursor/artifacts/screenshots/05-spaces.png) |
-| `23-copilot.png` | ![](/opt/cursor/artifacts/screenshots/23-copilot.png) |
-| `24-knowledge.png` | ![](/opt/cursor/artifacts/screenshots/24-knowledge.png) |
+| `04-lab-detail.png` | ![](/opt/cursor/artifacts/screenshots/04-lab-detail.png) |
+| `23-copilot-dashboard.png` | ![](/opt/cursor/artifacts/screenshots/23-copilot-dashboard.png) |
+| `24-knowledge-search.png` | ![](/opt/cursor/artifacts/screenshots/24-knowledge-search.png) |
 | `19-payments.png` | ![](/opt/cursor/artifacts/screenshots/19-payments.png) |
 
 ---
@@ -63,7 +74,7 @@
 
 **状态：** ✅ 已完成
 
-![1.1.1](/opt/cursor/artifacts/screenshots/03-labs.png)
+![1.1.1](/opt/cursor/artifacts/screenshots/03-labs-create-form.png)
 
 - 支持实验室名称、编号、位置、面积、功能分区、容纳人数、负责人、开放状态、巡查状态等字段的完整录入与编辑。
 - 操作路径：侧边栏「实验室」→ 新建/编辑；API：`POST/PATCH/GET /labs`。
@@ -72,7 +83,7 @@
 
 **状态：** ✅ 已完成
 
-![1.1.2](/opt/cursor/artifacts/screenshots/03-labs.png)
+![1.1.2](/opt/cursor/artifacts/screenshots/03-labs-list.png)
 
 - 列表页 FilterBar 支持按开放状态、实验室类型、关键词组合筛选。
 - API：`GET /labs?open_status&lab_type&keyword&building_id`。
@@ -81,7 +92,7 @@
 
 **状态：** ✅ 已完成
 
-![1.1.3](/opt/cursor/artifacts/screenshots/03-labs.png)
+![1.1.3](/opt/cursor/artifacts/screenshots/03-labs-list.png)
 
 - 列表页提供 Excel 导入/导出按钮，后端 `GET /labs/export`、`POST /labs/import` 已实现。
 - 导出即时下载；导入支持 xlsx 批量更新实验室信息。
@@ -90,7 +101,7 @@
 
 **状态：** ✅ 已完成
 
-![1.2.1](/opt/cursor/artifacts/screenshots/06-lab-changes.png)
+![1.2.1](/opt/cursor/artifacts/screenshots/06-lab-changes-list.png)
 
 - 支持四类变更类型在线申请，填写标题、说明与变更内容 JSON。
 - 操作路径：「变更管理」→ 新建申请；API：`POST /lab-changes`。
@@ -99,7 +110,7 @@
 
 **状态：** ✅ 已完成
 
-![1.2.2](/opt/cursor/artifacts/screenshots/06-lab-changes.png)
+![1.2.2](/opt/cursor/artifacts/screenshots/06-lab-change-detail.png)
 
 - 审批流：草稿 → 待单位审核 → 待管理中心审核 → 通过/驳回。
 - 详情页 Steps 展示进度，`approval_records` 全程留痕。
@@ -108,7 +119,7 @@
 
 **状态：** ✅ 已完成
 
-![1.2.3](/opt/cursor/artifacts/screenshots/06-lab-changes.png)
+![1.2.3](/opt/cursor/artifacts/screenshots/06-lab-change-detail.png)
 
 - 详情页可查看每级审批人、意见与时间；站内通知推送审批结果。
 - （微信/钉钉原生推送不在本次交付范围，站内消息已闭环。）
@@ -117,7 +128,7 @@
 
 **状态：** ✅ 已完成
 
-![1.3.1](/opt/cursor/artifacts/screenshots/07-lab-staff.png)
+![1.3.1](/opt/cursor/artifacts/screenshots/07-lab-staff-create-modal.png)
 
 - 工号、姓名、电话、办公室、责任实验室等字段 CRUD 完整。
 - 操作路径：「实验员」→ 新增/编辑/删除。
@@ -126,7 +137,7 @@
 
 **状态：** ✅ 已完成
 
-![1.3.2](/opt/cursor/artifacts/screenshots/07-lab-staff.png)
+![1.3.2](/opt/cursor/artifacts/screenshots/07-lab-staff-create-modal.png)
 
 - 表单支持多选责任实验室，后端 `lab_ids` 数组绑定。
 
@@ -143,7 +154,7 @@
 
 **状态：** ✅ 已完成
 
-![2.1.2](/opt/cursor/artifacts/screenshots/08-instruments.png)
+![2.1.2](/opt/cursor/artifacts/screenshots/08-instruments-create-form.png)
 
 - InstrumentForm 支持名称、型号、厂家、资产号、购置信息、管理员等字段新增与编辑。
 
@@ -151,7 +162,7 @@
 
 **状态：** ✅ 已完成
 
-![2.2.1](/opt/cursor/artifacts/screenshots/08-instruments.png)
+![2.2.1](/opt/cursor/artifacts/screenshots/08-instruments-create-form.png)
 
 - 完整字段：编号(自动)、名称、型号、分类、实验室、位置、购置日期/价格等。
 
@@ -159,7 +170,7 @@
 
 **状态：** ✅ 已完成
 
-![2.2.2](/opt/cursor/artifacts/screenshots/08-instruments.png)
+![2.2.2](/opt/cursor/artifacts/screenshots/08-instruments-list.png)
 
 - 状态：正常/维护/停用/报废；列表「状态」按钮变更并写入 status_log。
 
@@ -167,7 +178,7 @@
 
 **状态：** ✅ 已完成
 
-![2.2.3](/opt/cursor/artifacts/screenshots/08-instruments.png)
+![2.2.3](/opt/cursor/artifacts/screenshots/08-instruments-list.png)
 
 - 列表页「导入」「导出」按钮；API 支持 xlsx/csv。
 
@@ -199,7 +210,7 @@
 
 **状态：** ✅ 已完成
 
-![2.4.1](/opt/cursor/artifacts/screenshots/08-instruments.png)
+![2.4.1](/opt/cursor/artifacts/screenshots/08-instruments-list.png)
 
 - InstrumentList 关键词、实验室、状态多维筛选。
 
@@ -215,7 +226,7 @@
 
 **状态：** ✅ 已完成
 
-![2.4.3](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png)
+![2.4.3](/opt/cursor/artifacts/screenshots/09-instrument-bookings-create-modal.png)
 
 - 选择仪器、时段、用途、项目名后提交；规则引擎自动校验冲突与限额。
 
@@ -223,7 +234,7 @@
 
 **状态：** ✅ 已完成
 
-![2.5.1](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png)
+![2.5.1](/opt/cursor/artifacts/screenshots/09-instrument-bookings-list.png)
 
 - 待审批记录可一键通过或填写原因拒绝；用户可取消未开始预约。
 
@@ -231,7 +242,7 @@
 
 **状态：** ✅ 已完成
 
-![2.5.2](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png)
+![2.5.2](/opt/cursor/artifacts/screenshots/09-instrument-bookings-list.png)
 
 - 列表实时展示状态；审批结果通过站内通知推送申请人。
 
@@ -239,7 +250,7 @@
 
 **状态：** ✅ 已完成
 
-![2.6.1](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png)
+![2.6.1](/opt/cursor/artifacts/screenshots/09-instrument-bookings-list.png)
 
 - 展开已通过预约行，填写使用内容与设备状态反馈并提交。
 
@@ -247,7 +258,7 @@
 
 **状态：** ✅ 已完成
 
-![2.6.2](/opt/cursor/artifacts/screenshots/09-instrument-bookings.png)
+![2.6.2](/opt/cursor/artifacts/screenshots/09-instrument-bookings-list.png)
 
 - 使用记录表单支持附件上传（upload API）。
 
@@ -305,7 +316,7 @@
 
 **状态：** ✅ 已完成
 
-![3.2.1](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.2.1](/opt/cursor/artifacts/screenshots/10-lab-bookings-create-modal.png)
 
 - 选择实验室、用途类型、时段、人数、目的后提交申请。
 
@@ -313,7 +324,7 @@
 
 **状态：** ✅ 已完成
 
-![3.2.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.2.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-create-modal.png)
 
 - 新建表单勾选「周期性预约」，配置频率/次数/截止日期。
 
@@ -321,7 +332,7 @@
 
 **状态：** ✅ 已完成
 
-![3.3.1](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.3.1](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png)
 
 - 待审批可「通过」「拒绝」；已通过可「编辑」「取消」。
 
@@ -329,7 +340,7 @@
 
 **状态：** ✅ 已完成
 
-![3.3.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.3.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png)
 
 - 审批通过后弹出 CheckInModal，展示 QR/门禁 token；支持多种 access_method。
 
@@ -344,7 +355,7 @@
 
 **状态：** ✅ 已完成
 
-![3.4.1](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.4.1](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png)
 
 - 按实验室、状态筛选；列表导出 Excel。
 
@@ -352,7 +363,7 @@
 
 **状态：** ✅ 已完成
 
-![3.4.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.4.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png)
 
 - 同 3.3.1；审批结果站内通知。
 
@@ -360,7 +371,7 @@
 
 **状态：** ✅ 已完成
 
-![3.4.3](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.4.3](/opt/cursor/artifacts/screenshots/10-lab-bookings-list.png)
 
 - 列表「导出」按钮下载 xlsx。
 
@@ -368,7 +379,7 @@
 
 **状态：** ✅ 已完成
 
-![3.5.1](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.5.1](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png)
 
 - 展开已通过预约，提供刷卡/扫码/人脸三种签到按钮；CheckInModal 展示凭证。
 
@@ -376,7 +387,7 @@
 
 **状态：** ✅ 已完成
 
-![3.5.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.5.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png)
 
 - 签到与使用记录可填写 actual_count，与 expected_count 比对。
 
@@ -384,7 +395,7 @@
 
 **状态：** ✅ 已完成
 
-![3.6.1](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.6.1](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png)
 
 - LabUsageRecordPanel 提交内容与参数；GET usage 持久化加载审核状态。
 
@@ -392,7 +403,7 @@
 
 **状态：** ✅ 已完成
 
-![3.6.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![3.6.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png)
 
 - 使用记录支持附件上传。
 
@@ -448,7 +459,7 @@
 
 **状态：** ✅ 已完成
 
-![4.1.1](/opt/cursor/artifacts/screenshots/13-experiment-projects.png)
+![4.1.1](/opt/cursor/artifacts/screenshots/13-experiment-projects-create.png)
 
 - 课程 + 实验项目 CRUD：名称、类型、学时、仪器、耗材、专业等。
 
@@ -456,7 +467,7 @@
 
 **状态：** ✅ 已完成
 
-![4.1.2](/opt/cursor/artifacts/screenshots/13-experiment-projects.png)
+![4.1.2](/opt/cursor/artifacts/screenshots/13-experiment-projects-list.png)
 
 - ProjectList/ProjectForm 完整 CRUD + 编辑路由。
 
@@ -464,7 +475,7 @@
 
 **状态：** ✅ 已完成
 
-![4.2.1](/opt/cursor/artifacts/screenshots/13-experiment-projects.png)
+![4.2.1](/opt/cursor/artifacts/screenshots/13-experiment-projects-list.png)
 
 - API `POST /experiment-projects/batch-copy` + 列表批量操作。
 
@@ -480,7 +491,7 @@
 
 **状态：** ✅ 已完成
 
-![4.3.2](/opt/cursor/artifacts/screenshots/13-experiment-projects.png)
+![4.3.2](/opt/cursor/artifacts/screenshots/13-experiment-projects-list.png)
 
 - ProjectList 导入/导出按钮 + 后端 export/import API。
 
@@ -488,7 +499,7 @@
 
 **状态：** ✅ 已完成
 
-![4.4.1](/opt/cursor/artifacts/screenshots/27-experiments.png)
+![4.4.1](/opt/cursor/artifacts/screenshots/27-experiment-detail.png)
 
 - 「科研实验」模块：新建/编辑/删除/状态流转（草稿→计划→执行→完成/归档）。
 - 操作路径：「科研实验」→ 列表/详情/编辑页。
@@ -499,7 +510,7 @@
 
 **状态：** ✅ 已完成
 
-![5.1.1](/opt/cursor/artifacts/screenshots/14-faults.png)
+![5.1.1](/opt/cursor/artifacts/screenshots/14-faults-report-modal.png)
 
 - 选择实验室、类型、描述，支持图片/视频/文件上传。
 
@@ -507,7 +518,7 @@
 
 **状态：** ✅ 已完成
 
-![5.1.2](/opt/cursor/artifacts/screenshots/15-fault-report.png)
+![5.1.2](/opt/cursor/artifacts/screenshots/04-lab-fault-qr-modal.png)
 
 - LabDetail 生成专属 QR；`/fault-report?lab_id=` 落地页自动关联实验室。
 
@@ -515,7 +526,7 @@
 
 **状态：** ✅ 已完成
 
-![5.2.1](/opt/cursor/artifacts/screenshots/04-lab-detail.png)
+![5.2.1](/opt/cursor/artifacts/screenshots/14-fault-detail.png)
 
 - FaultDetail 指派处理人、更新状态、填写处理意见。
 
@@ -523,7 +534,7 @@
 
 **状态：** ✅ 已完成
 
-![5.2.2](/opt/cursor/artifacts/screenshots/14-faults.png)
+![5.2.2](/opt/cursor/artifacts/screenshots/14-fault-detail.png)
 
 - FaultHandlingRecord 时间线；上报人可在详情页查看进度。
 
@@ -531,7 +542,7 @@
 
 **状态：** ✅ 已完成
 
-![5.3.1](/opt/cursor/artifacts/screenshots/14-faults.png)
+![5.3.1](/opt/cursor/artifacts/screenshots/14-faults-list.png)
 
 - FaultList 顶部 StatCard：总数、待处理、平均响应/处理时长、24h SLA。
 
@@ -539,7 +550,7 @@
 
 **状态：** ✅ 已完成
 
-![5.3.2](/opt/cursor/artifacts/screenshots/14-faults.png)
+![5.3.2](/opt/cursor/artifacts/screenshots/14-faults-list.png)
 
 - 多维度 StatCard 可视化；列表支持筛选与删除管理。
 
@@ -549,7 +560,7 @@
 
 **状态：** ✅ 已完成
 
-![6.1.1](/opt/cursor/artifacts/screenshots/16-data-reporting.png)
+![6.1.1](/opt/cursor/artifacts/screenshots/16-data-reporting-template-create.png)
 
 - 种子含 7 类基表模板；支持新建/编辑 Schema/删除模板。
 
@@ -557,7 +568,7 @@
 
 **状态：** ✅ 已完成
 
-![6.1.2](/opt/cursor/artifacts/screenshots/16-data-reporting.png)
+![6.1.2](/opt/cursor/artifacts/screenshots/16-data-reporting-submissions.png)
 
 - 填报 CRUD + 草稿编辑 + 提交/审核 + Excel 导入导出闭环。
 
@@ -565,7 +576,7 @@
 
 **状态：** ✅ 已完成
 
-![6.2.1](/opt/cursor/artifacts/screenshots/16-data-reporting.png)
+![6.2.1](/opt/cursor/artifacts/screenshots/16-data-reporting-submissions.png)
 
 - SubmissionList 按状态/模板筛选查询。
 
@@ -701,7 +712,7 @@
 
 **状态：** ✅ 已完成
 
-![9.2.1](/opt/cursor/artifacts/screenshots/01-login-ui.png)
+![9.2.1](/opt/cursor/artifacts/screenshots/01-login.png)
 
 - 登录页 SSO 按钮；`/auth/sso/login` 本地 CAS/OIDC 模拟流程。
 - （生产 IdP 对接属集成范畴，不在范围。）
@@ -710,13 +721,15 @@
 
 **状态：** ✅ 已完成
 
-![9.2.2](/opt/cursor/artifacts/screenshots/10-lab-bookings.png)
+![9.2.2](/opt/cursor/artifacts/screenshots/10-lab-bookings-usage-panel.png)
 
 - check-in method=card 已实现；实机刷卡器属硬件集成排除。
 
 #### 9.2.3 标准化 RESTful API
 
 **状态：** ✅ 已完成
+
+![9.2.3](/opt/cursor/artifacts/screenshots/30-openapi-docs.png)
 
 - OpenAPI `/docs`；120+ 端点。
 
@@ -736,7 +749,7 @@
 
 **状态：** ✅ 已完成
 
-![9.4.1](/opt/cursor/artifacts/screenshots/22-mobile.png)
+![9.4.1](/opt/cursor/artifacts/screenshots/22-mobile-dashboard.png)
 
 - H5 移动版 `/mobile/*` 完整可用（Dashboard/预约/故障/通知）。
 - 微信/钉钉原生小程序不在范围。
@@ -745,7 +758,7 @@
 
 **状态：** ✅ 已完成
 
-![9.5.1](/opt/cursor/artifacts/screenshots/20-users.png)
+![9.5.1](/opt/cursor/artifacts/screenshots/20-users-create-modal.png)
 
 - 6 种角色；用户 CRUD + 启用/禁用 + 编辑表单。
 
@@ -795,7 +808,7 @@
 
 **状态：** ✅ 已完成
 
-![10.1.1](/opt/cursor/artifacts/screenshots/23-copilot.png)
+![10.1.1](/opt/cursor/artifacts/screenshots/23-copilot-dashboard.png)
 
 - CopilotKit 侧边栏 + Agent REST API + MCP JSON-RPC `/api/v1/mcp`。
 
@@ -803,7 +816,7 @@
 
 **状态：** ✅ 已完成
 
-![10.1.2](/opt/cursor/artifacts/screenshots/23-copilot.png)
+![10.1.2](/opt/cursor/artifacts/screenshots/23-copilot-dashboard.png)
 
 - 签到/门禁 API + 站内通知；Copilot 可查询待办。
 
@@ -811,7 +824,7 @@
 
 **状态：** ✅ 已完成
 
-![10.2.1](/opt/cursor/artifacts/screenshots/23-copilot.png)
+![10.2.1](/opt/cursor/artifacts/screenshots/23-copilot-dashboard.png)
 
 - `POST /agent/text-to-sql` 支持中文问句转只读 SQL。
 
@@ -819,7 +832,7 @@
 
 **状态：** ✅ 已完成
 
-![10.2.2](/opt/cursor/artifacts/screenshots/24-knowledge.png)
+![10.2.2](/opt/cursor/artifacts/screenshots/24-knowledge-search.png)
 
 - 「知识库」页面：文档 CRUD + 中文 FTS/混合搜索。
 

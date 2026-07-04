@@ -14,35 +14,35 @@ OUT = Path(__file__).resolve().parent.parent / "docs" / "functional-delivery-rep
 # status: done | excluded | partial
 ITEMS: list[tuple[str, str, str, str, list[str]]] = [
     # === 1 实验室信息管理 ===
-    ("1.1.1", "实验室基础信息录入、编辑与维护", "done", "03-labs.png", [
+    ("1.1.1", "实验室基础信息录入、编辑与维护", "done", "03-labs-create-form.png", [
         "支持实验室名称、编号、位置、面积、功能分区、容纳人数、负责人、开放状态、巡查状态等字段的完整录入与编辑。",
         "操作路径：侧边栏「实验室」→ 新建/编辑；API：`POST/PATCH/GET /labs`。",
     ]),
-    ("1.1.2", "多维度检索筛选（楼栋/楼层/类型/开放状态/关键词）", "done", "03-labs.png", [
+    ("1.1.2", "多维度检索筛选（楼栋/楼层/类型/开放状态/关键词）", "done", "03-labs-list.png", [
         "列表页 FilterBar 支持按开放状态、实验室类型、关键词组合筛选。",
         "API：`GET /labs?open_status&lab_type&keyword&building_id`。",
     ]),
-    ("1.1.3", "实验室信息批量导入与导出", "done", "03-labs.png", [
+    ("1.1.3", "实验室信息批量导入与导出", "done", "03-labs-list.png", [
         "列表页提供 Excel 导入/导出按钮，后端 `GET /labs/export`、`POST /labs/import` 已实现。",
         "导出即时下载；导入支持 xlsx 批量更新实验室信息。",
     ]),
-    ("1.2.1", "变更在线申请（功能/负责人/设备/区域）", "done", "06-lab-changes.png", [
+    ("1.2.1", "变更在线申请（功能/负责人/设备/区域）", "done", "06-lab-changes-list.png", [
         "支持四类变更类型在线申请，填写标题、说明与变更内容 JSON。",
         "操作路径：「变更管理」→ 新建申请；API：`POST /lab-changes`。",
     ]),
-    ("1.2.2", "多级线上审核（单位 + 管理中心）", "done", "06-lab-changes.png", [
+    ("1.2.2", "多级线上审核（单位 + 管理中心）", "done", "06-lab-change-detail.png", [
         "审批流：草稿 → 待单位审核 → 待管理中心审核 → 通过/驳回。",
         "详情页 Steps 展示进度，`approval_records` 全程留痕。",
     ]),
-    ("1.2.3", "审批进度查询与变更留痕", "done", "06-lab-changes.png", [
+    ("1.2.3", "审批进度查询与变更留痕", "done", "06-lab-change-detail.png", [
         "详情页可查看每级审批人、意见与时间；站内通知推送审批结果。",
         "（微信/钉钉原生推送不在本次交付范围，站内消息已闭环。）",
     ]),
-    ("1.3.1", "实验员信息录入维护", "done", "07-lab-staff.png", [
+    ("1.3.1", "实验员信息录入维护", "done", "07-lab-staff-create-modal.png", [
         "工号、姓名、电话、办公室、责任实验室等字段 CRUD 完整。",
         "操作路径：「实验员」→ 新增/编辑/删除。",
     ]),
-    ("1.3.2", "实验员与实验室关联（一人多室）", "done", "07-lab-staff.png", [
+    ("1.3.2", "实验员与实验室关联（一人多室）", "done", "07-lab-staff-create-modal.png", [
         "表单支持多选责任实验室，后端 `lab_ids` 数组绑定。",
     ]),
     # === 2 设备管理 ===
@@ -50,16 +50,16 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
         "按甲方要求，外部系统集成对接不在本次交付范围。",
         "仪器信息可通过「仪器台账」手动录入或 Excel 导入完成维护（见 2.1.2）。",
     ]),
-    ("2.1.2", "配套设备手动录入与维护", "done", "08-instruments.png", [
+    ("2.1.2", "配套设备手动录入与维护", "done", "08-instruments-create-form.png", [
         "InstrumentForm 支持名称、型号、厂家、资产号、购置信息、管理员等字段新增与编辑。",
     ]),
-    ("2.2.1", "仪器详细信息录入", "done", "08-instruments.png", [
+    ("2.2.1", "仪器详细信息录入", "done", "08-instruments-create-form.png", [
         "完整字段：编号(自动)、名称、型号、分类、实验室、位置、购置日期/价格等。",
     ]),
-    ("2.2.2", "技术状态标记与变更记录", "done", "08-instruments.png", [
+    ("2.2.2", "技术状态标记与变更记录", "done", "08-instruments-list.png", [
         "状态：正常/维护/停用/报废；列表「状态」按钮变更并写入 status_log。",
     ]),
-    ("2.2.3", "仪器台账批量导入导出", "done", "08-instruments.png", [
+    ("2.2.3", "仪器台账批量导入导出", "done", "08-instruments-list.png", [
         "列表页「导入」「导出」按钮；API 支持 xlsx/csv。",
     ]),
     ("2.3.1", "按仪器设置开放时段", "done", "12-instrument-rules.png", [
@@ -71,25 +71,25 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
     ("2.3.3", "校内外用户差异化规则", "done", "12-instrument-rules.png", [
         "校外 external_rules + 校内 internal_rules UI 配置；预约引擎按角色选用规则。",
     ]),
-    ("2.4.1", "按名称/类型/实验室查询仪器", "done", "08-instruments.png", [
+    ("2.4.1", "按名称/类型/实验室查询仪器", "done", "08-instruments-list.png", [
         "InstrumentList 关键词、实验室、状态多维筛选。",
     ]),
     ("2.4.2", "日历展示空闲占用", "done", "09-instrument-bookings-calendar.png", [
         "仪器预约页「日历视图」Tab，调用 calendar API 展示占用时段。",
     ]),
-    ("2.4.3", "在线提交仪器预约", "done", "09-instrument-bookings.png", [
+    ("2.4.3", "在线提交仪器预约", "done", "09-instrument-bookings-create-modal.png", [
         "选择仪器、时段、用途、项目名后提交；规则引擎自动校验冲突与限额。",
     ]),
-    ("2.5.1", "仪器预约审批（通过/拒绝/取消）", "done", "09-instrument-bookings.png", [
+    ("2.5.1", "仪器预约审批（通过/拒绝/取消）", "done", "09-instrument-bookings-list.png", [
         "待审批记录可一键通过或填写原因拒绝；用户可取消未开始预约。",
     ]),
-    ("2.5.2", "审批进度与消息通知", "done", "09-instrument-bookings.png", [
+    ("2.5.2", "审批进度与消息通知", "done", "09-instrument-bookings-list.png", [
         "列表实时展示状态；审批结果通过站内通知推送申请人。",
     ]),
-    ("2.6.1", "仪器使用后在线填写记录", "done", "09-instrument-bookings.png", [
+    ("2.6.1", "仪器使用后在线填写记录", "done", "09-instrument-bookings-list.png", [
         "展开已通过预约行，填写使用内容与设备状态反馈并提交。",
     ]),
-    ("2.6.2", "上传实验数据与照片", "done", "09-instrument-bookings.png", [
+    ("2.6.2", "上传实验数据与照片", "done", "09-instrument-bookings-list.png", [
         "使用记录表单支持附件上传（upload API）。",
     ]),
     ("2.6.3", "负责人审核使用记录", "done", "25-usage-approval.png", [
@@ -111,41 +111,41 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
     ("3.1.2", "按使用类型差异化规则", "done", "11-lab-booking-rules.png", [
         "usage_type_rules UI + 预约时按教学/科研/开放等类型校验与自动审批。",
     ]),
-    ("3.2.1", "查看时段并提交预约", "done", "10-lab-bookings.png", [
+    ("3.2.1", "查看时段并提交预约", "done", "10-lab-bookings-create-modal.png", [
         "选择实验室、用途类型、时段、人数、目的后提交申请。",
     ]),
-    ("3.2.2", "周期性批量预约", "done", "10-lab-bookings.png", [
+    ("3.2.2", "周期性批量预约", "done", "10-lab-bookings-create-modal.png", [
         "新建表单勾选「周期性预约」，配置频率/次数/截止日期。",
     ]),
-    ("3.3.1", "按类型配置审批流程", "done", "10-lab-bookings.png", [
+    ("3.3.1", "按类型配置审批流程", "done", "10-lab-bookings-list.png", [
         "待审批可「通过」「拒绝」；已通过可「编辑」「取消」。",
     ]),
-    ("3.3.2", "审批通过后开门凭证", "done", "10-lab-bookings.png", [
+    ("3.3.2", "审批通过后开门凭证", "done", "10-lab-bookings-list.png", [
         "审批通过后弹出 CheckInModal，展示 QR/门禁 token；支持多种 access_method。",
     ]),
     ("3.3.3", "与门禁系统对接", "excluded", "", [
         "外部门禁硬件/production API 对接不在本次交付范围。",
         "系统内已实现 LabAccessGrant 凭证生成与模拟开门 API。",
     ]),
-    ("3.4.1", "预约记录集中查看与筛选", "done", "10-lab-bookings.png", [
+    ("3.4.1", "预约记录集中查看与筛选", "done", "10-lab-bookings-list.png", [
         "按实验室、状态筛选；列表导出 Excel。",
     ]),
-    ("3.4.2", "按类型审批与推送", "done", "10-lab-bookings.png", [
+    ("3.4.2", "按类型审批与推送", "done", "10-lab-bookings-list.png", [
         "同 3.3.1；审批结果站内通知。",
     ]),
-    ("3.4.3", "预约记录导出", "done", "10-lab-bookings.png", [
+    ("3.4.3", "预约记录导出", "done", "10-lab-bookings-list.png", [
         "列表「导出」按钮下载 xlsx。",
     ]),
-    ("3.5.1", "刷卡/扫码/人脸签到", "done", "10-lab-bookings.png", [
+    ("3.5.1", "刷卡/扫码/人脸签到", "done", "10-lab-bookings-usage-panel.png", [
         "展开已通过预约，提供刷卡/扫码/人脸三种签到按钮；CheckInModal 展示凭证。",
     ]),
-    ("3.5.2", "实际到场人数统计", "done", "10-lab-bookings.png", [
+    ("3.5.2", "实际到场人数统计", "done", "10-lab-bookings-usage-panel.png", [
         "签到与使用记录可填写 actual_count，与 expected_count 比对。",
     ]),
-    ("3.6.1", "实验室使用记录填报", "done", "10-lab-bookings.png", [
+    ("3.6.1", "实验室使用记录填报", "done", "10-lab-bookings-usage-panel.png", [
         "LabUsageRecordPanel 提交内容与参数；GET usage 持久化加载审核状态。",
     ]),
-    ("3.6.2", "上传实验数据文件", "done", "10-lab-bookings.png", [
+    ("3.6.2", "上传实验数据文件", "done", "10-lab-bookings-usage-panel.png", [
         "使用记录支持附件上传。",
     ]),
     ("3.6.3", "使用记录审核（含批量）", "done", "25-usage-approval.png", [
@@ -167,52 +167,52 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
         "同 3.3.3，外部门禁 production 对接排除。",
     ]),
     # === 4 实验项目 ===
-    ("4.1.1", "实验项目信息录入", "done", "13-experiment-projects.png", [
+    ("4.1.1", "实验项目信息录入", "done", "13-experiment-projects-create.png", [
         "课程 + 实验项目 CRUD：名称、类型、学时、仪器、耗材、专业等。",
     ]),
-    ("4.1.2", "项目增删改查", "done", "13-experiment-projects.png", [
+    ("4.1.2", "项目增删改查", "done", "13-experiment-projects-list.png", [
         "ProjectList/ProjectForm 完整 CRUD + 编辑路由。",
     ]),
-    ("4.2.1", "批量复制项目至其他课程", "done", "13-experiment-projects.png", [
+    ("4.2.1", "批量复制项目至其他课程", "done", "13-experiment-projects-list.png", [
         "API `POST /experiment-projects/batch-copy` + 列表批量操作。",
     ]),
     ("4.3.1", "按课程/类型/学期统计", "done", "17-statistics.png", [
         "StatisticsPage「实验项目统计」卡片：按类型、学期分布表格。",
     ]),
-    ("4.3.2", "项目数据导入导出", "done", "13-experiment-projects.png", [
+    ("4.3.2", "项目数据导入导出", "done", "13-experiment-projects-list.png", [
         "ProjectList 导入/导出按钮 + 后端 export/import API。",
     ]),
-    ("4.4.1", "科研实验全生命周期管理", "done", "27-experiments.png", [
+    ("4.4.1", "科研实验全生命周期管理", "done", "27-experiment-detail.png", [
         "「科研实验」模块：新建/编辑/删除/状态流转（草稿→计划→执行→完成/归档）。",
         "操作路径：「科研实验」→ 列表/详情/编辑页。",
     ]),
     # === 5 故障上报 ===
-    ("5.1.1", "在线提交故障（含附件）", "done", "14-faults.png", [
+    ("5.1.1", "在线提交故障（含附件）", "done", "14-faults-report-modal.png", [
         "选择实验室、类型、描述，支持图片/视频/文件上传。",
     ]),
-    ("5.1.2", "二维码扫码上报", "done", "15-fault-report.png", [
+    ("5.1.2", "二维码扫码上报", "done", "04-lab-fault-qr-modal.png", [
         "LabDetail 生成专属 QR；`/fault-report?lab_id=` 落地页自动关联实验室。",
     ]),
-    ("5.2.1", "指派与进度更新", "done", "04-lab-detail.png", [
+    ("5.2.1", "指派与进度更新", "done", "14-fault-detail.png", [
         "FaultDetail 指派处理人、更新状态、填写处理意见。",
     ]),
-    ("5.2.2", "处理全过程留痕", "done", "14-faults.png", [
+    ("5.2.2", "处理全过程留痕", "done", "14-fault-detail.png", [
         "FaultHandlingRecord 时间线；上报人可在详情页查看进度。",
     ]),
-    ("5.3.1", "故障统计分析（含 SLA）", "done", "14-faults.png", [
+    ("5.3.1", "故障统计分析（含 SLA）", "done", "14-faults-list.png", [
         "FaultList 顶部 StatCard：总数、待处理、平均响应/处理时长、24h SLA。",
     ]),
-    ("5.3.2", "可视化与导出", "done", "14-faults.png", [
+    ("5.3.2", "可视化与导出", "done", "14-faults-list.png", [
         "多维度 StatCard 可视化；列表支持筛选与删除管理。",
     ]),
     # === 6 数据填报 ===
-    ("6.1.1", "教育部基表填报模板", "done", "16-data-reporting.png", [
+    ("6.1.1", "教育部基表填报模板", "done", "16-data-reporting-template-create.png", [
         "种子含 7 类基表模板；支持新建/编辑 Schema/删除模板。",
     ]),
-    ("6.1.2", "基表在线填报与导入导出", "done", "16-data-reporting.png", [
+    ("6.1.2", "基表在线填报与导入导出", "done", "16-data-reporting-submissions.png", [
         "填报 CRUD + 草稿编辑 + 提交/审核 + Excel 导入导出闭环。",
     ]),
-    ("6.2.1", "填报数据归档与查询", "done", "16-data-reporting.png", [
+    ("6.2.1", "填报数据归档与查询", "done", "16-data-reporting-submissions.png", [
         "SubmissionList 按状态/模板筛选查询。",
     ]),
     ("6.2.2", "自动汇总统计", "done", "16-data-reporting-stats.png", [
@@ -245,21 +245,21 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
     ]),
     ("9.1.2", "分层设计", "done", "", ["frontend / modules / repository 三层结构。"]),
     ("9.1.3", "跨平台浏览器兼容", "done", "", ["Ant Design + Vite，兼容 Chrome/Firefox/Edge。"]),
-    ("9.2.1", "SSO 单点登录", "done", "01-login-ui.png", [
+    ("9.2.1", "SSO 单点登录", "done", "01-login.png", [
         "登录页 SSO 按钮；`/auth/sso/login` 本地 CAS/OIDC 模拟流程。",
         "（生产 IdP 对接属集成范畴，不在范围。）",
     ]),
-    ("9.2.2", "一卡通刷卡签到", "done", "10-lab-bookings.png", [
+    ("9.2.2", "一卡通刷卡签到", "done", "10-lab-bookings-usage-panel.png", [
         "check-in method=card 已实现；实机刷卡器属硬件集成排除。",
     ]),
-    ("9.2.3", "标准化 RESTful API", "done", "", ["OpenAPI `/docs`；120+ 端点。"]),
+    ("9.2.3", "标准化 RESTful API", "done", "30-openapi-docs.png", ["OpenAPI `/docs`；120+ 端点。"]),
     ("9.3.1", "人脸数据中台对接", "excluded", "", ["外部人脸平台对接不在范围。"]),
     ("9.3.2", "人脸增量同步", "excluded", "", ["同上。"]),
-    ("9.4.1", "移动端入口", "done", "22-mobile.png", [
+    ("9.4.1", "移动端入口", "done", "22-mobile-dashboard.png", [
         "H5 移动版 `/mobile/*` 完整可用（Dashboard/预约/故障/通知）。",
         "微信/钉钉原生小程序不在范围。",
     ]),
-    ("9.5.1", "多角色用户管理 RBAC", "done", "20-users.png", [
+    ("9.5.1", "多角色用户管理 RBAC", "done", "20-users-create-modal.png", [
         "6 种角色；用户 CRUD + 启用/禁用 + 编辑表单。",
     ]),
     ("9.5.2", "空间管理（楼栋/楼层/房间）", "done", "05-spaces.png", [
@@ -276,16 +276,16 @@ ITEMS: list[tuple[str, str, str, str, list[str]]] = [
         "TanStack Query refetchInterval 30~120s 自动刷新。",
     ]),
     # === 10 智能体 ===
-    ("10.1.1", "MCP/API 自然语言操作", "done", "23-copilot.png", [
+    ("10.1.1", "MCP/API 自然语言操作", "done", "23-copilot-dashboard.png", [
         "CopilotKit 侧边栏 + Agent REST API + MCP JSON-RPC `/api/v1/mcp`。",
     ]),
-    ("10.1.2", "实时推送与 AI 待办", "done", "23-copilot.png", [
+    ("10.1.2", "实时推送与 AI 待办", "done", "23-copilot-dashboard.png", [
         "签到/门禁 API + 站内通知；Copilot 可查询待办。",
     ]),
-    ("10.2.1", "Text-to-SQL 自然语言查询", "done", "23-copilot.png", [
+    ("10.2.1", "Text-to-SQL 自然语言查询", "done", "23-copilot-dashboard.png", [
         "`POST /agent/text-to-sql` 支持中文问句转只读 SQL。",
     ]),
-    ("10.2.2", "知识库 CRUD 与搜索", "done", "24-knowledge.png", [
+    ("10.2.2", "知识库 CRUD 与搜索", "done", "24-knowledge-search.png", [
         "「知识库」页面：文档 CRUD + 中文 FTS/混合搜索。",
     ]),
     # === 11/12 支付 ===

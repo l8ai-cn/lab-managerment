@@ -1,7 +1,7 @@
 # 实验室管理系统 — 需求核对清单（V2）
 
 > **维护日期：** 2026-07-04（v0.3.3 功能交付报告）  
-> **交付报告：** [functional-delivery-report.md](./functional-delivery-report.md)（逐条截图 + 功能说明）  
+> **交付报告：** [functional-delivery-report.md](./functional-delivery-report.md)（逐条截图 + 功能说明） · [functional-delivery-report.docx](./functional-delivery-report.docx)（Word 版，含嵌入截图）  
 > **系统版本：** LabOS v0.3  
 > **测试环境：** 后端 `http://127.0.0.1:8000` / 前端 `http://127.0.0.1:5173`  
 > **种子数据：** `python3 -m scripts.reset_and_seed`  
