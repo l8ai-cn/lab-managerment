@@ -1,0 +1,82 @@
+from logging.config import fileConfig
+
+from alembic import context
+from sqlalchemy import pool
+from sqlalchemy.ext.asyncio import async_engine_from_config
+
+from src.core.database import Base
+from src.modules.data_reporting.models import DataReportSubmission, DataReportTemplate  # noqa: F401
+from src.modules.experiment_projects.models import Course, ExperimentProject  # noqa: F401
+from src.modules.experiments.models import Experiment  # noqa: F401
+from src.modules.faults.models import FaultHandlingRecord, FaultReport  # noqa: F401
+from src.modules.integrations.models import IntegrationSyncLog  # noqa: F401
+from src.modules.instruments.models import (  # noqa: F401
+    Instrument,
+    InstrumentBooking,
+    InstrumentBookingApproval,
+    InstrumentBookingRule,
+    InstrumentStatusLog,
+    InstrumentUsageRecord,
+)
+from src.modules.lab_bookings.models import (  # noqa: F401
+    LabAccessGrant,
+    LabBooking,
+    LabBookingApproval,
+    LabBookingRule,
+    LabCheckIn,
+    LabUsageRecord,
+)
+from src.modules.lab_changes.models import LabChangeApprovalRecord, LabChangeRequest  # noqa: F401
+from src.modules.lab_staff.models import LabStaff, LabStaffAssignment  # noqa: F401
+from src.modules.labs.models import Lab  # noqa: F401
+from src.modules.payments.models import PaymentOrder  # noqa: F401
+from src.modules.spaces.models import Building, Floor, Room  # noqa: F401
+from src.modules.users.models import User  # noqa: F401
+from src.shared.notifications import Notification  # noqa: F401
+
+config = context.config
+if config.config_file_name is not None:
+    fileConfig(config.config_file_name)
+
+target_metadata = Base.metadata
+
+
+def run_migrations_offline() -> None:
+    url = config.get_main_option("sqlalchemy.url")
+    context.configure(
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
+        dialect_opts={"paramstyle": "named"},
+    )
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+def do_run_migrations(connection):
+    context.configure(connection=connection, target_metadata=target_metadata)
+    with context.begin_transaction():
+        context.run_migrations()
+
+
+async def run_async_migrations() -> None:
+    connectable = async_engine_from_config(
+        config.get_section(config.config_ini_section, {}),
+        prefix="sqlalchemy.",
+        poolclass=pool.NullPool,
+    )
+    async with connectable.connect() as connection:
+        await connection.run_sync(do_run_migrations)
+    await connectable.dispose()
+
+
+def run_migrations_online() -> None:
+    import asyncio
+
+    asyncio.run(run_async_migrations())
+
+
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
