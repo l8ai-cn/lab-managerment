@@ -19,6 +19,9 @@ import { FaultListPage } from "@/features/faults/components/FaultListPage";
 import { FaultDetailPage } from "@/features/faults/components/FaultDetailPage";
 import { KnowledgePage } from "@/features/knowledge/components/KnowledgePage";
 import { DataReportingPage } from "@/features/data-reporting/components/DataReportingPage";
+import { InstrumentListPage } from "@/features/instruments/components/InstrumentListPage";
+import { InstrumentBookingListPage } from "@/features/instruments/components/InstrumentBookingListPage";
+import { LabBookingListPage } from "@/features/lab-bookings/components/LabBookingListPage";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,6 +61,11 @@ export function App() {
               <Route path="/experiments" element={<ExperimentListPage />} />
               <Route path="/experiments/new" element={<ExperimentForm />} />
               <Route path="/experiments/:id" element={<ExperimentDetailPage />} />
+
+              {/* Equipment and booking Systems (Batch 3) */}
+              <Route path="/instruments" element={<InstrumentListPage />} />
+              <Route path="/instrument-bookings" element={<InstrumentBookingListPage />} />
+              <Route path="/lab-bookings" element={<LabBookingListPage />} />
 
               <Route path="/faults" element={<FaultListPage />} />
               <Route path="/faults/:id" element={<FaultDetailPage />} />
