@@ -6,8 +6,11 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from src.core.database import Base
 from src.modules.experiments.models import Experiment  # noqa: F401
+from src.modules.lab_changes.models import LabChangeApprovalRecord, LabChangeRequest  # noqa: F401
+from src.modules.lab_staff.models import LabStaff, LabStaffAssignment  # noqa: F401
 from src.modules.labs.models import Lab  # noqa: F401
 from src.modules.spaces.models import Building, Floor, Room  # noqa: F401
+from src.modules.users.models import User  # noqa: F401
 
 config = context.config
 if config.config_file_name is not None:

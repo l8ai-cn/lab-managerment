@@ -1,15 +1,10 @@
-import axios from "axios";
+import { api } from "@/shared/api/client";
 import type {
   Experiment,
   ExperimentCreate,
   ExperimentListResponse,
   ExperimentStatus,
 } from "../types/experiment";
-
-const api = axios.create({
-  baseURL: "/api/v1",
-  headers: { "Content-Type": "application/json" },
-});
 
 export interface ExperimentListParams {
   page?: number;

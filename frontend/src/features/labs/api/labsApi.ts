@@ -1,10 +1,5 @@
-import axios from "axios";
+import { api } from "@/shared/api/client";
 import type { BuildingTree, Lab, LabCreate, LabListResponse, LabType, OpenStatus } from "../types/lab";
-
-const api = axios.create({
-  baseURL: "/api/v1",
-  headers: { "Content-Type": "application/json" },
-});
 
 export interface LabListParams {
   page?: number;
