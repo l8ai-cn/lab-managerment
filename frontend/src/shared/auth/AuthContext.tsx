@@ -33,13 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (username: string, password: string) => {
-    // Call FastAPI auth login endpoint
-    const params = new URLSearchParams();
-    params.append("username", username);
-    params.append("password", password);
-
-    const res = await axios.post("/api/v1/auth/login", params, {
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    // Call FastAPI auth login endpoint accepting json LoginRequest schema
+    const res = await axios.post("/api/v1/auth/login", {
+      username,
+      password
     });
 
     const { access_token, user: userData } = res.data;
