@@ -1,0 +1,16 @@
+@import "../../docs/design/tokens.css";
+@import "tailwindcss";
+
+@layer base {
+  body {
+    background-color: var(--canvas);
+    color: var(--ink-primary);
+    font-family: var(--font-sans);
+    margin: 0;
+    min-height: 100vh;
+  }
+  
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+}
