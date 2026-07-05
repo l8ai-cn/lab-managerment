@@ -29,6 +29,11 @@ import { IntegrationPage } from "@/features/integrations/components/IntegrationP
 import { ClassBoardPage } from "@/features/access-control/components/ClassBoardPage";
 import { MobileApp } from "@/mobile/MobileApp";
 
+// Rules configurations added in Batch 3 extension loop
+import { InstrumentBookingRulesPage } from "@/features/instruments/components/InstrumentBookingRulesPage";
+import { LabBookingRulesPage } from "@/features/lab-bookings/components/LabBookingRulesPage";
+import { UsageApprovalPage } from "@/features/lab-bookings/components/UsageApprovalPage";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -70,8 +75,12 @@ export function App() {
 
               {/* Equipment and booking Systems (Batch 3) */}
               <Route path="/instruments" element={<InstrumentListPage />} />
+              <Route path="/instruments/rules" element={<InstrumentBookingRulesPage />} />
               <Route path="/instrument-bookings" element={<InstrumentBookingListPage />} />
+              
               <Route path="/lab-bookings" element={<LabBookingListPage />} />
+              <Route path="/lab-bookings/rules" element={<LabBookingRulesPage />} />
+              <Route path="/lab-bookings/usage-approval" element={<UsageApprovalPage />} />
 
               <Route path="/faults" element={<FaultListPage />} />
               <Route path="/faults/:id" element={<FaultDetailPage />} />
